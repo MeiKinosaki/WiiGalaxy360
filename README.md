@@ -2,31 +2,33 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado real — v2.12b: diagnóstico de inicialização do núcleo
+## Estado real — v2.13b: diagnóstico de falhas do núcleo
 
-A v2.11b gerou na nuvem um XEX de smoke test com cabeçalho XEX2 validado. Na v2.12b, o `main()` agora carrega quatro instruções na memória, executa `addi`, `stw` e `lwz` no núcleo Broadway e verifica o resultado. O diagnóstico executou no runner host e passou: `executed=4 r3=42`. O workflow Xenon também compilou, ligou, empacotou e validou estruturalmente `default.xex`.
+A v2.13b amplia o núcleo Broadway com diagnósticos estruturados de falhas. O processador agora registra o motivo, o endereço da instrução e a instrução que falhou, distinguindo busca fora da memória, leitura fora da memória, escrita fora da memória e instrução não suportada. O reset limpa o estado de falha. O workflow de host executa testes para estes casos, além do teste de inicialização; o workflow Xenon recompila e empacota um XEX de diagnóstico.
 
 ## Como executar
 
-1. Abra a branch `v2.12b-runtime-startup-check`.
+1. Abra a branch `v2.13b-cpu-fault-diagnostics`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. A execução validada está em https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38223558296 . Baixe o artefato `WiiGalaxy360-v2.12b-runtime-startup`.
+4. Acompanhe a execução de Actions nesta branch e baixe `WiiGalaxy360-v2.13b-cpu-fault-diagnostics` quando o build terminar com sucesso.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
 
 - Testes de host.
 - Compilação dos arquivos atuais do núcleo com `xenon-g++`.
-- Execução, nos testes de host, de uma rotina diagnóstica que verifica `addi`, `stw` e `lwz` no núcleo Broadway; resultado observado: `PASS: Broadway addi/stw/lwz; executed=4 r3=42`.
+- Testes de host para `addi`, `stw`, `lwz`, reset e diagnóstico de falhas do processador.
+- Rotina de startup que verifica `addi`, `stw` e `lwz`; o resultado anterior na v2.12b foi `PASS: Broadway addi/stw/lwz; executed=4 r3=42`.
+- Empacotamento Xenon de um XEX de diagnóstico; a aprovação da v2.13b depende da execução atual de Actions.
 - Linkagem do smoke test e conversão/validação de ELF32 PowerPC.
 - Execução do empacotador XEX externo em modo `--no-sign`.
 - Cabeçalho `XEX2` e tamanho mínimo do arquivo resultante.
 
 ## Limites importantes
 
-- `default.xex` nesta versão é um **XEX de diagnóstico sem assinatura e sem criptografia**, com uma rotina mínima que exercita parte do núcleo Broadway; não é um executável funcional do emulador Wii.
-- A validação automatizada verifica o contêiner e o cabeçalho XEX2, mas não prova que o arquivo inicia em hardware Xbox 360 RGH.
+- `default.xex` nesta versão é um **XEX de diagnóstico sem assinatura e sem criptografia**, com uma rotina mínima que exercita parte do núcleo Broadway e imprime informações de falha; não é um executável funcional do emulador Wii.
+- A validação automatizada verifica os testes de host, a compilação e o contêiner/cabeçalho XEX2, mas não prova que o arquivo inicia em hardware Xbox 360 RGH.
 - O modo `--no-sign` não produz a imagem assinada/criptografada exigida por um console retail/devkit padrão. O comportamento em um RGH depende do ambiente de execução e não foi testado aqui.
 - O empacotador é obtido de um repositório externo e fixado em commit; consulte a licença e os avisos do projeto RXDK360 antes de reutilizá-lo ou redistribuí-lo.
 - O núcleo continua experimental. A rotina de diagnóstico ainda precisa ser confirmada no ambiente Xenon e no console RGH; não há compatibilidade de jogos Wii demonstrada, nem implementação completa de GPU/Flipper, áudio, IOS e inicialização de jogos.
