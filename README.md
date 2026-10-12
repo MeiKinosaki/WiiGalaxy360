@@ -58,3 +58,9 @@ A biblioteca web agora permite importar um catálogo JSON por arquivo e selecion
 Formato aceito: uma lista de jogos ou um objeto com `games: []`; cada item pode ter `id`, `name`/ `title`, `category`/ `platform`, `path`/ `file` e `cover`. Para associar uma capa, use o ID ou nome do jogo como nome-base do arquivo de imagem.
 
 **Limites:** isso é importação de metadados no navegador, não varredura automática de pastas do Xbox, verificação do conteúdo dos discos, nem carregamento de ROM. A importação de imagens é temporária na sessão e não as grava na pasta `covers/`. A integração com o frontend nativo e o `default.xex` permanece pendente.
+
+## v2.21b — persistência de capas e exportação do catálogo
+
+O protótipo da biblioteca passa a converter capas selecionadas em Data URLs e guardá-las junto aos metadados no armazenamento local do navegador, quando a quota permite. Também adiciona exportação do catálogo em JSON (sem embutir as imagens no arquivo exportado) e atualiza os itens recentes ao abrir detalhes.
+
+**Limitações:** armazenamento local pode ter quota restrita e não é armazenamento da pasta `covers/` do Xbox. O export JSON não inclui bytes das capas; mantenha os arquivos originais à parte. Navegação de controle físico e integração com o `default.xex` continuam pendentes. ROMs continuam sendo apenas registros de catálogo, não jogos carregáveis.
