@@ -85,7 +85,7 @@ jobs:
               "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/broadway_cpu.cpp -o build/xenon/broadway_cpu.o
               "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -c src/xenon_smoke_main.cpp -o build/xenon/xenon_smoke_main.o
               # Use a nonzero Xenon image base in the linker script itself; objcopy does not reliably relocate PT_LOAD addresses.
-              sed -E "s/^([[:space:]]*\.[[:space:]]*=[[:space:]]*)0(x0+)?([;[:space:]]|$)/\\1 0x80001000\\3/" "$DEVKITXENON/app.lds" > build/xenon/xenon_app.lds
+              sed -E "s/^([[:space:]]*\.[[:space:]]*=[[:space:]]*)0x80000000([;[:space:]]|$)/\\1 0x80000000\\2\\n\\1 0x80001000;/" "$DEVKITXENON/app.lds" > build/xenon/xenon_app.lds
               grep -q '0x80001000' build/xenon/xenon_app.lds || { echo "ERROR: failed to set Xenon link base" >&2; sed -n '1,100p' "$DEVKITXENON/app.lds" >&2; exit 1; }
               "$compiler" $flags -Wl,--gc-sections -Wl,-Ttext-segment=0x80000000 -L"$DEVKITXENON/usr/lib" -L"$DEVKITXENON/xenon/lib/32" -T build/xenon/xenon_app.lds build/xenon/xenon_smoke_main.o build/xenon/memory_bus.o build/xenon/broadway_cpu.o -lxenon -lm -o build/xenon/WiiGalaxy360-smoke.elf
               "$DEVKITXENON/bin/xenon-objcopy" -O elf32-powerpc build/xenon/WiiGalaxy360-smoke.elf build/xenon/WiiGalaxy360-smoke.elf32
