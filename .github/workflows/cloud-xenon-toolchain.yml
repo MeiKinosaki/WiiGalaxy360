@@ -6,6 +6,7 @@ on:
       - main
       - v2.8b-cloud-toolchain
       - v2.9b-xenon-elf32-link
+      - v2.10b-xex-packer-audit
   pull_request:
   workflow_dispatch:
 
@@ -34,6 +35,30 @@ jobs:
       - name: Pull libXenon build image
         run: docker pull free60/libxenon:latest
 
+      - name: Audit available XEX packaging tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/xenon
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" free60/libxenon:latest bash -lc '
+            set -eu
+            export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
+            {
+              echo "WiiGalaxy360 v2.10b — XEX tool inventory"
+              echo "Image: free60/libxenon:latest"
+              echo "DEVKITXENON=$DEVKITXENON"
+              echo
+              echo "Executables whose names contain xex:"
+              find /usr/local /usr/bin /opt -type f -iname "*xex*" -perm /111 -print 2>/dev/null || true
+              echo
+              echo "Relevant binutils:"
+              find "$DEVKITXENON/bin" -maxdepth 1 -type f \( -name "*objcopy*" -o -name "*objdump*" -o -name "*strip*" -o -name "*ld" \) -print 2>/dev/null || true
+              echo
+              echo "Note: ELF/objcopy output is not a valid XEX unless a real XEX packer creates and validates the container."
+            } > /work/build/xenon/xex-tool-inventory.txt
+            cat /work/build/xenon/xex-tool-inventory.txt
+          ' 
+
       - name: Compile core and link smoke-test ELF32 in cloud
         shell: bash
         run: |
@@ -51,8 +76,6 @@ jobs:
               test -x "$compiler" || { echo "ERROR: expected compiler not found: $compiler" >&2; exit 1; }
               echo "Compiler: $compiler"
               echo "Target: $("$compiler" -dumpmachine)"
-              echo "libxenon candidates:"
-              find "$DEVKITXENON" -type f -name "libxenon*" -print
               flags="-m32 -mpowerpc64 -maltivec -mhard-float -fno-pic -DXENON"
               "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/memory_bus.cpp -o build/xenon/memory_bus.o
               "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/broadway_cpu.cpp -o build/xenon/broadway_cpu.o
@@ -66,13 +89,14 @@ jobs:
               readelf -h build/xenon/WiiGalaxy360-smoke.elf32 | grep -q "Machine:.*PowerPC"
             '
 
-      - name: Upload Xenon ELF smoke-test artifacts
+      - name: Upload Xenon ELF and XEX-tool inventory
         uses: actions/upload-artifact@v4
         with:
-          name: WiiGalaxy360-v2.9b-xenon-elf32
+          name: WiiGalaxy360-v2.10b-cloud-build-audit
           path: |
             build/xenon/WiiGalaxy360-smoke.elf
             build/xenon/WiiGalaxy360-smoke.elf32
             build/xenon/*.o
+            build/xenon/xex-tool-inventory.txt
           if-no-files-found: error
           retention-days: 14
