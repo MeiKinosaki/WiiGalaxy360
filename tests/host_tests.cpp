@@ -97,12 +97,25 @@ void test_arithmetic_logical_xforms() {
         check(!cpu.halted() && cpu.fault() == CpuFault::None, "supported X-form ops do not fault");
     }
     {
-        MemoryBus bus(32);
-        check(bus.write32(0, xform(3, 1, 2, 266, true)), "write add with Rc=1");
+        MemoryBus bus(128);
+        check(bus.write32(0, dform(14, 1, 0, 17)), "seed positive r1 for CR0");
+        check(bus.write32(4, dform(14, 2, 0, 25)), "seed positive r2 for CR0");
+        check(bus.write32(8, xform(3, 1, 2, 266, true)), "add with Rc=1 yields GT");
+        check(bus.write32(12, dform(14, 4, 0, static_cast<std::uint16_t>(-17))), "seed negative r4");
+        check(bus.write32(16, xform(5, 1, 4, 266, true)), "add with Rc=1 yields EQ");
+        check(bus.write32(20, dform(14, 6, 0, 0x8000)), "seed negative r6");
+        check(bus.write32(24, dform(14, 7, 0, 0)), "seed zero r7");
+        check(bus.write32(28, xform(8, 6, 7, 266, true)), "add with Rc=1 yields LT");
         BroadwayCpu cpu(bus);
-        check(cpu.run(1) == 0U, "Rc variant is not executed without CR support");
-        check(cpu.fault() == CpuFault::UnsupportedInstruction, "Rc variant reports unsupported instruction");
-        check(cpu.fault_instruction() == xform(3, 1, 2, 266, true), "Rc variant records instruction");
+        check(cpu.run(3) == 3U, "execute positive Rc arithmetic");
+        check(((cpu.cr() >> 28U) & 0xfU) == 0x4U, "CR0 records GT on positive result");
+        check(cpu.run(2) == 2U, "execute zero-result Rc arithmetic");
+        check(((cpu.cr() >> 28U) & 0xfU) == 0x2U, "CR0 records EQ on zero result");
+        check(cpu.run(3) == 3U, "execute negative Rc arithmetic");
+        check(((cpu.cr() >> 28U) & 0xfU) == 0x8U, "CR0 records LT on negative result");
+        check(!cpu.halted() && cpu.fault() == CpuFault::None, "Rc variants execute without fault");
+        cpu.reset();
+        check(cpu.cr() == 0U, "reset clears condition register");
     }
     {
         MemoryBus bus(32);

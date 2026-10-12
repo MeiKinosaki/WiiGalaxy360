@@ -6,6 +6,7 @@ void BroadwayCpu::reset() noexcept {
     gpr_.fill(0);
     pc_ = 0;
     lr_ = 0;
+    cr_ = 0;
     halted_ = false;
     fault_ = CpuFault::None;
     fault_pc_ = 0;
@@ -70,30 +71,37 @@ bool BroadwayCpu::step() noexcept {
     case 31U: { // Selected X-form arithmetic/logical instructions, Rc=0 only.
         const auto rb = static_cast<std::size_t>((instruction >> 11U) & 31U);
         const auto xo = (instruction >> 1U) & 0x3ffU;
-        if ((instruction & 1U) != 0U) {
-            // Rc=1 requires CR updates, which this subset does not implement yet.
-            raise_fault(CpuFault::UnsupportedInstruction, instruction);
-            return false;
-        }
+        std::uint32_t result = 0U;
+        bool writes_rt = false;
         switch (xo) {
         case 266U: // add RT,RA,RB
-            gpr_[rt] = gpr_[ra] + gpr_[rb];
+            result = gpr_[ra] + gpr_[rb];
+            writes_rt = true;
             break;
         case 40U: // subf RT,RA,RB => RB - RA
-            gpr_[rt] = gpr_[rb] - gpr_[ra];
+            result = gpr_[rb] - gpr_[ra];
+            writes_rt = true;
             break;
         case 316U: // xor RA,RS,RB; destination is RA
-            gpr_[ra] = gpr_[rt] ^ gpr_[rb];
+            result = gpr_[rt] ^ gpr_[rb];
             break;
         case 444U: // or RA,RS,RB; destination is RA
-            gpr_[ra] = gpr_[rt] | gpr_[rb];
+            result = gpr_[rt] | gpr_[rb];
             break;
         case 28U: // and RA,RS,RB; destination is RA
-            gpr_[ra] = gpr_[rt] & gpr_[rb];
+            result = gpr_[rt] & gpr_[rb];
             break;
         default:
             raise_fault(CpuFault::UnsupportedInstruction, instruction);
             return false;
+        }
+        if (writes_rt) gpr_[rt] = result;
+        else gpr_[ra] = result;
+        if ((instruction & 1U) != 0U) {
+            // CR0 = LT, GT, EQ, SO. XER[SO] is not modelled yet.
+            std::uint32_t field = result == 0U ? 0x2U :
+                ((result & 0x80000000U) != 0U ? 0x8U : 0x4U);
+            cr_ = (cr_ & 0x0fffffffU) | (field << 28U);
         }
         break;
     }
@@ -131,6 +139,7 @@ std::uint32_t BroadwayCpu::reg(std::size_t index) const noexcept {
     return index < gpr_.size() ? gpr_[index] : 0U;
 }
 std::uint32_t BroadwayCpu::lr() const noexcept { return lr_; }
+std::uint32_t BroadwayCpu::cr() const noexcept { return cr_; }
 bool BroadwayCpu::halted() const noexcept { return halted_; }
 CpuFault BroadwayCpu::fault() const noexcept { return fault_; }
 std::uint32_t BroadwayCpu::fault_pc() const noexcept { return fault_pc_; }
