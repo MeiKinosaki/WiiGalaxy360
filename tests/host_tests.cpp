@@ -141,7 +141,7 @@ void test_addc_xer_carry() {
     {
         MemoryBus bus(128);
         check(bus.write32(0, dform(15, 1, 0, 0x7fffU)), "seed addc r1 high word");
-        check(bus.write32(4, dform(14, 1, 1, 0xffffU)), "set r1 to 0x7fffffff");
+        check(bus.write32(4, dform(24, 1, 1, 0xffffU)), "set r1 to 0x7fffffff with ori");
         check(bus.write32(8, dform(14, 2, 0, 1U)), "seed addc r2 positive one");
         check(bus.write32(12, xform(3, 1, 2, 10U, true)), "write addc with Rc");
         BroadwayCpu cpu(bus);
