@@ -113,3 +113,10 @@ O carregamento do `localStorage` agora verifica a estrutura básica dos valores 
 O botão **Diagnóstico** verifica a estrutura básica dos registros em memória, IDs duplicados, listas de favoritos e recentes, quantidade de capas embutidas e disponibilidade básica de gravação/leitura no `localStorage`. Os resultados aparecem na interface.
 
 **Limites:** diagnóstico de metadados e armazenamento do navegador apenas. Não abre nem valida ROMs, não confirma que caminhos existem, não testa o núcleo PowerPC/GPU, não compila `default.xex` e não representa teste no Xbox 360.
+
+
+## v2.29b — importação sem apagar registros existentes
+
+A importação de catálogo agora mescla os registros válidos novos aos itens já cadastrados, em vez de substituir todo o catálogo importado. IDs já presentes no catálogo são tratados como duplicados e rejeitados, evitando que uma importação parcial ou com IDs repetidos apague silenciosamente registros anteriores. A mensagem informa quantos itens novos foram aceitos e quantos foram rejeitados.
+
+**Limites:** a mudança protege os metadados armazenados no navegador, mas não cria backup automático, não valida arquivos ROM e não liga a biblioteca ao núcleo de emulação ou ao `default.xex`. A interface segue sendo um protótipo web; sem teste automatizado ou validação em Xbox 360 nesta etapa.
