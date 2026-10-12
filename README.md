@@ -2,24 +2,24 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado real — v2.16b: XER e carry com addc
+## Estado real — v2.17b: subfc e carry do XER
 
-A v2.16b adiciona estado XER e implementa `addc` (XO=10) no subconjunto X-form. O bit CA (0x20000000) é atualizado com o carry unsigned da soma de 32 bits; `Rc=1` também atualiza CR0 a partir do resultado. O reset limpa XER. Os testes cobrem carry ligado, carry desligado apesar de overflow com sinal, CR0 e reset. O diagnóstico de inicialização agora verifica `addc`, CR0, XER, `stw` e `lwz`. A validação da v2.16b passou: os testes de host, o diagnóstico de inicialização, a compilação/ligação Xenon e o empacotamento/validação estrutural do `default.xex` foram concluídos com sucesso. Logs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38295685506.
+A v2.17b implementa `subfc` (XO=8), calculando RB − RA e atualizando CA do XER segundo a semântica carry-not-borrow: CA é definido quando RB ≥ RA e limpo quando ocorre empréstimo. Mantém `addc`, CR0 e as instruções anteriores. Testes adicionados cobrem subtração com e sem empréstimo, incluindo o resultado de 32 bits com wraparound. O diagnóstico inicial também executa `subfc`. A aprovação da versão depende da execução dos workflows desta branch.
 
 ## Como executar
 
-1. Abra a branch `v2.16b-xer-carry-addc`.
+1. Abra a branch `v2.17b-xer-subfc`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. Abra https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38295685506 e baixe o artefato `WiiGalaxy360-v2.16b-xer-carry-addc`.
+4. Acompanhe os workflows da branch e baixe `WiiGalaxy360-v2.17b-xer-subfc` quando concluídos.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
 
 - Testes de host.
 - Compilação dos arquivos atuais do núcleo com `xenon-g++`.
-- Testes de host para `addi`, `stw`, `lwz`, reset, diagnósticos de falha, instruções X-form, CR0 e XER/CA.
-- Rotina de startup que verifica `addi`, `add.` (Rc=1), `addc`, `stw`, `lwz`, CR0 e XER/CA.
+- Testes de host para `addi`, `stw`, `lwz`, reset, diagnósticos de falha, instruções X-form, CR0, `addc`, `subfc` e XER/CA.
+- Rotina de startup que verifica `addi`, `add.` (Rc=1), `addc`, `subfc`, `stw`, `lwz`, CR0 e XER/CA.
 - Empacotamento Xenon de um XEX de diagnóstico; a execução da v2.16b passou.
 - Linkagem do smoke test e conversão/validação de ELF32 PowerPC.
 - Execução do empacotador XEX externo em modo `--no-sign`.
