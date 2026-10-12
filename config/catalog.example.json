@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "description": "Modelo de catálogo para importar em ui/library.html. Registos são metadados, não garantem compatibilidade.",
+  "games": [
+    {
+      "id": "GAME-ID-EXAMPLE",
+      "name": "Nome do jogo",
+      "category": "wii",
+      "path": "games/roms/nome-do-jogo.iso",
+      "cover": "GAME-ID-EXAMPLE.png"
+    }
+  ]
+}

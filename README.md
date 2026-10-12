@@ -50,3 +50,11 @@ Adicionado `ui/library.html`, um frontend demonstrativo em HTML/CSS/JavaScript c
 **Limites desta etapa:** os itens da grade são fictícios; não há descoberta de ROMs, carregamento de jogos, integração com o núcleo, renderização gráfica do emulador, áudio real nem save/load state. Os controles de qualidade são apenas preferências demonstrativas até serem ligados ao renderizador. O botão de áudio não reproduz música.
 
 Para visualizar o protótipo, abra `ui/library.html` em um navegador moderno. Isto não significa que a interface já esteja integrada ao `default.xex` ou seja executável como app Xbox 360.
+
+## v2.20b — importação de catálogo e capas no protótipo
+
+A biblioteca web agora permite importar um catálogo JSON por arquivo e selecionar imagens de capa locais. Os metadados importados são guardados no armazenamento local do navegador quando há espaço; capas escolhidas são associadas nesta sessão pelo nome/ID do arquivo. Exemplo de formato: `config/catalog.example.json`.
+
+Formato aceito: uma lista de jogos ou um objeto com `games: []`; cada item pode ter `id`, `name`/ `title`, `category`/ `platform`, `path`/ `file` e `cover`. Para associar uma capa, use o ID ou nome do jogo como nome-base do arquivo de imagem.
+
+**Limites:** isso é importação de metadados no navegador, não varredura automática de pastas do Xbox, verificação do conteúdo dos discos, nem carregamento de ROM. A importação de imagens é temporária na sessão e não as grava na pasta `covers/`. A integração com o frontend nativo e o `default.xex` permanece pendente.
