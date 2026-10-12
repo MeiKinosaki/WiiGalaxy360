@@ -7,6 +7,7 @@ on:
       - v2.8b-cloud-toolchain
       - v2.9b-xenon-elf32-link
       - v2.10b-xex-packer-audit
+      - v2.11b-cloud-xex-packaging
   pull_request:
   workflow_dispatch:
 
@@ -26,11 +27,14 @@ jobs:
         run: make clean host-test
 
   xenon-cross-compile:
-    name: Compile and link Xenon ELF32 smoke test
+    name: Compile, link and pack smoke-test XEX
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
         uses: actions/checkout@v4
+
+      - name: Install host-side packer runtime
+        run: sudo apt-get update && sudo apt-get install -y python3 git
 
       - name: Pull libXenon build image
         run: docker pull free60/libxenon:latest
@@ -44,7 +48,7 @@ jobs:
             set -eu
             export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
             {
-              echo "WiiGalaxy360 v2.10b — XEX tool inventory"
+              echo "WiiGalaxy360 v2.11b — XEX tool inventory"
               echo "Image: free60/libxenon:latest"
               echo "DEVKITXENON=$DEVKITXENON"
               echo
@@ -54,12 +58,12 @@ jobs:
               echo "Relevant binutils:"
               find "$DEVKITXENON/bin" -maxdepth 1 -type f \( -name "*objcopy*" -o -name "*objdump*" -o -name "*strip*" -o -name "*ld" \) -print 2>/dev/null || true
               echo
-              echo "Note: ELF/objcopy output is not a valid XEX unless a real XEX packer creates and validates the container."
+              echo "The external pinned elf2xex.py packer is used in the next step; ELF output is not itself XEX."
             } > /work/build/xenon/xex-tool-inventory.txt
             cat /work/build/xenon/xex-tool-inventory.txt
-          ' 
+          '
 
-      - name: Compile core and link smoke-test ELF32 in cloud
+      - name: Compile core and link Xenon ELF32 smoke test
         shell: bash
         run: |
           set -euo pipefail
@@ -89,11 +93,38 @@ jobs:
               readelf -h build/xenon/WiiGalaxy360-smoke.elf32 | grep -q "Machine:.*PowerPC"
             '
 
-      - name: Upload Xenon ELF and XEX-tool inventory
+      - name: Fetch pinned XEX packer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/Team-Resurgent/RXDK360.git /tmp/RXDK360
+          git -C /tmp/RXDK360 checkout --detach ca06a4db2bc91a44cecfa1f2895adb8f23e91ba3
+          test -f /tmp/RXDK360/tools/elf2xex.py
+          test -f /tmp/RXDK360/tools/xex_debugsign.py
+          git -C /tmp/RXDK360 rev-parse HEAD
+
+      - name: Pack and structurally validate default.xex
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 /tmp/RXDK360/tools/elf2xex.py build/xenon/WiiGalaxy360-smoke.elf32 \
+            --base 0x80000000 --no-sign -o build/xenon/default.xex
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("build/xenon/default.xex")
+          data = p.read_bytes()
+          assert len(data) > 0x100, f"XEX unexpectedly small: {len(data)} bytes"
+          assert data[:4] == b"XEX2", f"bad XEX2 magic: {data[:4]!r}"
+          assert len(data) >= 24, "truncated XEX header"
+          print(f"PASS: XEX2 magic, {len(data)} bytes; unsigned/unencrypted smoke-test image")
+          PY
+
+      - name: Upload Xenon ELF, XEX and tool inventory
         uses: actions/upload-artifact@v4
         with:
-          name: WiiGalaxy360-v2.10b-cloud-build-audit
+          name: WiiGalaxy360-v2.11b-cloud-xex
           path: |
+            build/xenon/default.xex
             build/xenon/WiiGalaxy360-smoke.elf
             build/xenon/WiiGalaxy360-smoke.elf32
             build/xenon/*.o
