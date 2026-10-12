@@ -4,14 +4,14 @@ Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
 ## Estado real — v2.17b: subfc e carry do XER
 
-A v2.17b implementa `subfc` (XO=8), calculando RB − RA e atualizando CA do XER segundo a semântica carry-not-borrow: CA é definido quando RB ≥ RA e limpo quando ocorre empréstimo. Mantém `addc`, CR0 e as instruções anteriores. Testes adicionados cobrem subtração com e sem empréstimo, incluindo o resultado de 32 bits com wraparound. O diagnóstico inicial também executa `subfc`. A aprovação da versão depende da execução dos workflows desta branch.
+A v2.17b implementa `subfc` (XO=8), calculando RB − RA e atualizando CA do XER segundo a semântica carry-not-borrow: CA é definido quando RB ≥ RA e limpo quando ocorre empréstimo. Mantém `addc`, CR0 e as instruções anteriores. Testes adicionados cobrem subtração com e sem empréstimo, incluindo o resultado de 32 bits com wraparound. O diagnóstico inicial também executa `subfc`. A validação da v2.17b passou: testes de host, diagnóstico inicial, compilação/ligação Xenon e empacotamento/validação estrutural de `default.xex` concluídos com sucesso. Logs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38298337507.
 
 ## Como executar
 
 1. Abra a branch `v2.17b-xer-subfc`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. Acompanhe os workflows da branch e baixe `WiiGalaxy360-v2.17b-xer-subfc` quando concluídos.
+4. Abra https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38298337507 e baixe o artefato `WiiGalaxy360-v2.17b-xer-subfc`.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
