@@ -4,14 +4,14 @@ Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
 ## Estado real — v2.15b: registrador de condição CR0
 
-A v2.15b implementa atualização do campo CR0 quando as instruções suportadas `add`, `subf`, `xor`, `or` e `and` usam Rc=1. CR0 registra LT, GT ou EQ conforme o resultado; o bit SO permanece zero porque o XER/SO ainda não é modelado. O reset limpa o registrador CR. Os testes agora verificam os três resultados, e o programa de diagnóstico executado na toolchain testa `add.` seguido de `stw` e `lwz`. O workflow desta versão deve passar os testes de host e compilar/empacotar o `default.xex` de diagnóstico.
+A v2.15b implementa atualização do campo CR0 quando as instruções suportadas `add`, `subf`, `xor`, `or` e `and` usam Rc=1. CR0 registra LT, GT ou EQ conforme o resultado; o bit SO permanece zero porque o XER/SO ainda não é modelado. O reset limpa o registrador CR. Os testes agora verificam os três resultados, e o programa de diagnóstico executado na toolchain testa `add.` seguido de `stw` e `lwz`. A execução da v2.15b passou: testes de host e diagnóstico inicial aprovados, compilação/ligação Xenon concluídas e `default.xex` empacotado e validado estruturalmente. Logs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38293723470.
 
 ## Como executar
 
 1. Abra a branch `v2.15b-condition-register-cr0`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. Abra a execução de Actions da branch `v2.15b-condition-register-cr0` e baixe `WiiGalaxy360-v2.15b-condition-register-cr0` quando concluída.
+4. Abra https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38293723470 e baixe o artefato `WiiGalaxy360-v2.15b-condition-register-cr0`.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
