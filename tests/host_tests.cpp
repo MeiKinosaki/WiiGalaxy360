@@ -107,7 +107,11 @@ void test_arithmetic_logical_xforms() {
         check(bus.write32(24, dform(14, 7, 0, 0)), "seed zero r7");
         check(bus.write32(28, xform(8, 6, 7, 266, true)), "add with Rc=1 yields LT");
         BroadwayCpu cpu(bus);
-        check(cpu.run(8) == 8U, "execute Rc arithmetic instructions");
+        check(cpu.run(3) == 3U, "execute positive Rc arithmetic");
+        check(((cpu.cr() >> 28U) & 0xfU) == 0x4U, "CR0 records GT on positive result");
+        check(cpu.run(2) == 2U, "execute zero-result Rc arithmetic");
+        check(((cpu.cr() >> 28U) & 0xfU) == 0x2U, "CR0 records EQ on zero result");
+        check(cpu.run(3) == 3U, "execute negative Rc arithmetic");
         check(((cpu.cr() >> 28U) & 0xfU) == 0x8U, "CR0 records LT on negative result");
         check(!cpu.halted() && cpu.fault() == CpuFault::None, "Rc variants execute without fault");
         cpu.reset();
