@@ -7,6 +7,7 @@ void BroadwayCpu::reset() noexcept {
     pc_ = 0;
     lr_ = 0;
     cr_ = 0;
+    xer_ = 0;
     halted_ = false;
     fault_ = CpuFault::None;
     fault_pc_ = 0;
@@ -73,6 +74,7 @@ bool BroadwayCpu::step() noexcept {
         const auto xo = (instruction >> 1U) & 0x3ffU;
         std::uint32_t result = 0U;
         bool writes_rt = false;
+        bool writes_carry = false;
         switch (xo) {
         case 266U: // add RT,RA,RB
             result = gpr_[ra] + gpr_[rb];
@@ -82,6 +84,16 @@ bool BroadwayCpu::step() noexcept {
             result = gpr_[rb] - gpr_[ra];
             writes_rt = true;
             break;
+        case 10U: { // addc RT,RA,RB
+            const std::uint64_t sum = static_cast<std::uint64_t>(gpr_[ra]) +
+                                      static_cast<std::uint64_t>(gpr_[rb]);
+            result = static_cast<std::uint32_t>(sum);
+            xer_ = (xer_ & ~0x20000000U) |
+                   ((sum >> 32U) != 0U ? 0x20000000U : 0U);
+            writes_rt = true;
+            writes_carry = true;
+            break;
+        }
         case 316U: // xor RA,RS,RB; destination is RA
             result = gpr_[rt] ^ gpr_[rb];
             break;
@@ -140,6 +152,7 @@ std::uint32_t BroadwayCpu::reg(std::size_t index) const noexcept {
 }
 std::uint32_t BroadwayCpu::lr() const noexcept { return lr_; }
 std::uint32_t BroadwayCpu::cr() const noexcept { return cr_; }
+std::uint32_t BroadwayCpu::xer() const noexcept { return xer_; }
 bool BroadwayCpu::halted() const noexcept { return halted_; }
 CpuFault BroadwayCpu::fault() const noexcept { return fault_; }
 std::uint32_t BroadwayCpu::fault_pc() const noexcept { return fault_pc_; }
