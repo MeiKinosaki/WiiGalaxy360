@@ -40,7 +40,7 @@ main{padding:24px;min-width:0}.headline{display:flex;gap:16px;align-items:end;fl
 <label>Som do menu<select id="audio"><option value="off">Desligado</option><option value="on">Ligado (quando implementado)</option></select></label>
 </div><div class="panel"><h2>Salvar preferências</h2><p>Essas opções são apenas configuração visual. Não alteram o desempenho real do Xbox 360 até serem conectadas ao renderizador.</p><button id="saveSettings">Salvar preferências</button> <span id="saved" class="note" role="status"></span></div>
 </section>
-<footer>WiiGalaxy360 · Protótipo de frontend v2.25b · Sem emulação de jogos nesta página.</footer>
+<footer>WiiGalaxy360 · Protótipo de frontend v2.27b · Sem emulação de jogos nesta página.</footer>
 </main></div>
 <script>
 (function(){
@@ -48,8 +48,27 @@ const demo=[{id:"demo-blue",name:"Jogo de demonstração azul",category:"test",t
 let games=load("wg-catalog",demo), favorites=load("wg-favorites",[]), recent=load("wg-recent",[]), active="all";
 const viewState=load("wg-library-view",{search:"",sort:"name",platform:"all",active:"all"});
 const $=id=>document.getElementById(id);
-function load(k,fallback){try{const v=JSON.parse(localStorage.getItem(k));return v??fallback}catch(e){return fallback}}
-function persist(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+const storageWarnings=[];
+function validStoredValue(k,v){
+ if(k==="wg-catalog")return Array.isArray(v)&&v.every(g=>g&&typeof g==="object"&&!Array.isArray(g)&&typeof g.id==="string"&&typeof (g.name||g.title)==="string");
+ if(k==="wg-favorites"||k==="wg-recent")return Array.isArray(v)&&v.every(x=>typeof x==="string");
+ if(k==="wg-library-view")return !!v&&typeof v==="object"&&!Array.isArray(v);
+ if(k==="wg-settings")return !!v&&typeof v==="object"&&!Array.isArray(v);
+ return true;
+}
+function load(k,fallback){
+ try{
+  const raw=localStorage.getItem(k);
+  if(raw===null)return fallback;
+  const v=JSON.parse(raw);
+  if(!validStoredValue(k,v)){storageWarnings.push(k+": formato inválido; valores padrão usados");return fallback}
+  return v;
+ }catch(e){storageWarnings.push(k+": dados ilegíveis ou armazenamento indisponível; valores padrão usados");return fallback}
+}
+function persist(k,v){
+ try{localStorage.setItem(k,JSON.stringify(v));return true}
+ catch(e){storageWarnings.push(k+": não foi possível salvar (quota ou armazenamento indisponível)");return false}
+}
 function status(t){$("importStatus").textContent=t}
 function render(){const q=$("search").value.toLowerCase().trim();let items=games.filter(g=>(active!=="favorites"||favorites.includes(g.id))&&(active!=="recent"||recent.includes(g.id))&&($("platform").value==="all"||$("platform").value===g.category)&&((g.name||g.title||"").toLowerCase().includes(q)));if($("sort").value==="recent")items.sort((a,b)=>recent.indexOf(a.id)-recent.indexOf(b.id));else items.sort((a,b)=>(a.name||a.title||"").localeCompare(b.name||b.title||"","pt-BR"));$("count").textContent=items.length+" item(ns) no catálogo · "+games.filter(g=>!g.demo).length+" importado(s)";$("grid").innerHTML="";if(!items.length){$("grid").innerHTML='<div class="empty">Nenhum item corresponde ao filtro atual.</div>';return}items.forEach(g=>{const name=g.name||g.title||g.id;const card=document.createElement("article");card.className="game";const star=document.createElement("button");star.className="star";star.textContent=favorites.includes(g.id)?"★":"☆";star.title="Alternar favorito";star.setAttribute("aria-label","Alternar favorito de "+name);star.onclick=()=>{favorites=favorites.includes(g.id)?favorites.filter(x=>x!==g.id):favorites.concat(g.id);persist("wg-favorites",favorites);render()};const cover=document.createElement("div");cover.className="cover";cover.style.background=g.tone||"linear-gradient(145deg,#0e5fa5,#1c9be9 48%,#d8f0ff)";cover.textContent=name;if(g.coverData){const img=document.createElement("img");img.src=g.coverData;img.alt="Capa de "+name;img.style.cssText="width:100%;height:100%;object-fit:cover;position:absolute;inset:0";cover.textContent="";cover.append(img)}const title=document.createElement("h3");title.textContent=name;const meta=document.createElement("div");meta.className="meta";meta.textContent=(g.category==="wii"?"Wii":g.category==="test"?"Demonstração":g.category||"Importado")+(g.path?" · "+g.path:"");card.setAttribute("role","listitem");const open=document.createElement("button");open.className="open";open.textContent="Detalhes";open.setAttribute("aria-label","Ver detalhes de "+name);open.onclick=()=>{recent=[g.id].concat(recent.filter(x=>x!==g.id));persist("wg-recent",recent);render();alert(g.demo?"Item ilustrativo: não é um jogo carregável.":"Registro de catálogo selecionado. O carregamento da ROM ainda não está ligado ao núcleo de emulação.");};card.append(star,cover,title,meta,open);$("grid").append(card)})}
 $("nav").addEventListener("click",e=>{const b=e.target.closest("button[data-filter]");if(!b)return;active=b.dataset.filter;document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));$("library").hidden=active==="settings";$("settingsView").hidden=active!=="settings";if(active!=="settings")render()});
@@ -101,6 +120,7 @@ document.addEventListener("keydown",e=>{
 const settings=load("wg-settings",{});["quality","filter","resolution","audio"].forEach(id=>{if(settings[id])$(id).value=settings[id]});
 if(viewState&&typeof viewState==="object"){$("search").value=typeof viewState.search==="string"?viewState.search:"";$("sort").value=["name","recent"].includes(viewState.sort)?viewState.sort:"name";$("platform").value=["all","wii","test"].includes(viewState.platform)?viewState.platform:"all";if(["all","favorites","recent"].includes(viewState.active))active=viewState.active;document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x.dataset.filter===active));}
 render();
+if(storageWarnings.length)status("Aviso de armazenamento: "+storageWarnings.slice(0,4).join("; ")+(storageWarnings.length>4?"…":"")+". A biblioteca abriu com os dados disponíveis; reimporte o catálogo se necessário.");
 })();
 </script>
 </body></html>
