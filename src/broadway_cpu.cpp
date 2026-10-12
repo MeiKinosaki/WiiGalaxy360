@@ -74,7 +74,6 @@ bool BroadwayCpu::step() noexcept {
         const auto xo = (instruction >> 1U) & 0x3ffU;
         std::uint32_t result = 0U;
         bool writes_rt = false;
-        bool writes_carry = false;
         switch (xo) {
         case 266U: // add RT,RA,RB
             result = gpr_[ra] + gpr_[rb];
@@ -91,7 +90,6 @@ bool BroadwayCpu::step() noexcept {
             xer_ = (xer_ & ~0x20000000U) |
                    ((sum >> 32U) != 0U ? 0x20000000U : 0U);
             writes_rt = true;
-            writes_carry = true;
             break;
         }
         case 316U: // xor RA,RS,RB; destination is RA
