@@ -125,6 +125,32 @@ void test_arithmetic_logical_xforms() {
         check(cpu.fault() == CpuFault::UnsupportedInstruction, "unknown X-form XO fault");
     }
 }
+void test_addc_xer_carry() {
+    {
+        MemoryBus bus(128);
+        check(bus.write32(0, dform(14, 1, 0, 0xffffU)), "seed addc r1 low word");
+        check(bus.write32(4, dform(14, 2, 0, 1U)), "seed addc r2");
+        check(bus.write32(8, xform(3, 1, 2, 10U)), "write addc");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(3) == 3U, "execute addc without overflow");
+        check(cpu.reg(3) == 0U, "addc wraps 32-bit result");
+        check((cpu.xer() & 0x20000000U) != 0U, "addc sets XER CA on unsigned carry");
+        cpu.reset();
+        check(cpu.xer() == 0U, "reset clears XER");
+    }
+    {
+        MemoryBus bus(128);
+        check(bus.write32(0, dform(15, 1, 0, 0x7fffU)), "seed addc r1 high word");
+        check(bus.write32(4, dform(14, 1, 1, 0xffffU)), "set r1 to 0x7fffffff");
+        check(bus.write32(8, dform(14, 2, 0, 1U)), "seed addc r2 positive one");
+        check(bus.write32(12, xform(3, 1, 2, 10U, true)), "write addc with Rc");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(4) == 4U, "execute addc Rc variant");
+        check(cpu.reg(3) == 0x80000000U, "addc result wraps to sign bit");
+        check((cpu.xer() & 0x20000000U) == 0U, "signed overflow does not set unsigned carry");
+        check(((cpu.cr() >> 28U) & 0xfU) == 0x8U, "Rc sets CR0 LT for signed negative bit pattern");
+    }
+}
 void test_fault_diagnostics() {
     {
         MemoryBus bus(32);
@@ -183,7 +209,7 @@ void test_halt_reset() {
 }
 int main() {
     test_memory(); test_cpu_load_store(); test_addis_and_branch();
-    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_arithmetic_logical_xforms(); test_fault_diagnostics(); test_halt_reset();
+    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_arithmetic_logical_xforms(); test_addc_xer_carry(); test_fault_diagnostics(); test_halt_reset();
     if (failures) { std::cerr << failures << " assertion(s) failed\n"; return 1; }
     std::cout << "PASS: all host test assertions\n";
     return 0;
