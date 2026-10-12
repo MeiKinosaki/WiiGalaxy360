@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - v2.8b-cloud-toolchain
+      - v2.9b-xenon-elf32-link
   pull_request:
   workflow_dispatch:
 
@@ -24,16 +25,16 @@ jobs:
         run: make clean host-test
 
   xenon-cross-compile:
-    name: Cross-compile core with libXenon
+    name: Compile and link Xenon ELF32 smoke test
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Pull documented libXenon build image
+      - name: Pull libXenon build image
         run: docker pull free60/libxenon:latest
 
-      - name: Compile PowerPC/Xenon object files in cloud
+      - name: Compile core and link smoke-test ELF32 in cloud
         shell: bash
         run: |
           set -euo pipefail
@@ -46,33 +47,30 @@ jobs:
               set -euo pipefail
               export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
               export PATH="$PATH:$DEVKITXENON/bin:$DEVKITXENON/usr/bin"
-              compiler=""
-              for candidate in "$DEVKITXENON"/bin/*g++ "$DEVKITXENON"/usr/bin/*g++; do
-                [ -x "$candidate" ] || continue
-                target=$("$candidate" -dumpmachine 2>/dev/null || true)
-                case "$target" in
-                  *powerpc*|*ppc*|*xenon*)
-                    compiler="$candidate"
-                    echo "Compiler: $compiler"
-                    echo "Target: $target"
-                    break
-                    ;;
-                esac
-              done
-              if [ -z "$compiler" ]; then
-                echo "ERROR: no PowerPC/Xenon C++ cross-compiler found in $DEVKITXENON" >&2
-                find "$DEVKITXENON" -maxdepth 3 -type f -name "*g++" -print >&2 || true
-                exit 1
-              fi
-              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -Isrc -c src/memory_bus.cpp -o build/xenon/memory_bus.o
-              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -Isrc -c src/broadway_cpu.cpp -o build/xenon/broadway_cpu.o
-              file build/xenon/*.o
+              compiler="$DEVKITXENON/bin/xenon-g++"
+              test -x "$compiler" || { echo "ERROR: expected compiler not found: $compiler" >&2; exit 1; }
+              echo "Compiler: $compiler"
+              echo "Target: $("$compiler" -dumpmachine)"
+              flags="-m32 -mpowerpc64 -maltivec -mhard-float -fno-pic -DXENON"
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/memory_bus.cpp -o build/xenon/memory_bus.o
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/broadway_cpu.cpp -o build/xenon/broadway_cpu.o
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -c src/xenon_smoke_main.cpp -o build/xenon/xenon_smoke_main.o
+              "$compiler" $flags -Wl,--gc-sections -L"$DEVKITXENON/xenon/lib/32" -T "$DEVKITXENON/app.lds" build/xenon/xenon_smoke_main.o build/xenon/memory_bus.o build/xenon/broadway_cpu.o -lxenon -lm -o build/xenon/WiiGalaxy360-smoke.elf
+              "$DEVKITXENON/bin/xenon-objcopy" -O elf32-powerpc --adjust-vma 0x80000000 build/xenon/WiiGalaxy360-smoke.elf build/xenon/WiiGalaxy360-smoke.elf32
+              "$DEVKITXENON/bin/xenon-strip" build/xenon/WiiGalaxy360-smoke.elf32
+              readelf -h build/xenon/WiiGalaxy360-smoke.elf32
+              file build/xenon/WiiGalaxy360-smoke.elf32
+              readelf -h build/xenon/WiiGalaxy360-smoke.elf32 | grep -q "Class:.*ELF32"
+              readelf -h build/xenon/WiiGalaxy360-smoke.elf32 | grep -q "Machine:.*PowerPC"
             '
 
-      - name: Upload cross-compiled object files
+      - name: Upload Xenon ELF smoke-test artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: WiiGalaxy360-v2.8b-xenon-objects
-          path: build/xenon/*.o
+          name: WiiGalaxy360-v2.9b-xenon-elf32
+          path: |
+            build/xenon/WiiGalaxy360-smoke.elf
+            build/xenon/WiiGalaxy360-smoke.elf32
+            build/xenon/*.o
           if-no-files-found: error
           retention-days: 14
