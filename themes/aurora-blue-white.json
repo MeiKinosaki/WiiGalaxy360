@@ -1,0 +1,21 @@
+{
+  "name": "Aurora Blue & White",
+  "inspired_by": "Xbox 360 Aurora dashboard layout; original WiiGalaxy360 styling",
+  "colors": {
+    "background": "#071A33",
+    "surface": "#102B4C",
+    "surface_alt": "#16395F",
+    "accent": "#1688E8",
+    "text": "#FFFFFF",
+    "muted": "#B9D2E8",
+    "favorite": "#F5C451"
+  },
+  "layout": {
+    "navigation": "left_sidebar",
+    "library": "cover_grid",
+    "cover_aspect_ratio": "3:4",
+    "show_title": true,
+    "show_platform": true,
+    "show_favorite_marker": true
+  }
+}
