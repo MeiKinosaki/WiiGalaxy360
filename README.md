@@ -42,3 +42,11 @@ Referências:
 Esta etapa prepara a estrutura de dados para a biblioteca inspirada no layout Aurora, com paleta azul/branca, pastas de capas, ROMs, favoritos, save data, save states e músicas de abertura/menu. Configuração inicial: `config/ui_settings.json`; tema: `themes/aurora-blue-white.json`; favoritos começam vazios em `favorites/favorites.json`.
 
 **Estado honesto:** esta etapa cria a estrutura e os arquivos de configuração, não a interface gráfica funcional nem o áudio. A detecção/carregamento de jogos, filtragem visual, reprodução de música e salvamento/restauração real ainda precisam ser integrados ao frontend e ao núcleo. A música deve ser fornecida pelo usuário ou ter licença apropriada. A tela de abertura inspirada no Wii e o tema sonoro selecionado ainda não estão implementados.
+
+## v2.19b — protótipo interativo da biblioteca
+
+Adicionado `ui/library.html`, um frontend demonstrativo em HTML/CSS/JavaScript com tema azul/branco, grade de capas ilustrativas, navegação lateral, pesquisa, ordenação, filtro por categoria, favoritos e painel de preferências gráficas. Favoritos, itens recentes e preferências usam armazenamento local do navegador quando disponível.
+
+**Limites desta etapa:** os itens da grade são fictícios; não há descoberta de ROMs, carregamento de jogos, integração com o núcleo, renderização gráfica do emulador, áudio real nem save/load state. Os controles de qualidade são apenas preferências demonstrativas até serem ligados ao renderizador. O botão de áudio não reproduz música.
+
+Para visualizar o protótipo, abra `ui/library.html` em um navegador moderno. Isto não significa que a interface já esteja integrada ao `default.xex` ou seja executável como app Xbox 360.
