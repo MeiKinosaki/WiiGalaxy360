@@ -51,11 +51,13 @@ jobs:
               test -x "$compiler" || { echo "ERROR: expected compiler not found: $compiler" >&2; exit 1; }
               echo "Compiler: $compiler"
               echo "Target: $("$compiler" -dumpmachine)"
+              echo "libxenon candidates:"
+              find "$DEVKITXENON" -type f -name "libxenon*" -print
               flags="-m32 -mpowerpc64 -maltivec -mhard-float -fno-pic -DXENON"
               "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/memory_bus.cpp -o build/xenon/memory_bus.o
               "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/broadway_cpu.cpp -o build/xenon/broadway_cpu.o
               "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -c src/xenon_smoke_main.cpp -o build/xenon/xenon_smoke_main.o
-              "$compiler" $flags -Wl,--gc-sections -L"$DEVKITXENON/xenon/lib/32" -T "$DEVKITXENON/app.lds" build/xenon/xenon_smoke_main.o build/xenon/memory_bus.o build/xenon/broadway_cpu.o -lxenon -lm -o build/xenon/WiiGalaxy360-smoke.elf
+              "$compiler" $flags -Wl,--gc-sections -L"$DEVKITXENON/usr/lib" -L"$DEVKITXENON/xenon/lib/32" -T "$DEVKITXENON/app.lds" build/xenon/xenon_smoke_main.o build/xenon/memory_bus.o build/xenon/broadway_cpu.o -lxenon -lm -o build/xenon/WiiGalaxy360-smoke.elf
               "$DEVKITXENON/bin/xenon-objcopy" -O elf32-powerpc --adjust-vma 0x80000000 build/xenon/WiiGalaxy360-smoke.elf build/xenon/WiiGalaxy360-smoke.elf32
               "$DEVKITXENON/bin/xenon-strip" build/xenon/WiiGalaxy360-smoke.elf32
               readelf -h build/xenon/WiiGalaxy360-smoke.elf32
