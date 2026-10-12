@@ -1,0 +1,78 @@
+name: Cloud Xenon toolchain
+
+on:
+  push:
+    branches:
+      - main
+      - v2.8b-cloud-toolchain
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-tests:
+    name: Host regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install host compiler
+        run: sudo apt-get update && sudo apt-get install -y g++ make
+      - name: Run host tests
+        run: make clean host-test
+
+  xenon-cross-compile:
+    name: Cross-compile core with libXenon
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Pull documented libXenon build image
+        run: docker pull free60/libxenon:latest
+
+      - name: Compile PowerPC/Xenon object files in cloud
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/xenon
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -w /work \
+            free60/libxenon:latest \
+            bash -lc '
+              set -euo pipefail
+              export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
+              export PATH="$PATH:$DEVKITXENON/bin:$DEVKITXENON/usr/bin"
+              compiler=""
+              for candidate in "$DEVKITXENON"/bin/*g++ "$DEVKITXENON"/usr/bin/*g++; do
+                [ -x "$candidate" ] || continue
+                target=$("$candidate" -dumpmachine 2>/dev/null || true)
+                case "$target" in
+                  *powerpc*|*ppc*|*xenon*)
+                    compiler="$candidate"
+                    echo "Compiler: $compiler"
+                    echo "Target: $target"
+                    break
+                    ;;
+                esac
+              done
+              if [ -z "$compiler" ]; then
+                echo "ERROR: no PowerPC/Xenon C++ cross-compiler found in $DEVKITXENON" >&2
+                find "$DEVKITXENON" -maxdepth 3 -type f -name "*g++" -print >&2 || true
+                exit 1
+              fi
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -Isrc -c src/memory_bus.cpp -o build/xenon/memory_bus.o
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -Isrc -c src/broadway_cpu.cpp -o build/xenon/broadway_cpu.o
+              file build/xenon/*.o
+            '
+
+      - name: Upload cross-compiled object files
+        uses: actions/upload-artifact@v4
+        with:
+          name: WiiGalaxy360-v2.8b-xenon-objects
+          path: build/xenon/*.o
+          if-no-files-found: error
+          retention-days: 14
