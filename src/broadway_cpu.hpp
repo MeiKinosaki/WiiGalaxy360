@@ -22,6 +22,7 @@ public:
     std::uint32_t reg(std::size_t index) const noexcept;
     std::uint32_t lr() const noexcept;
     std::uint32_t cr() const noexcept;
+    std::uint32_t xer() const noexcept;
     bool halted() const noexcept;
     CpuFault fault() const noexcept;
     std::uint32_t fault_pc() const noexcept;
@@ -33,6 +34,7 @@ private:
     std::uint32_t pc_ = 0;
     std::uint32_t lr_ = 0;
     std::uint32_t cr_ = 0;
+    std::uint32_t xer_ = 0;
     bool halted_ = false;
     CpuFault fault_ = CpuFault::None;
     std::uint32_t fault_pc_ = 0;
