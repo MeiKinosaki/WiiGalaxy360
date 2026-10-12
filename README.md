@@ -106,3 +106,10 @@ O importador agora exige ID explícito, nome não vazio e categoria suportada (`
 O carregamento do `localStorage` agora verifica a estrutura básica dos valores usados pelo catálogo, favoritos, recentes, filtros e preferências. JSON ilegível ou valores com formato incompatível recorrem aos valores padrão, e a interface apresenta um aviso quando detecta dados inválidos ou falha de persistência. Falhas de quota/armazenamento são capturadas para evitar que a rotina de salvar interrompa a interface.
 
 **Limites:** a recuperação não restaura automaticamente dados corrompidos nem substitui um backup; mantenha cópias exportadas do catálogo. Tudo continua no armazenamento do navegador, sem integração ao armazenamento do Xbox 360, `default.xex`, carregamento de ROMs ou teste em hardware.
+
+
+## v2.28b — diagnóstico da biblioteca
+
+O botão **Diagnóstico** verifica a estrutura básica dos registros em memória, IDs duplicados, listas de favoritos e recentes, quantidade de capas embutidas e disponibilidade básica de gravação/leitura no `localStorage`. Os resultados aparecem na interface.
+
+**Limites:** diagnóstico de metadados e armazenamento do navegador apenas. Não abre nem valida ROMs, não confirma que caminhos existem, não testa o núcleo PowerPC/GPU, não compila `default.xex` e não representa teste no Xbox 360.
