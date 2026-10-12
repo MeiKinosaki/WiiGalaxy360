@@ -23,6 +23,19 @@ bool BroadwayCpu::step() noexcept {
     case 14U: // addi RT,RA,SIMM
         gpr_[rt] = (ra == 0U ? 0U : gpr_[ra]) + static_cast<std::uint32_t>(simm);
         break;
+    case 15U: // addis RT,RA,SIMM (add immediate shifted)
+        gpr_[rt] = (ra == 0U ? 0U : gpr_[ra]) +
+                   (static_cast<std::uint32_t>(simm) << 16U);
+        break;
+    case 18U: { // b LI,AA,LK; this prototype supports LK=0 only
+        if ((instruction & 1U) != 0U) { halted_ = true; return false; }
+        std::int32_t displacement = static_cast<std::int32_t>(instruction & 0x03fffffcU);
+        if ((displacement & 0x02000000) != 0) displacement |= static_cast<std::int32_t>(0xfc000000U);
+        pc_ = (instruction & 2U) != 0U
+            ? static_cast<std::uint32_t>(displacement)
+            : pc_ + static_cast<std::uint32_t>(displacement);
+        return true;
+    }
     case 24U: // ori RA,RS,UIMM; RS occupies the RT field
         gpr_[ra] = gpr_[rt] | static_cast<std::uint32_t>(immediate);
         break;

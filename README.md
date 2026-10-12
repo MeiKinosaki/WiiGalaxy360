@@ -2,25 +2,23 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado real do projeto — v2.1b
+## Estado real do projeto — v2.2b
 
-Esta versão cria uma base de código verificável: barramento de memória simples, núcleo inicial de execução PowerPC/Broadway com um subconjunto de instruções e testes de host. **Ainda não é um emulador de Wii funcional.** Faltam MMU e exceções completas, dispositivos do Wii, GPU/Flipper, áudio, IOS, drive, boot e compatibilidade de jogos.
+A base inclui barramento de memória big-endian, núcleo experimental Broadway com um subconjunto de instruções e testes automatizados. Nesta versão foram adicionados `addis` e salto relativo/absoluto `b` sem link (`LK=0), com testes que verificam o desvio de fluxo. O ramo de salto com link (`LK=1`) é deliberadamente interrompido até existir suporte correto ao registrador LR.
 
-## Compilar e testar no computador
+**Ainda não é um emulador de Wii funcional.** Faltam MMU e exceções completas, registradores especiais/CR/LR, dispositivos do Wii, GPU/Flipper, áudio, IOS, drive, boot e compatibilidade de jogos.
+
+## Testar em host
 
 Requisitos: C++17 e GNU Make.
 
 ```sh
-make host-test
 make clean
+make host-test
 ```
 
-O GitHub Actions executa os testes de host em pushes e pull requests.
+O GitHub Actions executa os testes em pushes e pull requests.
 
-## Compilação para Xbox 360
+## Compilação Xbox 360
 
-Nenhum `default.xex` é fornecido nesta etapa. A compilação Xenon exige uma toolchain libXenon compatível instalada e ainda precisa ser configurada e validada. Passar nos testes de host **não** comprova compilação PowerPC/Xenon nem execução no console.
-
-## Próxima etapa
-
-Expandir os testes e o conjunto de instruções de forma incremental, documentando o que está implementado e o que ainda falta.
+Nenhum `default.xex` é fornecido nesta etapa. É necessário configurar e validar uma toolchain Xenon/libXenon real. Testes de host não comprovam compilação PowerPC/Xenon nem execução no console.

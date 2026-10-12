@@ -6,7 +6,7 @@
 namespace {
 int failures = 0;
 void check(bool ok, const char* message) {
-    if (!ok) { std::cerr << "FAIL: " << message << '\n'; ++failures; }
+    if (!ok) { std::cerr << "FAIL: " << message << '\\n'; ++failures; }
 }
 constexpr std::uint32_t dform(std::uint32_t op, std::uint32_t rt,
                               std::uint32_t ra, std::uint16_t imm) {
@@ -21,7 +21,7 @@ void test_memory() {
     value = 0xdeadbeefU;
     check(!bus.read32(64, value) && value == 0xdeadbeefU, "failed read preserves output");
 }
-void test_cpu() {
+void test_cpu_load_store() {
     MemoryBus bus(256);
     check(bus.write32(0, dform(14, 1, 0, 16)), "write addi r1");
     check(bus.write32(4, dform(14, 2, 0, 0x1234)), "write addi r2");
@@ -35,6 +35,26 @@ void test_cpu() {
     check(cpu.pc() == 16, "PC increments");
     check(!cpu.halted(), "CPU remains active");
 }
+void test_addis_and_branch() {
+    MemoryBus bus(128);
+    check(bus.write32(0, dform(15, 1, 0, 1)), "write addis r1");
+    check(bus.write32(4, (18U << 26U) | 8U), "write branch forward by eight");
+    check(bus.write32(8, dform(14, 2, 0, 99)), "write skipped addi");
+    check(bus.write32(12, dform(14, 3, 0, 7)), "write target addi");
+    BroadwayCpu cpu(bus);
+    check(cpu.run(3) == 3, "execute addis, branch, and target instruction");
+    check(cpu.reg(1) == 0x10000U, "addis shifts immediate by sixteen bits");
+    check(cpu.reg(2) == 0U, "branch skips instruction");
+    check(cpu.reg(3) == 7U, "branch reaches target");
+    check(cpu.pc() == 16U, "PC reflects branch target execution");
+}
+void test_link_branch_stops() {
+    MemoryBus bus(32);
+    check(bus.write32(0, (18U << 26U) | 1U), "write branch with link bit");
+    BroadwayCpu cpu(bus);
+    check(cpu.run(1) == 0, "unsupported branch-link not counted");
+    check(cpu.halted(), "branch-link halts until LR is implemented");
+}
 void test_halt_reset() {
     MemoryBus bus(32);
     check(bus.write32(0, 0xffffffffU), "write unsupported instruction");
@@ -46,8 +66,9 @@ void test_halt_reset() {
 }
 }
 int main() {
-    test_memory(); test_cpu(); test_halt_reset();
-    if (failures) { std::cerr << failures << " assertion(s) failed\n"; return 1; }
-    std::cout << "PASS: all host test assertions\n";
+    test_memory(); test_cpu_load_store(); test_addis_and_branch();
+    test_link_branch_stops(); test_halt_reset();
+    if (failures) { std::cerr << failures << " assertion(s) failed\\n"; return 1; }
+    std::cout << "PASS: all host test assertions\\n";
     return 0;
 }
