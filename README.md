@@ -2,24 +2,23 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado real — v2.8b (toolchain na nuvem)
+## Estado real — v2.9b: linkagem ELF32 na nuvem
 
-Esta branch adiciona um workflow do GitHub Actions que executa os testes de host e tenta compilar os arquivos do núcleo para objetos PowerPC/Xenon dentro da imagem Docker `free60/libxenon:latest`. O processo roda nos servidores do GitHub Actions; não exige instalar a toolchain no computador do usuário.
+A branch v2.8b demonstrou compilação cruzada do núcleo com `xenon-g++`, mas os objetos gerados foram identificados como ELF64. Esta versão corrige isso ao usar as opções de ABI Xenon do projeto libXenon (`-m32 -mpowerpc64 -maltivec -mhard-float -fno-pic -DXENON`) e adiciona uma etapa de linkagem de smoke test.
 
-## Como executar
+## Executar
 
-1. Abra a branch `v2.8b-cloud-toolchain` no GitHub.
-2. Entre em **Actions** e selecione **Cloud Xenon toolchain**.
-3. Use **Run workflow** para iniciar manualmente, ou faça push/abra um pull request para disparar o workflow.
-4. Confira os dois jobs. Se a compilação cruzada passar, baixe o artefato `WiiGalaxy360-v2.8b-xenon-objects` no resumo da execução.
+1. Abra a branch `v2.9b-xenon-elf32-link`.
+2. Acesse **Actions** → **Cloud Xenon toolchain**.
+3. Execute **Run workflow** ou acompanhe a execução do pull request.
+4. Se o job passar, baixe `WiiGalaxy360-v2.9b-xenon-elf32`, que contém os objetos, o ELF ligado e a variante ELF32 convertida.
 
-## O que esta versão entrega — e o que não entrega
+## Limites
 
-- O job de host executa os testes C++ existentes.
-- O job Xenon tenta localizar um compilador cruzado PowerPC/Xenon dentro da imagem libXenon e compila `memory_bus.cpp` e `broadway_cpu.cpp` em arquivos objeto.
-- O workflow falha de forma explícita se a imagem não contiver um compilador adequado.
-- **Esta versão não gera `default.xex`.** Objetos compilados não são um executável Xbox 360.
-- Não há ainda uma etapa de linkagem ELF validada, empacotamento XEX validado ou teste num Xbox 360 RGH.
-- O núcleo continua experimental e não é um emulador de Wii funcional; GPU/Flipper, áudio, IOS, inicialização de jogos e compatibilidade real não estão implementados/demonstrados.
+- O smoke test comprova apenas que a toolchain compila e liga um programa mínimo junto com os arquivos atuais do núcleo, e que a saída ELF32 reporta a arquitetura PowerPC.
+- O programa de smoke test não é o runtime do emulador e não testa hardware.
+- **Ainda não há `default.xex`.** O formato ELF32 não é automaticamente um XEX e esta versão não implementa nem valida um empacotador XEX.
+- A imagem Docker é referenciada como `free60/libxenon:latest`; portanto, sua composição pode mudar. A execução do workflow é a verificação real para cada commit.
+- WiiGalaxy360 continua experimental: não há compatibilidade de jogos demonstrada nem GPU/Flipper, áudio, IOS e inicialização completa de jogos.
 
-A imagem de toolchain usada é publicada pelo projeto Free60/libxenon: https://github.com/Free60Project/libxenon . O workflow deve ser tratado como uma tentativa de build até que a execução do GitHub Actions termine com sucesso.
+Referência da toolchain: https://github.com/Free60Project/libxenon
