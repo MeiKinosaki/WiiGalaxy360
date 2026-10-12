@@ -4,14 +4,14 @@ Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
 ## Estado real — v2.16b: XER e carry com addc
 
-A v2.16b adiciona estado XER e implementa `addc` (XO=10) no subconjunto X-form. O bit CA (0x20000000) é atualizado com o carry unsigned da soma de 32 bits; `Rc=1` também atualiza CR0 a partir do resultado. O reset limpa XER. Os testes cobrem carry ligado, carry desligado apesar de overflow com sinal, CR0 e reset. O diagnóstico de inicialização agora verifica `addc`, CR0, XER, `stw` e `lwz`. A validação do workflow desta versão ainda está pendente.
+A v2.16b adiciona estado XER e implementa `addc` (XO=10) no subconjunto X-form. O bit CA (0x20000000) é atualizado com o carry unsigned da soma de 32 bits; `Rc=1` também atualiza CR0 a partir do resultado. O reset limpa XER. Os testes cobrem carry ligado, carry desligado apesar de overflow com sinal, CR0 e reset. O diagnóstico de inicialização agora verifica `addc`, CR0, XER, `stw` e `lwz`. A validação da v2.16b passou: os testes de host, o diagnóstico de inicialização, a compilação/ligação Xenon e o empacotamento/validação estrutural do `default.xex` foram concluídos com sucesso. Logs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38295685506.
 
 ## Como executar
 
 1. Abra a branch `v2.16b-xer-carry-addc`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. Acompanhe o workflow desta branch e baixe `WiiGalaxy360-v2.16b-xer-carry-addc` quando terminar.
+4. Abra https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38295685506 e baixe o artefato `WiiGalaxy360-v2.16b-xer-carry-addc`.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
