@@ -26,6 +26,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y g++ make
       - name: Run host tests
         run: make clean host-test
+      - name: Compile and execute Broadway startup diagnostic on host
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -O2 -Isrc src/memory_bus.cpp src/broadway_cpu.cpp src/xenon_smoke_main.cpp -o build/broadway-startup-diagnostic
+          ./build/broadway-startup-diagnostic
 
   xenon-cross-compile:
     name: Compile, link and pack smoke-test XEX
