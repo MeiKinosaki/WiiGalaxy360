@@ -40,7 +40,7 @@ main{padding:24px;min-width:0}.headline{display:flex;gap:16px;align-items:end;fl
 <label>Som do menu<select id="audio"><option value="off">Desligado</option><option value="on">Ligado (quando implementado)</option></select></label>
 </div><div class="panel"><h2>Salvar preferências</h2><p>Essas opções são apenas configuração visual. Não alteram o desempenho real do Xbox 360 até serem conectadas ao renderizador.</p><button id="saveSettings">Salvar preferências</button> <span id="saved" class="note" role="status"></span></div>
 </section>
-<footer>WiiGalaxy360 · Protótipo de frontend v2.22b · Sem emulação de jogos nesta página.</footer>
+<footer>WiiGalaxy360 · Protótipo de frontend v2.23b · Sem emulação de jogos nesta página.</footer>
 </main></div>
 <script>
 (function(){
@@ -60,21 +60,41 @@ $("coverFiles").onchange=async e=>{let n=0,failed=0;for(const file of Array.from
 $("exportCatalog").onclick=()=>{const blob=new Blob([JSON.stringify({schema_version:1,games:games.map(({coverData,...g})=>g)},null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="wiigalaxy360-catalog.json";a.click();URL.revokeObjectURL(url);status("Exportado catálogo JSON sem imagens embutidas; mantenha cópia das capas separadamente.");};
 $("mute").onclick=()=>{const muted=$("mute").getAttribute("aria-pressed")==="true";$("mute").setAttribute("aria-pressed",String(!muted));$("mute").textContent=muted?"♫ Áudio: ligado*":"♫ Áudio: desligado";};
 $("saveSettings").onclick=()=>{const obj={quality:$("quality").value,filter:$("filter").value,resolution:$("resolution").value,audio:$("audio").value};$("saved").textContent=persist("wg-settings",obj)?"Preferências salvas.":"Não foi possível salvar neste navegador.";};
-// Navegação de teclado entre os cartões; não captura teclas enquanto o usuário digita.
+// Navegação espacial entre cartões; funciona mesmo com foco no botão de favorito.
 document.addEventListener("keydown",e=>{
- if($( "library").hidden || !["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Home","End"].includes(e.key))return;
+ const keys=["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Home","End"];
+ if($("library").hidden||!keys.includes(e.key))return;
  const target=e.target;
  if(target&&(/INPUT|TEXTAREA|SELECT/.test(target.tagName)||target.isContentEditable))return;
- const buttons=Array.from(document.querySelectorAll("#grid .game .open"));
- if(!buttons.length)return;
- const idx=buttons.indexOf(document.activeElement);
+ const cards=Array.from(document.querySelectorAll("#grid .game"));
+ if(!cards.length)return;
+ const current=target&&target.closest?target.closest(".game"):null;
+ const idx=cards.indexOf(current);
  if(idx<0)return;
- let next=idx;
- if(e.key==="ArrowRight"||e.key==="ArrowDown")next=Math.min(buttons.length-1,idx+1);
- if(e.key==="ArrowLeft"||e.key==="ArrowUp")next=Math.max(0,idx-1);
- if(e.key==="Home")next=0;
- if(e.key==="End")next=buttons.length-1;
- e.preventDefault();buttons[next].focus();
+ if(e.key==="Home"||e.key==="End"){
+   e.preventDefault();
+   const card=cards[e.key==="Home"?0:cards.length-1];
+   const control=card.querySelector(".open");
+   if(control)control.focus();
+   return;
+ }
+ const here=cards[idx].getBoundingClientRect();
+ const cx=here.left+here.width/2, cy=here.top+here.height/2;
+ const horizontal=e.key==="ArrowLeft"||e.key==="ArrowRight";
+ const direction=(e.key==="ArrowRight"||e.key==="ArrowDown")?1:-1;
+ let candidates=cards.map((card,i)=>{
+   if(i===idx)return null;
+   const rect=card.getBoundingClientRect(), x=rect.left+rect.width/2, y=rect.top+rect.height/2;
+   const primary=horizontal?(x-cx)*direction:(y-cy)*direction;
+   if(primary<=1)return null;
+   const secondary=horizontal?Math.abs(y-cy):Math.abs(x-cx);
+   return {card,score:primary+secondary*1.8};
+ }).filter(Boolean);
+ candidates.sort((a,b)=>a.score-b.score);
+ const next=candidates[0]?.card;
+ if(!next)return;
+ const control=next.querySelector(".open");
+ if(control){e.preventDefault();control.focus();}
 });
 const settings=load("wg-settings",{});["quality","filter","resolution","audio"].forEach(id=>{if(settings[id])$(id).value=settings[id]});render();
 })();
