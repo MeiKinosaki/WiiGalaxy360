@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "theme": {
+    "name": "aurora-blue-white",
+    "background": "#071A33",
+    "panel": "#102B4C",
+    "accent": "#1688E8",
+    "text": "#FFFFFF",
+    "muted_text": "#B9D2E8"
+  },
+  "library": {
+    "cover_directory": "covers",
+    "rom_directory": "games/roms",
+    "sort": "title_ascending",
+    "filters": [
+      "all",
+      "favorites",
+      "recent",
+      "platform",
+      "title"
+    ]
+  },
+  "audio": {
+    "startup_enabled": true,
+    "startup_track": "music/startup",
+    "menu_enabled": true,
+    "menu_track": "music/menu",
+    "volume": 70
+  },
+  "graphics": {
+    "preset": "balanced",
+    "resolution": "auto",
+    "texture_filter": "linear",
+    "vsync": true
+  },
+  "save_data_directory": "save_data",
+  "save_state_directory": "save_states",
+  "favorites_file": "favorites/favorites.json"
+}
