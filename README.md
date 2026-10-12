@@ -2,23 +2,23 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado real do projeto — v2.2b
+## Estado real do projeto — v2.3b
 
-A base inclui barramento de memória big-endian, núcleo experimental Broadway com um subconjunto de instruções e testes automatizados. Nesta versão foram adicionados `addis` e salto relativo/absoluto `b` sem link (`LK=0), com testes que verificam o desvio de fluxo. O ramo de salto com link (`LK=1`) é deliberadamente interrompido até existir suporte correto ao registrador LR.
+Esta versão amplia o núcleo Broadway experimental com o registrador de link (LR), chamadas \`bl\` e retorno \`blr\` (codificado como \`bclr\`, XO 16). O subconjunto de instruções suportado agora inclui \`addi\`, \`addis\`, \`ori\`, \`lwz\`, \`stw\`, \`b\`, \`bl\` e \`blr\`. Há testes de host para uma chamada e retorno simples.
 
-**Ainda não é um emulador de Wii funcional.** Faltam MMU e exceções completas, registradores especiais/CR/LR, dispositivos do Wii, GPU/Flipper, áudio, IOS, drive, boot e compatibilidade de jogos.
+**Limitações:** este não é um emulador de Wii funcional. Não há ainda MMU, exceções PowerPC completas, CR/XER/CTR, decodificação completa, GPU/Flipper, áudio, IOS, drive, inicialização real de jogos nem compatibilidade demonstrada.
 
-## Testar em host
+## Testes de host
 
 Requisitos: C++17 e GNU Make.
 
-```sh
+\`\`\`sh
 make clean
 make host-test
-```
+\`\`\`
 
-O GitHub Actions executa os testes em pushes e pull requests.
+O workflow GitHub Actions compila e executa os testes de host em pushes e pull requests.
 
-## Compilação Xbox 360
+## Xbox 360 / Xenon
 
-Nenhum `default.xex` é fornecido nesta etapa. É necessário configurar e validar uma toolchain Xenon/libXenon real. Testes de host não comprovam compilação PowerPC/Xenon nem execução no console.
+Ainda não existe \`default.xex\` verificado nesta versão. A compilação para console exige uma toolchain Xenon/libXenon real e validação do artefato gerado. Testes de host não comprovam compilação cruzada nem execução no hardware.
