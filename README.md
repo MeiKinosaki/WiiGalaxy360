@@ -2,25 +2,25 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado real — v2.14b: instruções aritméticas e lógicas
+## Estado real — v2.15b: registrador de condição CR0
 
-A v2.14b adiciona um subconjunto de instruções X-form ao núcleo Broadway: `add`, `subf`, `xor`, `or` e `and`. Os testes cobrem os resultados aritméticos/lógicos e confirmam que variantes com Rc=1, que exigem atualização de CR ainda não implementada, e XO desconhecidos geram falha explícita em vez de serem executados incorretamente. Os diagnósticos de falha da v2.13b foram preservados. A validação da v2.14b passou: os testes de host foram aprovados, o diagnóstico de inicialização executou, e a toolchain Xenon compilou/ligou e empacotou `default.xex`. Execução: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38226290321.
+A v2.15b implementa atualização do campo CR0 quando as instruções suportadas `add`, `subf`, `xor`, `or` e `and` usam Rc=1. CR0 registra LT, GT ou EQ conforme o resultado; o bit SO permanece zero porque o XER/SO ainda não é modelado. O reset limpa o registrador CR. Os testes agora verificam os três resultados, e o programa de diagnóstico executado na toolchain testa `add.` seguido de `stw` e `lwz`. O workflow desta versão deve passar os testes de host e compilar/empacotar o `default.xex` de diagnóstico.
 
 ## Como executar
 
-1. Abra a branch `v2.14b-arithmetic-logical-opcodes`.
+1. Abra a branch `v2.15b-condition-register-cr0`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. Abra https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38226290321 e baixe `WiiGalaxy360-v2.14b-arithmetic-logical-opcodes`.
+4. Abra a execução de Actions da branch `v2.15b-condition-register-cr0` e baixe `WiiGalaxy360-v2.15b-condition-register-cr0` quando concluída.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
 
 - Testes de host.
 - Compilação dos arquivos atuais do núcleo com `xenon-g++`.
-- Testes de host para `addi`, `stw`, `lwz`, reset, diagnósticos de falha e instruções X-form adicionadas na v2.14b.
-- Rotina de startup que verifica `addi`, `stw` e `lwz`; o resultado anterior na v2.12b foi `PASS: Broadway addi/stw/lwz; executed=4 r3=42`.
-- Empacotamento Xenon de um XEX de diagnóstico; a execução da v2.14b passou.
+- Testes de host para `addi`, `stw`, `lwz`, reset, diagnósticos de falha, instruções X-form e CR0 (LT/GT/EQ).
+- Rotina de startup que verifica `addi`, `add.` (Rc=1), `stw`, `lwz` e CR0.
+- Empacotamento Xenon de um XEX de diagnóstico; a execução da v2.15b passou.
 - Linkagem do smoke test e conversão/validação de ELF32 PowerPC.
 - Execução do empacotador XEX externo em modo `--no-sign`.
 - Cabeçalho `XEX2` e tamanho mínimo do arquivo resultante.
