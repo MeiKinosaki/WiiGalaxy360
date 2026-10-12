@@ -13,8 +13,8 @@ std::uint32_t dform(std::uint32_t opcode, std::uint32_t rt,
 }
 
 int main() {
-    std::printf("WiiGalaxy360 v2.12b\\n");
-    std::printf("Runtime startup self-test...\\n");
+    std::printf("WiiGalaxy360 v2.12b\n");
+    std::printf("Runtime startup self-test...\n");
 
     MemoryBus bus(256U);
     const bool loaded =
@@ -23,7 +23,7 @@ int main() {
         bus.write32(8U, dform(36U, 1U, 2U, 0U)) &&    // stw r1,0(r2)
         bus.write32(12U, dform(32U, 3U, 2U, 0U));     // lwz r3,0(r2)
     if (!loaded) {
-        std::printf("FAIL: could not load diagnostic program\\n");
+        std::printf("FAIL: could not load diagnostic program\n");
         return 10;
     }
 
@@ -33,14 +33,14 @@ int main() {
     const bool read_back = bus.read32(128U, stored);
     if (executed != 4U || cpu.halted() || cpu.reg(3U) != 42U ||
         !read_back || stored != 42U) {
-        std::printf("FAIL: executed=%lu r3=%lu stored=%lu halted=%d\\n",
+        std::printf("FAIL: executed=%lu r3=%lu stored=%lu halted=%d\n",
                     static_cast<unsigned long>(executed),
                     static_cast<unsigned long>(cpu.reg(3U)),
                     static_cast<unsigned long>(stored), cpu.halted() ? 1 : 0);
         return 11;
     }
 
-    std::printf("PASS: Broadway addi/stw/lwz; executed=%lu r3=%lu\\n",
+    std::printf("PASS: Broadway addi/stw/lwz; executed=%lu r3=%lu\n",
                 static_cast<unsigned long>(executed),
                 static_cast<unsigned long>(cpu.reg(3U)));
     return 0;
