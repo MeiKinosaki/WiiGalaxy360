@@ -99,3 +99,10 @@ O importador agora rejeita registros que não sejam objetos, tenham nome ausente
 O importador agora exige ID explícito, nome não vazio e categoria suportada (`wii` ou `test`), além de rejeitar IDs duplicados. A exportação gera um objeto com `schema_version: 1` e apenas registros importados, normalizando os campos `id`, `name`, `category`, `path` e `cover`; itens fictícios e imagens embutidas não são exportados. A importação continua aceitando uma lista JSON ou um objeto com `games`.
 
 **Limites:** validação estrutural de metadados, não de conteúdo de ROM. O armazenamento continua no navegador; não há verificação de arquivos, carregamento de jogos, integração ao `default.xex`, controle nativo ou teste em hardware.
+
+
+## v2.27b — recuperação de erros de armazenamento
+
+O carregamento do `localStorage` agora verifica a estrutura básica dos valores usados pelo catálogo, favoritos, recentes, filtros e preferências. JSON ilegível ou valores com formato incompatível recorrem aos valores padrão, e a interface apresenta um aviso quando detecta dados inválidos ou falha de persistência. Falhas de quota/armazenamento são capturadas para evitar que a rotina de salvar interrompa a interface.
+
+**Limites:** a recuperação não restaura automaticamente dados corrompidos nem substitui um backup; mantenha cópias exportadas do catálogo. Tudo continua no armazenamento do navegador, sem integração ao armazenamento do Xbox 360, `default.xex`, carregamento de ROMs ou teste em hardware.
