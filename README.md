@@ -92,3 +92,10 @@ A biblioteca do protótipo agora salva no armazenamento local do navegador a pes
 O importador agora rejeita registros que não sejam objetos, tenham nome ausente, ID vazio ou ID duplicado (incluindo IDs já presentes nos itens demonstrativos). A mensagem de resultado informa quantos registros foram aceitos/rejeitados e mostra até cinco motivos de rejeição. Registros válidos continuam sendo apenas metadados; não há inspeção de arquivos ROM nem verificação de compatibilidade.
 
 **Limites:** persistência em `localStorage` do navegador, sujeita a quota. Sem varredura de diretórios Xbox, carregamento de jogos, integração ao `default.xex`, controle físico ou teste em hardware.
+
+
+## v2.26b — importação/exportação mais segura
+
+O importador agora exige ID explícito, nome não vazio e categoria suportada (`wii` ou `test`), além de rejeitar IDs duplicados. A exportação gera um objeto com `schema_version: 1` e apenas registros importados, normalizando os campos `id`, `name`, `category`, `path` e `cover`; itens fictícios e imagens embutidas não são exportados. A importação continua aceitando uma lista JSON ou um objeto com `games`.
+
+**Limites:** validação estrutural de metadados, não de conteúdo de ROM. O armazenamento continua no navegador; não há verificação de arquivos, carregamento de jogos, integração ao `default.xex`, controle nativo ou teste em hardware.
