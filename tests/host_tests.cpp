@@ -12,6 +12,12 @@ constexpr std::uint32_t dform(std::uint32_t op, std::uint32_t rt,
                               std::uint32_t ra, std::uint16_t imm) {
     return (op << 26U) | (rt << 21U) | (ra << 16U) | imm;
 }
+constexpr std::uint32_t xform(std::uint32_t rt, std::uint32_t ra,
+                              std::uint32_t rb, std::uint32_t xo,
+                              bool record = false) {
+    return (31U << 26U) | (rt << 21U) | (ra << 16U) |
+           (rb << 11U) | (xo << 1U) | (record ? 1U : 0U);
+}
 void test_memory() {
     MemoryBus bus(64);
     std::uint32_t value = 0xdeadbeefU;
@@ -71,6 +77,41 @@ void test_link_branch_stops_no_longer_applicable() {
     check(cpu.run(1) == 1, "blr is decoded as branch-to-LR");
     check(cpu.pc() == 0U, "empty LR returns to address zero in prototype");
 }
+void test_arithmetic_logical_xforms() {
+    {
+        MemoryBus bus(128);
+        check(bus.write32(0, dform(14, 1, 0, 17)), "seed r1");
+        check(bus.write32(4, dform(14, 2, 0, 25)), "seed r2");
+        check(bus.write32(8, xform(3, 1, 2, 266)), "add r3,r1,r2");
+        check(bus.write32(12, xform(4, 1, 2, 40)), "subf r4,r1,r2");
+        check(bus.write32(16, xform(1, 5, 2, 316)), "xor r1,r1,r2");
+        check(bus.write32(20, xform(1, 6, 2, 444)), "or r1,r1,r2");
+        check(bus.write32(24, xform(1, 7, 2, 28)), "and r1,r1,r2");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(7) == 7U, "execute selected arithmetic and logical X-form instructions");
+        check(cpu.reg(3) == 42U, "add produces 42");
+        check(cpu.reg(4) == 8U, "subf produces RB minus RA");
+        check(cpu.reg(5) == (17U ^ 25U), "xor result");
+        check(cpu.reg(6) == (17U | 25U), "or result");
+        check(cpu.reg(7) == (17U & 25U), "and result");
+        check(!cpu.halted() && cpu.fault() == CpuFault::None, "supported X-form ops do not fault");
+    }
+    {
+        MemoryBus bus(32);
+        check(bus.write32(0, xform(3, 1, 2, 266, true)), "write add with Rc=1");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(1) == 0U, "Rc variant is not executed without CR support");
+        check(cpu.fault() == CpuFault::UnsupportedInstruction, "Rc variant reports unsupported instruction");
+        check(cpu.fault_instruction() == xform(3, 1, 2, 266, true), "Rc variant records instruction");
+    }
+    {
+        MemoryBus bus(32);
+        check(bus.write32(0, xform(3, 1, 2, 0)), "write unsupported X-form XO");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(1) == 0U, "unknown X-form XO is rejected");
+        check(cpu.fault() == CpuFault::UnsupportedInstruction, "unknown X-form XO fault");
+    }
+}
 void test_fault_diagnostics() {
     {
         MemoryBus bus(32);
@@ -129,7 +170,7 @@ void test_halt_reset() {
 }
 int main() {
     test_memory(); test_cpu_load_store(); test_addis_and_branch();
-    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_fault_diagnostics(); test_halt_reset();
+    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_arithmetic_logical_xforms(); test_fault_diagnostics(); test_halt_reset();
     if (failures) { std::cerr << failures << " assertion(s) failed\n"; return 1; }
     std::cout << "PASS: all host test assertions\n";
     return 0;
