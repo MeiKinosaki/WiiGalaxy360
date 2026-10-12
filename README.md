@@ -36,3 +36,9 @@ A v2.17b implementa `subfc` (XO=8), calculando RB − RA e atualizando CA do XER
 Referências:
 - Toolchain libXenon: https://github.com/Free60Project/libxenon
 - Empacotador RXDK360: https://github.com/Team-Resurgent/RXDK360
+
+## v2.18b — fundação da biblioteca e interface
+
+Esta etapa prepara a estrutura de dados para a biblioteca inspirada no layout Aurora, com paleta azul/branca, pastas de capas, ROMs, favoritos, save data, save states e músicas de abertura/menu. Configuração inicial: `config/ui_settings.json`; tema: `themes/aurora-blue-white.json`; favoritos começam vazios em `favorites/favorites.json`.
+
+**Estado honesto:** esta etapa cria a estrutura e os arquivos de configuração, não a interface gráfica funcional nem o áudio. A detecção/carregamento de jogos, filtragem visual, reprodução de música e salvamento/restauração real ainda precisam ser integrados ao frontend e ao núcleo. A música deve ser fornecida pelo usuário ou ter licença apropriada. A tela de abertura inspirada no Wii e o tema sonoro selecionado ainda não estão implementados.
