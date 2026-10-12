@@ -85,3 +85,10 @@ A navegação por setas agora considera a posição visual dos cartões na grade
 A biblioteca do protótipo agora salva no armazenamento local do navegador a pesquisa digitada, o modo de ordenação, a categoria selecionada e a aba de biblioteca ativa (todos, favoritos ou recentes). Ao reabrir o protótipo no mesmo navegador, esses controles são restaurados quando os dados continuam disponíveis. O botão **Limpar filtros** redefine pesquisa, ordenação, categoria e aba para os valores padrão.
 
 **Limites:** os dados ficam no navegador e podem ser apagados ou limitados pela quota; não são preferências gravadas no Xbox 360. Isso não implementa leitura de diretórios, carregamento de jogos, integração com `default.xex` ou suporte nativo ao controle. Não houve teste em hardware nesta etapa.
+
+
+## v2.25b — validação de catálogo importado
+
+O importador agora rejeita registros que não sejam objetos, tenham nome ausente, ID vazio ou ID duplicado (incluindo IDs já presentes nos itens demonstrativos). A mensagem de resultado informa quantos registros foram aceitos/rejeitados e mostra até cinco motivos de rejeição. Registros válidos continuam sendo apenas metadados; não há inspeção de arquivos ROM nem verificação de compatibilidade.
+
+**Limites:** persistência em `localStorage` do navegador, sujeita a quota. Sem varredura de diretórios Xbox, carregamento de jogos, integração ao `default.xex`, controle físico ou teste em hardware.
