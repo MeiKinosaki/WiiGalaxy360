@@ -67,6 +67,36 @@ bool BroadwayCpu::step() noexcept {
     case 24U: // ori RA,RS,UIMM; RS occupies the RT field
         gpr_[ra] = gpr_[rt] | static_cast<std::uint32_t>(immediate);
         break;
+    case 31U: { // Selected X-form arithmetic/logical instructions, Rc=0 only.
+        const auto rb = static_cast<std::size_t>((instruction >> 11U) & 31U);
+        const auto xo = (instruction >> 1U) & 0x3ffU;
+        if ((instruction & 1U) != 0U) {
+            // Rc=1 requires CR updates, which this subset does not implement yet.
+            raise_fault(CpuFault::UnsupportedInstruction, instruction);
+            return false;
+        }
+        switch (xo) {
+        case 266U: // add RT,RA,RB
+            gpr_[rt] = gpr_[ra] + gpr_[rb];
+            break;
+        case 40U: // subf RT,RA,RB => RB - RA
+            gpr_[rt] = gpr_[rb] - gpr_[ra];
+            break;
+        case 316U: // xor RA,RS,RB; destination is RA
+            gpr_[ra] = gpr_[rt] ^ gpr_[rb];
+            break;
+        case 444U: // or RA,RS,RB; destination is RA
+            gpr_[ra] = gpr_[rt] | gpr_[rb];
+            break;
+        case 28U: // and RA,RS,RB; destination is RA
+            gpr_[ra] = gpr_[rt] & gpr_[rb];
+            break;
+        default:
+            raise_fault(CpuFault::UnsupportedInstruction, instruction);
+            return false;
+        }
+        break;
+    }
     case 32U: { // lwz RT,D(RA)
         const auto address = (ra == 0U ? 0U : gpr_[ra]) + static_cast<std::uint32_t>(simm);
         if (!bus_.read32(address, gpr_[rt])) {
