@@ -94,10 +94,13 @@ void test_fault_diagnostics() {
     }
     {
         MemoryBus bus(16);
+        check(bus.write32(0U, (18U << 26U) | 32U), "write branch beyond memory");
         BroadwayCpu cpu(bus);
-        check(cpu.step() == false, "fetch beyond empty instruction stream fails");
+        check(cpu.step(), "branch to out-of-range address executes");
+        check(cpu.pc() == 32U, "branch target is outside memory");
+        check(cpu.step() == false, "fetch beyond memory fails");
         check(cpu.fault() == CpuFault::InstructionFetchOutOfRange, "bad fetch reports fetch fault");
-        check(cpu.fault_pc() == 0U, "bad fetch records PC");
+        check(cpu.fault_pc() == 32U, "bad fetch records faulting PC");
     }
     {
         MemoryBus bus(32);
