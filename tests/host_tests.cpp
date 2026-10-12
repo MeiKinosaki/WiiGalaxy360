@@ -6,7 +6,7 @@
 namespace {
 int failures = 0;
 void check(bool ok, const char* message) {
-    if (!ok) { std::cerr << "FAIL: " << message << '\\n'; ++failures; }
+    if (!ok) { std::cerr << "FAIL: " << message << '\n'; ++failures; }
 }
 constexpr std::uint32_t dform(std::uint32_t op, std::uint32_t rt,
                               std::uint32_t ra, std::uint16_t imm) {
@@ -68,7 +68,7 @@ void test_halt_reset() {
 int main() {
     test_memory(); test_cpu_load_store(); test_addis_and_branch();
     test_link_branch_stops(); test_halt_reset();
-    if (failures) { std::cerr << failures << " assertion(s) failed\\n"; return 1; }
-    std::cout << "PASS: all host test assertions\\n";
+    if (failures) { std::cerr << failures << " assertion(s) failed\n"; return 1; }
+    std::cout << "PASS: all host test assertions\n";
     return 0;
 }
