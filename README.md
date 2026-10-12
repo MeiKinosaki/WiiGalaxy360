@@ -71,3 +71,10 @@ O protótipo da biblioteca passa a converter capas selecionadas em Data URLs e g
 A grade do protótipo agora anuncia a lista de jogos para tecnologias assistivas, usa foco visual mais evidente e oferece navegação por teclado entre os botões de detalhes dos cartões: setas para percorrer os itens, Home/End para ir ao primeiro/último item e Enter para ativar o botão focado. A captura das setas é suspensa quando o foco está em campos de entrada, pesquisa ou seleção.
 
 **Limites:** isso é acessibilidade de teclado no protótipo HTML do navegador; não implementa mapeamento nativo do controle Xbox 360, navegação dentro de um XEX nem integração com o núcleo. Os jogos continuam não carregáveis, e nenhuma validação em hardware foi feita.
+
+
+## v2.23b — navegação espacial refinada
+
+A navegação por setas agora considera a posição visual dos cartões na grade responsiva, em vez de simplesmente avançar ou voltar na lista. Isso torna o movimento horizontal e vertical mais natural em diferentes larguras de tela. A navegação também identifica o cartão atual quando o foco está no botão de favorito, e Home/End levam ao primeiro/último cartão.
+
+**Limites:** continua sendo navegação por teclado no protótipo HTML. Não foi implementado nem testado mapeamento do controle Xbox 360, integração ao default.xex, carregamento de ROM ou execução no console.
