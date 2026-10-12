@@ -71,19 +71,65 @@ void test_link_branch_stops_no_longer_applicable() {
     check(cpu.run(1) == 1, "blr is decoded as branch-to-LR");
     check(cpu.pc() == 0U, "empty LR returns to address zero in prototype");
 }
+void test_fault_diagnostics() {
+    {
+        MemoryBus bus(32);
+        check(bus.write32(0, 0xffffffffU), "write invalid instruction");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(1) == 0U, "invalid instruction is not counted");
+        check(cpu.fault() == CpuFault::UnsupportedInstruction, "unsupported opcode has fault reason");
+        check(cpu.fault_pc() == 0U, "unsupported opcode records fault PC");
+        check(cpu.fault_instruction() == 0xffffffffU, "unsupported opcode records instruction");
+        check(cpu.halted(), "fault halts CPU");
+        check(cpu.run(1) == 0U, "halted CPU does not execute more instructions");
+    }
+    {
+        MemoryBus bus(16);
+        check(bus.write32(0, dform(32, 1, 0, 64)), "write out-of-range lwz");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(1) == 0U, "out-of-range lwz is not counted");
+        check(cpu.fault() == CpuFault::DataReadOutOfRange, "bad load reports data-read fault");
+        check(cpu.fault_pc() == 0U, "bad load records PC");
+        check(cpu.fault_instruction() == dform(32, 1, 0, 64), "bad load records instruction");
+    }
+    {
+        MemoryBus bus(16);
+        check(bus.write32(0U, (18U << 26U) | 32U), "write branch beyond memory");
+        BroadwayCpu cpu(bus);
+        check(cpu.step(), "branch to out-of-range address executes");
+        check(cpu.pc() == 32U, "branch target is outside memory");
+        check(cpu.step() == false, "fetch beyond memory fails");
+        check(cpu.fault() == CpuFault::InstructionFetchOutOfRange, "bad fetch reports fetch fault");
+        check(cpu.fault_pc() == 32U, "bad fetch records faulting PC");
+    }
+    {
+        MemoryBus bus(32);
+        check(bus.write32(0, dform(14, 1, 0, 1)), "write valid instruction before reset test");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(1) == 1U, "valid instruction executes before reset");
+        check(bus.write32(4, 0xffffffffU), "write invalid instruction for reset test");
+        check(cpu.run(1) == 0U, "invalid instruction triggers reset test fault");
+        cpu.reset();
+        check(cpu.fault() == CpuFault::None && !cpu.halted() && cpu.pc() == 0U &&
+              cpu.fault_pc() == 0U && cpu.fault_instruction() == 0U,
+              "reset clears fault diagnostics");
+    }
+}
 void test_halt_reset() {
     MemoryBus bus(32);
     check(bus.write32(0, 0xffffffffU), "write unsupported instruction");
     BroadwayCpu cpu(bus);
     check(cpu.run(1) == 0, "unsupported instruction not counted");
     check(cpu.halted(), "unsupported instruction halts prototype");
+    check(cpu.fault() == CpuFault::UnsupportedInstruction, "halt has structured fault reason");
     cpu.reset();
     check(!cpu.halted() && cpu.pc() == 0 && cpu.lr() == 0, "reset clears halt and LR");
+    check(cpu.fault() == CpuFault::None, "reset clears fault reason");
 }
 }
 int main() {
     test_memory(); test_cpu_load_store(); test_addis_and_branch();
-    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_halt_reset();
+    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_fault_diagnostics(); test_halt_reset();
     if (failures) { std::cerr << failures << " assertion(s) failed\n"; return 1; }
     std::cout << "PASS: all host test assertions\n";
     return 0;

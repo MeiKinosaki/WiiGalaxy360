@@ -9,6 +9,7 @@ on:
       - v2.10b-xex-packer-audit
       - v2.11b-cloud-xex-packaging
       - v2.12b-runtime-startup-check
+      - v2.13b-cpu-fault-diagnostics
   pull_request:
   workflow_dispatch:
 
@@ -55,7 +56,7 @@ jobs:
             set -eu
             export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
             {
-              echo "WiiGalaxy360 v2.12b — XEX tool inventory"
+              echo "WiiGalaxy360 v2.13b — XEX tool inventory"
               echo "Image: free60/libxenon:latest"
               echo "DEVKITXENON=$DEVKITXENON"
               echo
@@ -70,7 +71,7 @@ jobs:
             cat /work/build/xenon/xex-tool-inventory.txt
           '
 
-      - name: Compile core and link Xenon runtime startup diagnostic
+      - name: Compile core and link Xenon CPU fault diagnostic
         shell: bash
         run: |
           set -euo pipefail
@@ -131,10 +132,10 @@ jobs:
           print(f"PASS: XEX2 magic, {len(data)} bytes; unsigned/unencrypted smoke-test image")
           PY
 
-      - name: Upload Xenon runtime ELF, XEX and tool inventory
+      - name: Upload Xenon CPU fault ELF, XEX and tool inventory
         uses: actions/upload-artifact@v4
         with:
-          name: WiiGalaxy360-v2.12b-runtime-startup
+          name: WiiGalaxy360-v2.13b-cpu-fault-diagnostics
           path: |
             build/xenon/default.xex
             build/xenon/WiiGalaxy360-smoke.elf

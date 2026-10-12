@@ -1,17 +1,31 @@
 #include "broadway_cpu.hpp"
 
 BroadwayCpu::BroadwayCpu(MemoryBus& bus) noexcept : bus_(bus) { reset(); }
+
 void BroadwayCpu::reset() noexcept {
     gpr_.fill(0);
     pc_ = 0;
     lr_ = 0;
     halted_ = false;
+    fault_ = CpuFault::None;
+    fault_pc_ = 0;
+    fault_instruction_ = 0;
+}
+
+void BroadwayCpu::raise_fault(CpuFault reason, std::uint32_t instruction) noexcept {
+    halted_ = true;
+    fault_ = reason;
+    fault_pc_ = pc_;
+    fault_instruction_ = instruction;
 }
 
 bool BroadwayCpu::step() noexcept {
     if (halted_) return false;
     std::uint32_t instruction = 0;
-    if (!bus_.read32(pc_, instruction)) { halted_ = true; return false; }
+    if (!bus_.read32(pc_, instruction)) {
+        raise_fault(CpuFault::InstructionFetchOutOfRange, 0U);
+        return false;
+    }
 
     const auto opcode = instruction >> 26U;
     const auto rt = static_cast<std::size_t>((instruction >> 21U) & 31U);
@@ -41,7 +55,10 @@ bool BroadwayCpu::step() noexcept {
     }
     case 19U: { // bclr / blrl, extended opcode 16
         const auto xo = (instruction >> 1U) & 0x3ffU;
-        if (xo != 16U) { halted_ = true; return false; }
+        if (xo != 16U) {
+            raise_fault(CpuFault::UnsupportedInstruction, instruction);
+            return false;
+        }
         const auto target = lr_ & ~std::uint32_t{3U};
         if ((instruction & 1U) != 0U) lr_ = next_pc;
         pc_ = target;
@@ -52,16 +69,22 @@ bool BroadwayCpu::step() noexcept {
         break;
     case 32U: { // lwz RT,D(RA)
         const auto address = (ra == 0U ? 0U : gpr_[ra]) + static_cast<std::uint32_t>(simm);
-        if (!bus_.read32(address, gpr_[rt])) { halted_ = true; return false; }
+        if (!bus_.read32(address, gpr_[rt])) {
+            raise_fault(CpuFault::DataReadOutOfRange, instruction);
+            return false;
+        }
         break;
     }
     case 36U: { // stw RS,D(RA)
         const auto address = (ra == 0U ? 0U : gpr_[ra]) + static_cast<std::uint32_t>(simm);
-        if (!bus_.write32(address, gpr_[rt])) { halted_ = true; return false; }
+        if (!bus_.write32(address, gpr_[rt])) {
+            raise_fault(CpuFault::DataWriteOutOfRange, instruction);
+            return false;
+        }
         break;
     }
     default:
-        halted_ = true;
+        raise_fault(CpuFault::UnsupportedInstruction, instruction);
         return false;
     }
     pc_ = next_pc;
@@ -79,3 +102,6 @@ std::uint32_t BroadwayCpu::reg(std::size_t index) const noexcept {
 }
 std::uint32_t BroadwayCpu::lr() const noexcept { return lr_; }
 bool BroadwayCpu::halted() const noexcept { return halted_; }
+CpuFault BroadwayCpu::fault() const noexcept { return fault_; }
+std::uint32_t BroadwayCpu::fault_pc() const noexcept { return fault_pc_; }
+std::uint32_t BroadwayCpu::fault_instruction() const noexcept { return fault_instruction_; }
