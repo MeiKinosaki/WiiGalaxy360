@@ -4,14 +4,14 @@ Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
 ## Estado real — v2.11b: geração de default.xex na nuvem
 
-A v2.9b comprovou compilação e ligação de um smoke test ELF32 PowerPC no GitHub Actions. A v2.10b confirmou que a imagem base libXenon não fornecia um empacotador XEX óbvio. A v2.11b adiciona um passo de empacotamento com `elf2xex.py` do projeto RXDK360, fixado no commit `ca06a4db2bc91a44cecfa1f2895adb8f23e91ba3`.
+A execução do GitHub Actions para a v2.11b passou: testes de host, compilação Xenon, ligação ELF32, empacotamento e validação estrutural do cabeçalho `XEX2`. O workflow gerou `default.xex` de 331.776 bytes no artefato `WiiGalaxy360-v2.11b-cloud-xex`. O empacotador `elf2xex.py` do projeto RXDK360 está fixado no commit `ca06a4db2bc91a44cecfa1f2895adb8f23e91ba3`.
 
 ## Como executar
 
 1. Abra a branch `v2.11b-cloud-xex-packaging`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. Quando todos os passos passarem, baixe o artefato `WiiGalaxy360-v2.11b-cloud-xex`.
+4. A execução validada está em https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38219140273 . Baixe o artefato `WiiGalaxy360-v2.11b-cloud-xex`.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
