@@ -78,3 +78,10 @@ A grade do protótipo agora anuncia a lista de jogos para tecnologias assistivas
 A navegação por setas agora considera a posição visual dos cartões na grade responsiva, em vez de simplesmente avançar ou voltar na lista. Isso torna o movimento horizontal e vertical mais natural em diferentes larguras de tela. A navegação também identifica o cartão atual quando o foco está no botão de favorito, e Home/End levam ao primeiro/último cartão.
 
 **Limites:** continua sendo navegação por teclado no protótipo HTML. Não foi implementado nem testado mapeamento do controle Xbox 360, integração ao default.xex, carregamento de ROM ou execução no console.
+
+
+## v2.24b — persistência de pesquisa e filtros
+
+A biblioteca do protótipo agora salva no armazenamento local do navegador a pesquisa digitada, o modo de ordenação, a categoria selecionada e a aba de biblioteca ativa (todos, favoritos ou recentes). Ao reabrir o protótipo no mesmo navegador, esses controles são restaurados quando os dados continuam disponíveis. O botão **Limpar filtros** redefine pesquisa, ordenação, categoria e aba para os valores padrão.
+
+**Limites:** os dados ficam no navegador e podem ser apagados ou limitados pela quota; não são preferências gravadas no Xbox 360. Isso não implementa leitura de diretórios, carregamento de jogos, integração com `default.xex` ou suporte nativo ao controle. Não houve teste em hardware nesta etapa.
