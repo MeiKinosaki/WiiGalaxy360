@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WiiGalaxy360 — Biblioteca</title>
+<style>
+:root{color-scheme:dark;--bg:#071a33;--panel:#102b4c;--panel2:#16395f;--blue:#1688e8;--white:#fff;--muted:#b9d2e8;--gold:#f5c451}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#06152a,var(--bg) 55%,#0b3158);color:var(--white);font:16px/1.45 "Segoe UI",Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{border:1px solid #3d6b95;border-radius:8px;background:var(--panel2);color:#fff;padding:10px 14px;cursor:pointer}button:hover,button:focus,input:focus,select:focus{outline:2px solid #67b9ff;outline-offset:2px}button.active{background:var(--blue);border-color:#8bcaff}
+header{display:flex;align-items:center;gap:14px;padding:18px 24px;border-bottom:1px solid #285078;background:#081d37eF;position:sticky;top:0;z-index:3}
+.logo{font-size:22px;font-weight:800;letter-spacing:.3px}.logo span{color:#62b7ff}.subtitle{color:var(--muted);font-size:12px}.spacer{flex:1}.layout{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 76px)}
+aside{padding:20px 14px;background:#081e38;border-right:1px solid #234568}aside h3{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1.2px;padding-left:10px}
+nav{display:grid;gap:8px}nav button{text-align:left;background:transparent;border-color:transparent}nav button.active{background:#14518a;border-color:#347ab4}
+main{padding:24px;min-width:0}.headline{display:flex;gap:16px;align-items:end;flex-wrap:wrap}.headline h1{font-size:28px;margin:0}.headline p{margin:4px 0;color:var(--muted)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.toolbar input{flex:1;min-width:190px}.toolbar input,.toolbar select,.settings select{background:#0a2340;color:#fff;border:1px solid #315d84;border-radius:8px;padding:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}.game{border:1px solid #2b5277;border-radius:12px;background:linear-gradient(180deg,#16395f,#0c2441);padding:10px;min-width:0;position:relative;transition:transform .12s,border-color .12s}.game:focus-within,.game:hover{border-color:#69baff;transform:translateY(-2px)}
+.cover{aspect-ratio:3/4;border-radius:8px;background:linear-gradient(145deg,#0e5fa5,#1c9be9 45%,#d8f0ff);display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;color:white;font-size:19px;font-weight:800;text-shadow:0 2px 5px #001b39;overflow:hidden;position:relative}.cover:after{content:"Wii";position:absolute;bottom:7px;right:9px;font-size:12px;opacity:.75}.game h3{font-size:15px;margin:10px 0 2px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted)}.star{position:absolute;top:14px;right:14px;background:#071a33cc;border:1px solid #7ea5c7;border-radius:99px;padding:5px 8px;color:var(--gold);z-index:1}.game .open{margin-top:10px;width:100%;padding:8px}.empty{border:1px dashed #426b91;border-radius:12px;padding:30px;text-align:center;color:var(--muted);grid-column:1/-1}
+.panel{margin-top:22px;padding:18px;border:1px solid #2b5277;border-radius:12px;background:#0b2340}.panel h2{margin:0 0 8px;font-size:18px}.panel p{margin:6px 0;color:var(--muted)}.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}.settings label{display:grid;gap:6px;color:var(--muted);font-size:13px}.note{font-size:12px;color:var(--muted)}footer{padding:20px;color:#9ebbd5;font-size:12px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #234568;padding:10px}aside h3{display:none}nav{grid-template-columns:repeat(4,1fr)}nav button{text-align:center;padding:8px 5px;font-size:13px}main{padding:16px}header{padding:14px}.headline h1{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div><div class="logo"><span>Wii</span>Galaxy360</div><div class="subtitle">BIBLIOTECA EXPERIMENTAL · TEMA AZUL E BRANCO</div></div><div class="spacer"></div><button id="mute" aria-pressed="true">♫ Áudio: desligado</button></header>
+<div class="layout">
+<aside><h3>Biblioteca</h3><nav id="nav"><button class="active" data-filter="all">Todos os jogos</button><button data-filter="favorites">★ Favoritos</button><button data-filter="recent">Recentes</button><button data-filter="settings">⚙ Configurações</button></nav></aside>
+<main>
+<section id="library">
+<div class="headline"><div><h1>Minha biblioteca</h1><p id="count">Demonstração da interface — nenhum jogo real carregado</p></div></div>
+<div class="toolbar"><input id="search" type="search" placeholder="Pesquisar por nome..." aria-label="Pesquisar jogos"><select id="sort" aria-label="Ordenar"><option value="name">Nome: A–Z</option><option value="recent">Mais recentes</option></select><select id="platform" aria-label="Filtrar plataforma"><option value="all">Todas as categorias</option><option value="wii">Wii</option><option value="test">Demonstração</option></select></div>
+<div id="grid" class="grid"></div>
+<div class="panel"><h2>Pastas do emulador</h2><p>ROMs: <code>games/roms/</code> · Capas: <code>covers/</code> · Favoritos: <code>favorites/favorites.json</code></p><p>Save Data: <code>save_data/</code> · Save States: <code>save_states/</code> · Música: <code>music/startup/</code> e <code>music/menu/</code></p><p class="note">A grade usa jogos fictícios para demonstrar o layout. A descoberta de ROMs e a abertura de jogos ainda não estão conectadas ao núcleo de emulação.</p></div>
+</section>
+<section id="settingsView" hidden>
+<div class="headline"><div><h1>Qualidade e desempenho</h1><p>Preferências de demonstração salvas neste navegador.</p></div></div>
+<div class="panel settings">
+<label>Perfil gráfico<select id="quality"><option value="performance">Desempenho</option><option value="balanced" selected>Equilibrado</option><option value="quality">Qualidade</option></select></label>
+<label>Filtro de textura<select id="filter"><option value="nearest">Nearest (nítido)</option><option value="linear" selected>Linear (suave)</option></select></label>
+<label>Resolução<select id="resolution"><option>Automática</option><option>640×480</option><option>1280×720</option></select></label>
+<label>Som do menu<select id="audio"><option value="off">Desligado</option><option value="on">Ligado (quando implementado)</option></select></label>
+</div><div class="panel"><h2>Salvar preferências</h2><p>Essas opções são apenas configuração visual. Não alteram o desempenho real do Xbox 360 até serem conectadas ao renderizador.</p><button id="saveSettings">Salvar preferências</button> <span id="saved" class="note" role="status"></span></div>
+</section>
+<footer>WiiGalaxy360 · Protótipo de frontend v2.19b · Sem emulação de jogos nesta página.</footer>
+</main></div>
+<script>
+(function(){
+const demo=[{id:"demo-blue",name:"Jogo de demonstração azul",category:"test",tone:"linear-gradient(145deg,#0e5fa5,#1c9be9 48%,#d8f0ff)"},{id:"demo-white",name:"Jogo de demonstração branco",category:"test",tone:"linear-gradient(145deg,#16446b,#77c9ff 55%,#f5fbff)"},{id:"wii-placeholder",name:"Adicionar jogos à pasta ROMs",category:"wii",tone:"linear-gradient(145deg,#0a315a,#147ac2 60%,#e5f6ff)"}];
+let favorites=load("wg-favorites",[]), recent=load("wg-recent",[]), active="all";
+const $=id=>document.getElementById(id);
+function load(k,fallback){try{const v=JSON.parse(localStorage.getItem(k));return v??fallback}catch(e){return fallback}}
+function persist(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+function render(){const q=$("search").value.toLowerCase().trim();let items=demo.filter(g=>(active!=="favorites"||favorites.includes(g.id))&&(active!=="recent"||recent.includes(g.id))&&( $("platform").value==="all"||$("platform").value===g.category)&&(g.name.toLowerCase().includes(q)));if($("sort").value==="recent")items.sort((a,b)=>recent.indexOf(a.id)-recent.indexOf(b.id));else items.sort((a,b)=>a.name.localeCompare(b.name,"pt-BR"));$("count").textContent=items.length+" item(ns) de demonstração · jogos reais ainda não indexados";$("grid").innerHTML="";if(!items.length){$("grid").innerHTML='<div class="empty">Nenhum item corresponde ao filtro atual.</div>';return}items.forEach(g=>{const card=document.createElement("article");card.className="game";const star=document.createElement("button");star.className="star";star.textContent=favorites.includes(g.id)?"★":"☆";star.title="Alternar favorito";star.setAttribute("aria-label","Alternar favorito de "+g.name);star.onclick=()=>{favorites=favorites.includes(g.id)?favorites.filter(x=>x!==g.id):favorites.concat(g.id);persist("wg-favorites",favorites);render()};const cover=document.createElement("div");cover.className="cover";cover.style.background=g.tone;cover.textContent=g.name;const title=document.createElement("h3");title.textContent=g.name;const meta=document.createElement("div");meta.className="meta";meta.textContent=g.category==="wii"?"Wii · pasta de jogos":"Item de demonstração";const open=document.createElement("button");open.className="open";open.textContent="Detalhes";open.onclick=()=>{recent=[g.id].concat(recent.filter(x=>x!==g.id));persist("wg-recent",recent);alert("Protótipo: '"+g.name+"' não é um jogo carregável. A integração com o núcleo ainda não foi implementada.");};card.append(star,cover,title,meta,open);$("grid").append(card)})}
+$("nav").addEventListener("click",e=>{const b=e.target.closest("button[data-filter]");if(!b)return;active=b.dataset.filter;document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));$("library").hidden=active==="settings";$("settingsView").hidden=active!=="settings";if(active!=="settings")render()});
+["search","sort","platform"].forEach(id=>$(id).addEventListener("input",render));
+$("mute").onclick=()=>{const muted=$("mute").getAttribute("aria-pressed")==="true";$("mute").setAttribute("aria-pressed",String(!muted));$("mute").textContent=muted?"♫ Áudio: ligado*":"♫ Áudio: desligado";};
+$("saveSettings").onclick=()=>{const obj={quality:$("quality").value,filter:$("filter").value,resolution:$("resolution").value,audio:$("audio").value};$("saved").textContent=persist("wg-settings",obj)?"Preferências salvas.":"Não foi possível salvar neste navegador.";};
+const settings=load("wg-settings",{});["quality","filter","resolution","audio"].forEach(id=>{if(settings[id])$(id).value=settings[id]});render();
+})();
+</script>
+</body></html>
