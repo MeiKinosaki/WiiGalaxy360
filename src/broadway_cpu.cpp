@@ -92,6 +92,15 @@ bool BroadwayCpu::step() noexcept {
             writes_rt = true;
             break;
         }
+        case 8U: { // subfc RT,RA,RB => RB - RA, CA=not borrow
+            const std::uint32_t minuend = gpr_[rb];
+            const std::uint32_t subtrahend = gpr_[ra];
+            result = minuend - subtrahend;
+            xer_ = (xer_ & ~0x20000000U) |
+                   (minuend >= subtrahend ? 0x20000000U : 0U);
+            writes_rt = true;
+            break;
+        }
         case 316U: // xor RA,RS,RB; destination is RA
             result = gpr_[rt] ^ gpr_[rb];
             break;

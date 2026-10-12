@@ -151,6 +151,28 @@ void test_addc_xer_carry() {
         check(((cpu.cr() >> 28U) & 0xfU) == 0x8U, "Rc sets CR0 LT for signed negative bit pattern");
     }
 }
+void test_subfc_xer_carry() {
+    {
+        MemoryBus bus(128);
+        check(bus.write32(0, dform(14, 1, 0, 3U)), "seed subfc minuend source");
+        check(bus.write32(4, dform(14, 2, 0, 5U)), "seed subfc subtrahend source");
+        check(bus.write32(8, xform(3, 1, 2, 8U)), "write subfc no borrow");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(3) == 3U, "execute subfc no borrow");
+        check(cpu.reg(3) == 2U, "subfc computes RB minus RA");
+        check((cpu.xer() & 0x20000000U) != 0U, "subfc sets CA when no borrow");
+    }
+    {
+        MemoryBus bus(128);
+        check(bus.write32(0, dform(14, 1, 0, 7U)), "seed subfc larger subtrahend");
+        check(bus.write32(4, dform(14, 2, 0, 2U)), "seed subfc smaller minuend");
+        check(bus.write32(8, xform(3, 1, 2, 8U)), "write subfc with borrow");
+        BroadwayCpu cpu(bus);
+        check(cpu.run(3) == 3U, "execute subfc with borrow");
+        check(cpu.reg(3) == 0xfffffffbU, "subfc wraps unsigned result");
+        check((cpu.xer() & 0x20000000U) == 0U, "subfc clears CA when borrow occurs");
+    }
+}
 void test_fault_diagnostics() {
     {
         MemoryBus bus(32);
@@ -209,7 +231,7 @@ void test_halt_reset() {
 }
 int main() {
     test_memory(); test_cpu_load_store(); test_addis_and_branch();
-    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_arithmetic_logical_xforms(); test_addc_xer_carry(); test_fault_diagnostics(); test_halt_reset();
+    test_call_and_return(); test_link_branch_stops_no_longer_applicable(); test_arithmetic_logical_xforms(); test_addc_xer_carry(); test_subfc_xer_carry(); test_fault_diagnostics(); test_halt_reset();
     if (failures) { std::cerr << failures << " assertion(s) failed\n"; return 1; }
     std::cout << "PASS: all host test assertions\n";
     return 0;

@@ -13,6 +13,7 @@ on:
       - v2.14b-arithmetic-logical-opcodes
       - v2.15b-condition-register-cr0
       - v2.16b-xer-carry-addc
+      - v2.17b-xer-subfc
   pull_request:
   workflow_dispatch:
 
@@ -59,7 +60,7 @@ jobs:
             set -eu
             export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
             {
-              echo "WiiGalaxy360 v2.16b — XEX tool inventory"
+              echo "WiiGalaxy360 v2.17b — XEX tool inventory"
               echo "Image: free60/libxenon:latest"
               echo "DEVKITXENON=$DEVKITXENON"
               echo
@@ -74,7 +75,7 @@ jobs:
             cat /work/build/xenon/xex-tool-inventory.txt
           '
 
-      - name: Compile core and link Xenon XER carry diagnostic
+      - name: Compile core and link Xenon XER subfc diagnostic
         shell: bash
         run: |
           set -euo pipefail
@@ -135,10 +136,10 @@ jobs:
           print(f"PASS: XEX2 magic, {len(data)} bytes; unsigned/unencrypted smoke-test image")
           PY
 
-      - name: Upload Xenon XER carry ELF, XEX and tool inventory
+      - name: Upload Xenon XER subfc ELF, XEX and tool inventory
         uses: actions/upload-artifact@v4
         with:
-          name: WiiGalaxy360-v2.16b-xer-carry-addc
+          name: WiiGalaxy360-v2.17b-xer-subfc
           path: |
             build/xenon/default.xex
             build/xenon/WiiGalaxy360-smoke.elf
