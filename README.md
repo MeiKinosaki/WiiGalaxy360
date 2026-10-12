@@ -64,3 +64,10 @@ Formato aceito: uma lista de jogos ou um objeto com `games: []`; cada item pode 
 O protótipo da biblioteca passa a converter capas selecionadas em Data URLs e guardá-las junto aos metadados no armazenamento local do navegador, quando a quota permite. Também adiciona exportação do catálogo em JSON (sem embutir as imagens no arquivo exportado) e atualiza os itens recentes ao abrir detalhes.
 
 **Limitações:** armazenamento local pode ter quota restrita e não é armazenamento da pasta `covers/` do Xbox. O export JSON não inclui bytes das capas; mantenha os arquivos originais à parte. Navegação de controle físico e integração com o `default.xex` continuam pendentes. ROMs continuam sendo apenas registros de catálogo, não jogos carregáveis.
+
+
+## v2.22b — navegação de teclado na biblioteca
+
+A grade do protótipo agora anuncia a lista de jogos para tecnologias assistivas, usa foco visual mais evidente e oferece navegação por teclado entre os botões de detalhes dos cartões: setas para percorrer os itens, Home/End para ir ao primeiro/último item e Enter para ativar o botão focado. A captura das setas é suspensa quando o foco está em campos de entrada, pesquisa ou seleção.
+
+**Limites:** isso é acessibilidade de teclado no protótipo HTML do navegador; não implementa mapeamento nativo do controle Xbox 360, navegação dentro de um XEX nem integração com o núcleo. Os jogos continuam não carregáveis, e nenhuma validação em hardware foi feita.
