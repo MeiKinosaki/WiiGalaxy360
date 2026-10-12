@@ -84,9 +84,9 @@ void test_arithmetic_logical_xforms() {
         check(bus.write32(4, dform(14, 2, 0, 25)), "seed r2");
         check(bus.write32(8, xform(3, 1, 2, 266)), "add r3,r1,r2");
         check(bus.write32(12, xform(4, 1, 2, 40)), "subf r4,r1,r2");
-        check(bus.write32(16, xform(5, 1, 2, 316)), "xor r1,r1,r2");
-        check(bus.write32(20, xform(6, 1, 2, 444)), "or r1,r1,r2");
-        check(bus.write32(24, xform(7, 1, 2, 28)), "and r1,r1,r2");
+        check(bus.write32(16, xform(1, 5, 2, 316)), "xor r1,r1,r2");
+        check(bus.write32(20, xform(1, 6, 2, 444)), "or r1,r1,r2");
+        check(bus.write32(24, xform(1, 7, 2, 28)), "and r1,r1,r2");
         BroadwayCpu cpu(bus);
         check(cpu.run(7) == 7U, "execute selected arithmetic and logical X-form instructions");
         check(cpu.reg(3) == 42U, "add produces 42");
