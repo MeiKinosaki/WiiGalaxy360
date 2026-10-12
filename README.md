@@ -2,25 +2,25 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado real — v2.15b: registrador de condição CR0
+## Estado real — v2.16b: XER e carry com addc
 
-A v2.15b implementa atualização do campo CR0 quando as instruções suportadas `add`, `subf`, `xor`, `or` e `and` usam Rc=1. CR0 registra LT, GT ou EQ conforme o resultado; o bit SO permanece zero porque o XER/SO ainda não é modelado. O reset limpa o registrador CR. Os testes agora verificam os três resultados, e o programa de diagnóstico executado na toolchain testa `add.` seguido de `stw` e `lwz`. A execução da v2.15b passou: testes de host e diagnóstico inicial aprovados, compilação/ligação Xenon concluídas e `default.xex` empacotado e validado estruturalmente. Logs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38293723470.
+A v2.16b adiciona estado XER e implementa `addc` (XO=10) no subconjunto X-form. O bit CA (0x20000000) é atualizado com o carry unsigned da soma de 32 bits; `Rc=1` também atualiza CR0 a partir do resultado. O reset limpa XER. Os testes cobrem carry ligado, carry desligado apesar de overflow com sinal, CR0 e reset. O diagnóstico de inicialização agora verifica `addc`, CR0, XER, `stw` e `lwz`. A validação da v2.16b passou: os testes de host, o diagnóstico de inicialização, a compilação/ligação Xenon e o empacotamento/validação estrutural do `default.xex` foram concluídos com sucesso. Logs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38295685506.
 
 ## Como executar
 
-1. Abra a branch `v2.15b-condition-register-cr0`.
+1. Abra a branch `v2.16b-xer-carry-addc`.
 2. Vá para **Actions** → **Cloud Xenon toolchain**.
 3. Execute **Run workflow** ou acompanhe o workflow disparado pela branch.
-4. Abra https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38293723470 e baixe o artefato `WiiGalaxy360-v2.15b-condition-register-cr0`.
+4. Abra https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38295685506 e baixe o artefato `WiiGalaxy360-v2.16b-xer-carry-addc`.
 5. O pacote contém `default.xex`, ELF, objetos e inventário da toolchain.
 
 ## O que o workflow valida
 
 - Testes de host.
 - Compilação dos arquivos atuais do núcleo com `xenon-g++`.
-- Testes de host para `addi`, `stw`, `lwz`, reset, diagnósticos de falha, instruções X-form e CR0 (LT/GT/EQ).
-- Rotina de startup que verifica `addi`, `add.` (Rc=1), `stw`, `lwz` e CR0.
-- Empacotamento Xenon de um XEX de diagnóstico; a execução da v2.15b passou.
+- Testes de host para `addi`, `stw`, `lwz`, reset, diagnósticos de falha, instruções X-form, CR0 e XER/CA.
+- Rotina de startup que verifica `addi`, `add.` (Rc=1), `addc`, `stw`, `lwz`, CR0 e XER/CA.
+- Empacotamento Xenon de um XEX de diagnóstico; a execução da v2.16b passou.
 - Linkagem do smoke test e conversão/validação de ELF32 PowerPC.
 - Execução do empacotador XEX externo em modo `--no-sign`.
 - Cabeçalho `XEX2` e tamanho mínimo do arquivo resultante.
