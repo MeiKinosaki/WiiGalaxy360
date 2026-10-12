@@ -8,6 +8,7 @@ on:
       - v2.9b-xenon-elf32-link
       - v2.10b-xex-packer-audit
       - v2.11b-cloud-xex-packaging
+      - v2.12b-runtime-startup-check
   pull_request:
   workflow_dispatch:
 
@@ -25,6 +26,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y g++ make
       - name: Run host tests
         run: make clean host-test
+      - name: Compile and execute Broadway startup diagnostic on host
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -O2 -Isrc src/memory_bus.cpp src/broadway_cpu.cpp src/xenon_smoke_main.cpp -o build/broadway-startup-diagnostic
+          ./build/broadway-startup-diagnostic
 
   xenon-cross-compile:
     name: Compile, link and pack smoke-test XEX
@@ -48,7 +55,7 @@ jobs:
             set -eu
             export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
             {
-              echo "WiiGalaxy360 v2.11b — XEX tool inventory"
+              echo "WiiGalaxy360 v2.12b — XEX tool inventory"
               echo "Image: free60/libxenon:latest"
               echo "DEVKITXENON=$DEVKITXENON"
               echo
@@ -63,7 +70,7 @@ jobs:
             cat /work/build/xenon/xex-tool-inventory.txt
           '
 
-      - name: Compile core and link Xenon ELF32 smoke test
+      - name: Compile core and link Xenon runtime startup diagnostic
         shell: bash
         run: |
           set -euo pipefail
@@ -124,10 +131,10 @@ jobs:
           print(f"PASS: XEX2 magic, {len(data)} bytes; unsigned/unencrypted smoke-test image")
           PY
 
-      - name: Upload Xenon ELF, XEX and tool inventory
+      - name: Upload Xenon runtime ELF, XEX and tool inventory
         uses: actions/upload-artifact@v4
         with:
-          name: WiiGalaxy360-v2.11b-cloud-xex
+          name: WiiGalaxy360-v2.12b-runtime-startup
           path: |
             build/xenon/default.xex
             build/xenon/WiiGalaxy360-smoke.elf
