@@ -28,7 +28,7 @@ main{padding:24px;min-width:0}.headline{display:flex;gap:16px;align-items:end;fl
 <div class="headline"><div><h1>Minha biblioteca</h1><p id="count">Demonstração da interface — nenhum jogo real carregado</p></div></div>
 <div class="toolbar"><input id="search" type="search" placeholder="Pesquisar por nome..." aria-label="Pesquisar jogos"><select id="sort" aria-label="Ordenar"><option value="name">Nome: A–Z</option><option value="recent">Mais recentes</option></select><select id="platform" aria-label="Filtrar plataforma"><option value="all">Todas as categorias</option><option value="wii">Wii</option><option value="test">Demonstração</option></select><button id="importCatalog">Importar catálogo JSON</button><input id="catalogFile" type="file" accept=".json,application/json" hidden><button id="importCovers">Importar capas</button><input id="coverFiles" type="file" accept="image/*" multiple hidden><button id="exportCatalog">Exportar catálogo</button><button id="runDiagnostics" type="button">Diagnóstico</button><button id="clearFilters" type="button">Limpar filtros</button></div>
 <div id="diagnosticsPanel" class="panel" hidden><h2>Diagnóstico da biblioteca</h2><p class="note">Verificações locais; não testam emulação ou hardware.</p><div id="diagnosticsResults" role="status"></div></div><div class="panel"><p class="note">Importe um catálogo JSON e imagens de capa do seu dispositivo. Isso indexa metadados no protótipo; não carrega nem executa as ROMs.</p><div id="importStatus" class="note" role="status"></div></div>
-<p class="note" id="keyboardHelp">Teclado: Tab para controles; nas capas, use ↑ ↓ ← → para percorrer os jogos, Home/End para início/fim e Enter para abrir detalhes.</p><div id="grid" class="grid" role="list" aria-label="Jogos da biblioteca"></div>
+<p class="note" id="keyboardHelp">Teclado: Tab para controles; nas capas, use ↑ ↓ ← → para percorrer os jogos, Home/End para início/fim e Enter para abrir detalhes. Controle web experimental: direcional/analógico navega; botão principal ativa o foco.</p><p class="note" id="gamepadStatus" role="status" aria-live="polite">Controle web: aguardando detecção do navegador. Não representa suporte ao controle nativo do Xbox 360.</p><div id="grid" class="grid" role="list" aria-label="Jogos da biblioteca"></div>
 <div class="panel"><h2>Pastas do emulador</h2><p>ROMs: <code>games/roms/</code> · Capas: <code>covers/</code> · Favoritos: <code>favorites/favorites.json</code></p><p>Save Data: <code>save_data/</code> · Save States: <code>save_states/</code> · Música: <code>music/startup/</code> e <code>music/menu/</code></p><p class="note">A grade usa jogos fictícios para demonstrar o layout. A descoberta de ROMs e a abertura de jogos ainda não estão conectadas ao núcleo de emulação.</p></div>
 </section>
 <section id="settingsView" hidden>
@@ -84,7 +84,7 @@ $("exportCatalog").onclick=()=>{const exportGames=games.filter(g=>!g.demo).map(g
 $("mute").onclick=()=>{const muted=$("mute").getAttribute("aria-pressed")==="true";$("mute").setAttribute("aria-pressed",String(!muted));$("mute").textContent=muted?"♫ Áudio: ligado*":"♫ Áudio: desligado";};
 $("saveSettings").onclick=()=>{const obj={quality:$("quality").value,filter:$("filter").value,resolution:$("resolution").value,audio:$("audio").value};$("saved").textContent=persist("wg-settings",obj)?"Preferências salvas.":"Não foi possível salvar neste navegador.";};
 // Navegação espacial entre cartões; funciona mesmo com foco no botão de favorito.
-document.addEventListener("keydown",e=>{
+function navigateByKey(e){
  const keys=["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Home","End"];
  if($("library").hidden||!keys.includes(e.key))return;
  const target=e.target;
@@ -118,7 +118,91 @@ document.addEventListener("keydown",e=>{
  if(!next)return;
  const control=next.querySelector(".open");
  if(control){e.preventDefault();control.focus();}
+}
+document.addEventListener("keydown",navigateByKey);
+
+// Gamepad API do navegador: experimento exclusivo da interface web.
+const gamepadStatus=$("gamepadStatus");
+let activePadIndex=null, padFrame=0, lastPadButtons=[], lastPadMoveAt=0;
+const padDeadzone=0.55;
+function connectedPads(){
+ return navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(p=>p&&p.connected) : [];
+}
+function updatePadStatus(){
+ const pads=connectedPads();
+ if(activePadIndex===null || !pads.some(p=>p.index===activePadIndex)){
+  activePadIndex=pads.length?pads[0].index:null;
+ }
+ const pad=pads.find(p=>p.index===activePadIndex);
+ gamepadStatus.textContent=pad
+  ? "Controle web conectado: "+(pad.id||"dispositivo desconhecido")+" · "+(pad.mapping||"mapeamento não padronizado")+". Xbox 360 nativo não testado."
+  : "Nenhum controle web detectado. Teclado e mouse continuam disponíveis.";
+}
+function stopPadLoop(){
+ if(padFrame){cancelAnimationFrame(padFrame);padFrame=0;}
+ lastPadButtons=[];
+}
+function ensurePadLoop(){
+ if(!padFrame && connectedPads().length) padFrame=requestAnimationFrame(readPadFrame);
+}
+function activateFocusedControl(){
+ const el=document.activeElement;
+ if(el && el!==document.body && el.matches("button,a,[role=button]")) el.click();
+ else if(!$("library").hidden){
+  const cards=Array.from(document.querySelectorAll("#grid .game .open"));
+  if(cards.length) cards[0].focus();
+ }
+}
+function handlePadBack(){
+ if(!$("settingsView").hidden){
+  const all=$('nav button[data-filter="all"]'); if(all) all.click();
+ } else if(document.activeElement && document.activeElement.closest("#grid .game")){
+  $("search").focus();
+ }
+}
+function readPadFrame(){
+ padFrame=0;
+ const pads=connectedPads();
+ const pad=pads.find(p=>p.index===activePadIndex)||pads[0];
+ if(!pad){activePadIndex=null;updatePadStatus();lastPadButtons=[];return;}
+ activePadIndex=pad.index;
+ const now=performance.now();
+ const axisX=pad.axes&&pad.axes.length>0?pad.axes[0]:0;
+ const axisY=pad.axes&&pad.axes.length>1?pad.axes[1]:0;
+ const pressed=i=>!!pad.buttons[i]&&(pad.buttons[i].pressed||pad.buttons[i].value>0.7);
+ const wasPressed=i=>!!lastPadButtons[i];
+ const dir=[
+  {key:"ArrowUp",hit:pressed(12)||axisY < -padDeadzone},
+  {key:"ArrowDown",hit:pressed(13)||axisY > padDeadzone},
+  {key:"ArrowLeft",hit:pressed(14)||axisX < -padDeadzone},
+  {key:"ArrowRight",hit:pressed(15)||axisX > padDeadzone}
+ ];
+ if(!$("library").hidden && now-lastPadMoveAt>190){
+  const d=dir.find(x=>x.hit);
+  if(d){
+   const fakeEvent={key:d.key,target:document.activeElement,preventDefault(){}};
+   navigateByKey(fakeEvent);
+   lastPadMoveAt=now;
+  }
+ }
+ // Mapeamento padrão comum: 0 principal, 1 secundário. Pode variar.
+ if(pressed(0)&&!wasPressed(0)) activateFocusedControl();
+ if(pressed(1)&&!wasPressed(1)) handlePadBack();
+ lastPadButtons=pad.buttons.map(b=>!!b&&(b.pressed||b.value>0.7));
+ padFrame=requestAnimationFrame(readPadFrame);
+}
+window.addEventListener("gamepadconnected",e=>{
+ activePadIndex=e.gamepad.index; updatePadStatus(); ensurePadLoop();
 });
+window.addEventListener("gamepaddisconnected",e=>{
+ if(activePadIndex===e.gamepad.index) activePadIndex=null;
+ updatePadStatus();
+ if(!connectedPads().length) stopPadLoop(); else ensurePadLoop();
+});
+window.addEventListener("pointerdown",()=>{updatePadStatus();ensurePadLoop();},{passive:true});
+updatePadStatus();
+ensurePadLoop();
+
 const settings=load("wg-settings",{});["quality","filter","resolution","audio"].forEach(id=>{if(settings[id])$(id).value=settings[id]});
 if(viewState&&typeof viewState==="object"){$("search").value=typeof viewState.search==="string"?viewState.search:"";$("sort").value=["name","recent"].includes(viewState.sort)?viewState.sort:"name";$("platform").value=["all","wii","test"].includes(viewState.platform)?viewState.platform:"all";if(["all","favorites","recent"].includes(viewState.active))active=viewState.active;document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x.dataset.filter===active));}
 render();
