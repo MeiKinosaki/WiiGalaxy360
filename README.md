@@ -120,3 +120,103 @@ O botão **Diagnóstico** verifica a estrutura básica dos registros em memória
 A importação de catálogo agora mescla os registros válidos novos aos itens já cadastrados, em vez de substituir todo o catálogo importado. IDs já presentes no catálogo são tratados como duplicados e rejeitados, evitando que uma importação parcial ou com IDs repetidos apague silenciosamente registros anteriores. A mensagem informa quantos itens novos foram aceitos e quantos foram rejeitados.
 
 **Limites:** a mudança protege os metadados armazenados no navegador, mas não cria backup automático, não valida arquivos ROM e não liga a biblioteca ao núcleo de emulação ou ao `default.xex`. A interface segue sendo um protótipo web; sem teste automatizado ou validação em Xbox 360 nesta etapa.
+
+## v2.30b — documentação: controles, configurações, saves e instalação
+
+### Descrição do projeto
+
+O **WiiGalaxy360** é um projeto experimental que pretende desenvolver um emulador de Nintendo Wii para Xbox 360 RGH. A interface atual `ui/library.html` é um protótipo web com tema azul e branco, biblioteca demonstrativa, capas ilustrativas, pesquisa, filtros, favoritos, recentes e preferências.
+
+**Estado real:** a interface web não executa jogos Wii. O núcleo Broadway/PowerPC está incompleto; não há implementação completa de GPU/Flipper, áudio, IOS ou inicialização de jogos, e não há compatibilidade de jogos demonstrada. O `default.xex` disponível no fluxo histórico é um executável de diagnóstico, não o emulador completo.
+
+### Controles da interface web
+
+- **Tab / Shift+Tab:** avançar ou voltar entre controles focáveis.
+- **Setas ↑ ↓ ← →:** navegar entre cartões da biblioteca quando o foco estiver em um cartão.
+- **Home / End:** ir ao primeiro ou ao último cartão.
+- **Enter:** ativar o botão focado e abrir os detalhes do registro.
+- **Mouse:** clicar em botões, filtros e opções de importação.
+- **Pesquisar:** filtrar registros pelo nome.
+- **Todos os jogos / Favoritos / Recentes:** alternar a lista.
+- **Limpar filtros:** restaurar pesquisa, ordenação e categoria.
+- **Importar catálogo JSON:** importar metadados.
+- **Importar capas:** selecionar imagens locais para associar a registros compatíveis.
+- **Exportar catálogo:** salvar os registros importados em JSON.
+- **Diagnóstico:** verificar a estrutura básica do catálogo e o armazenamento do navegador.
+
+**Controle físico do Xbox 360:** ainda não há mapeamento nativo comprovado nem teste do controle dentro do XEX. Os comandos acima são apenas do protótipo web.
+
+### Configurações (Settings)
+
+Na aba **Configurações**, o protótipo exibe:
+
+| Opção | Valores | O que realmente faz |
+|---|---|---|
+| Perfil gráfico | Desempenho, Equilibrado, Qualidade | Preferência demonstrativa; não altera o renderizador |
+| Filtro de textura | Nearest, Linear | Preferência demonstrativa |
+| Resolução | Automática, 640×480, 1280×720 | Seleção visual; não configura a saída do Xbox |
+| Som do menu | Desligado/Ligado quando implementado | Não reproduz áudio atualmente |
+| Botão de áudio no cabeçalho | Liga/desliga o estado visual | Não toca música |
+
+O botão **Salvar preferências** grava essas escolhas no armazenamento local do navegador, quando disponível. Os dados podem ser perdidos ao limpar os dados do navegador e não são configurações nativas do Xbox 360.
+
+### Saves — Save Data e Save States
+
+- `save_data/`: diretório reservado para futuros dados persistentes de jogos.
+- `save_states/`: diretório reservado para futuros estados instantâneos da emulação.
+
+**Essas funções ainda não estão implementadas.** O emulador não grava nem restaura saves de jogos Wii ou save states. O protótipo guarda somente metadados da biblioteca, favoritos, recentes, filtros e preferências no `localStorage` do navegador. Isso não é um save de jogo. Use **Exportar catálogo** para criar uma cópia dos metadados; capas não são incluídas no JSON exportado.
+
+### Como instalar / visualizar
+
+#### Abrir a interface de demonstração no computador
+
+1. Abra o repositório no GitHub e selecione a branch desejada.
+2. Baixe o ZIP da branch e extraia os arquivos.
+3. Abra `ui/library.html` em um navegador moderno.
+4. Use **Importar catálogo JSON** para metadados e **Importar capas** para selecionar imagens.
+
+Isso abre apenas o protótipo no navegador; não instala o emulador no Xbox 360 nem executa jogos.
+
+#### Consultar/compilar o XEX experimental
+
+1. No GitHub, abra **Actions** e localize o workflow de toolchain Xenon disponível.
+2. Se houver execução manual, use **Run workflow** na branch desejada; caso contrário, consulte as execuções disparadas por commits.
+3. Abra a execução concluída e confira os logs e artefatos.
+4. Baixe apenas o artefato correspondente à versão desejada e leia suas notas.
+
+Nem toda branch produz um novo artefato automaticamente. O XEX histórico é experimental, sem assinatura/criptografia, e a execução em hardware RGH não foi confirmada. Não existe ainda um pacote de instalação de um emulador Wii completo.
+
+### Estrutura de pastas planejada
+
+```text
+WiiGalaxy360/
+├── config/          # preferências e exemplos de catálogo
+├── covers/          # capas (estrutura planejada)
+├── favorites/       # favoritos planejados
+├── games/roms/      # diretório reservado para ROMs próprias
+├── save_data/       # reservado para saves de jogos
+├── save_states/     # reservado para estados de emulação
+├── music/startup/   # áudio próprio/licenciado
+├── music/menu/      # áudio próprio/licenciado
+├── themes/          # tema azul e branco
+└── ui/library.html  # protótipo web
+```
+
+A presença das pastas não significa que o XEX já as leia. O suporte real a controles, saves, áudio, diretórios e carregamento de jogos depende de implementação futura.
+
+### Avisos
+
+- O catálogo contém metadados; não carrega nem valida arquivos de jogos.
+- Use apenas jogos e conteúdos para os quais tenha direito de uso.
+- Não inclua músicas, capas ou outros materiais protegidos sem permissão.
+- Não distribua o XEX de diagnóstico como se fosse uma versão funcional do emulador.
+
+## v2.31b — navegação experimental com Gamepad API no navegador
+
+O protótipo `ui/library.html` agora detecta controles expostos pela Gamepad API, mostra o estado de conexão e oferece navegação experimental da biblioteca usando direcional/analógico e botões padrão de ação/retorno. Teclado e mouse continuam disponíveis. A rotina de navegação espacial é compartilhada com o tratamento de teclado.
+
+**Validação pendente:** esta alteração foi registrada na branch `v2.31b-gamepad-navigation`, mas ainda precisa de testes manuais em navegadores e controles reais. O mapeamento de botões pode variar conforme o dispositivo/navegador. Não há teste comprovado com controle físico no Xbox 360, nem integração com o `default.xex`.
+
+Esta implementação usa a Gamepad API do **navegador**. Não representa suporte nativo ao controle do Xbox 360 nem muda o estado do núcleo de emulação: o projeto continua sem carregamento funcional de jogos Wii demonstrado. Consulte `docs/v2.31b-gamepad-validation.md` para os critérios de aceitação.
+
