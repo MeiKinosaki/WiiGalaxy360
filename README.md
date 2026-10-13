@@ -228,3 +228,10 @@ O protótipo agora rejeita catálogos JSON acima de 5 MiB e listas com mais de 1
 
 **Validação pendente:** ainda não foram executados testes automatizados, validação em navegador ou testes em hardware. Esses limites protegem o frontend contra entradas excessivas, mas não verificam arquivos ROM nem implementam carregamento de jogos. As capas continuam sujeitas à quota do armazenamento local do navegador. O núcleo Wii e a integração ao `default.xex` permanecem incompletos.
 Consulte `docs/v2.32b-import-hardening.md`.
+
+
+## v2.33b — limites de importação de capas
+
+A importação de capas agora aceita até 20 arquivos por lote, com máximo de 2 MiB por arquivo e 10 MiB somados por lote. Arquivos que não são imagens são contabilizados como ignorados. Consulte `docs/v2.33b-cover-import.md`.
+
+**Validação pendente:** ainda não foram executados testes de navegador, testes automatizados ou testes em Xbox 360. As capas continuam armazenadas como Data URLs no `localStorage`, cuja quota pode ser menor que o limite do lote. Esta mudança é da interface de biblioteca e não implementa carregamento de ROM nem execução de jogos Wii.
