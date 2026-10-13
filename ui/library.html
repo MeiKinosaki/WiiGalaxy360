@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WiiGalaxy360 — Biblioteca</title>
+<style>
+:root{color-scheme:dark;--bg:#071a33;--panel:#102b4c;--panel2:#16395f;--blue:#1688e8;--white:#fff;--muted:#b9d2e8;--gold:#f5c451}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#06152a,var(--bg) 55%,#0b3158);color:var(--white);font:16px/1.45 "Segoe UI",Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}button{border:1px solid #3d6b95;border-radius:8px;background:var(--panel2);color:#fff;padding:10px 14px;cursor:pointer}button:hover,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #8bd0ff;outline-offset:3px}button:focus-visible{box-shadow:0 0 0 4px #06152a}button.active{background:var(--blue);border-color:#8bcaff}
+header{display:flex;align-items:center;gap:14px;padding:18px 24px;border-bottom:1px solid #285078;background:#081d37eF;position:sticky;top:0;z-index:3}
+.logo{font-size:22px;font-weight:800;letter-spacing:.3px}.logo span{color:#62b7ff}.subtitle{color:var(--muted);font-size:12px}.spacer{flex:1}.layout{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 76px)}
+aside{padding:20px 14px;background:#081e38;border-right:1px solid #234568}aside h3{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1.2px;padding-left:10px}
+nav{display:grid;gap:8px}nav button{text-align:left;background:transparent;border-color:transparent}nav button.active{background:#14518a;border-color:#347ab4}
+main{padding:24px;min-width:0}.headline{display:flex;gap:16px;align-items:end;flex-wrap:wrap}.headline h1{font-size:28px;margin:0}.headline p{margin:4px 0;color:var(--muted)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.toolbar input{flex:1;min-width:190px}.toolbar input,.toolbar select,.settings select{background:#0a2340;color:#fff;border:1px solid #315d84;border-radius:8px;padding:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}.game{border:1px solid #2b5277;border-radius:12px;background:linear-gradient(180deg,#16395f,#0c2441);padding:10px;min-width:0;position:relative;transition:transform .12s,border-color .12s}.game:focus-within,.game:hover{border-color:#69baff;transform:translateY(-2px)}
+.cover{aspect-ratio:3/4;border-radius:8px;background:linear-gradient(145deg,#0e5fa5,#1c9be9 45%,#d8f0ff);display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;color:white;font-size:19px;font-weight:800;text-shadow:0 2px 5px #001b39;overflow:hidden;position:relative}.cover:after{content:"Wii";position:absolute;bottom:7px;right:9px;font-size:12px;opacity:.75}.game h3{font-size:15px;margin:10px 0 2px;overflow-wrap:anywhere}.meta{font-size:12px;color:var(--muted)}.star{position:absolute;top:14px;right:14px;background:#071a33cc;border:1px solid #7ea5c7;border-radius:99px;padding:5px 8px;color:var(--gold);z-index:1}.game .open{margin-top:10px;width:100%;padding:8px}.empty{border:1px dashed #426b91;border-radius:12px;padding:30px;text-align:center;color:var(--muted);grid-column:1/-1}
+.panel{margin-top:22px;padding:18px;border:1px solid #2b5277;border-radius:12px;background:#0b2340}.panel h2{margin:0 0 8px;font-size:18px}.panel p{margin:6px 0;color:var(--muted)}.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}.settings label{display:grid;gap:6px;color:var(--muted);font-size:13px}.note{font-size:12px;color:var(--muted)}footer{padding:20px;color:#9ebbd5;font-size:12px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid #234568;padding:10px}aside h3{display:none}nav{grid-template-columns:repeat(4,1fr)}nav button{text-align:center;padding:8px 5px;font-size:13px}main{padding:16px}header{padding:14px}.headline h1{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div><div class="logo"><span>Wii</span>Galaxy360</div><div class="subtitle">BIBLIOTECA EXPERIMENTAL · TEMA AZUL E BRANCO</div></div><div class="spacer"></div><button id="mute" aria-pressed="true">♫ Áudio: desligado</button></header>
+<div class="layout">
+<aside><h3>Biblioteca</h3><nav id="nav"><button class="active" data-filter="all">Todos os jogos</button><button data-filter="favorites">★ Favoritos</button><button data-filter="recent">Recentes</button><button data-filter="settings">⚙ Configurações</button></nav></aside>
+<main>
+<section id="library">
+<div class="headline"><div><h1>Minha biblioteca</h1><p id="count">Demonstração da interface — nenhum jogo real carregado</p></div></div>
+<div class="toolbar"><input id="search" type="search" placeholder="Pesquisar por nome..." aria-label="Pesquisar jogos"><select id="sort" aria-label="Ordenar"><option value="name">Nome: A–Z</option><option value="recent">Mais recentes</option></select><select id="platform" aria-label="Filtrar plataforma"><option value="all">Todas as categorias</option><option value="wii">Wii</option><option value="test">Demonstração</option></select><button id="importCatalog">Importar catálogo JSON</button><input id="catalogFile" type="file" accept=".json,application/json" hidden><button id="importCovers">Importar capas</button><input id="coverFiles" type="file" accept="image/*" multiple hidden><button id="exportCatalog">Exportar catálogo</button><button id="runDiagnostics" type="button">Diagnóstico</button><button id="clearFilters" type="button">Limpar filtros</button></div>
+<div id="diagnosticsPanel" class="panel" hidden><h2>Diagnóstico da biblioteca</h2><p class="note">Verificações locais; não testam emulação ou hardware.</p><div id="diagnosticsResults" role="status"></div></div><div class="panel"><p class="note">Importe um catálogo JSON e imagens de capa do seu dispositivo. Isso indexa metadados no protótipo; não carrega nem executa as ROMs.</p><div id="importStatus" class="note" role="status"></div></div>
+<p class="note" id="keyboardHelp">Teclado: Tab para controles; nas capas, use ↑ ↓ ← → para percorrer os jogos, Home/End para início/fim e Enter para abrir detalhes. Controle web experimental: direcional/analógico navega; botão principal ativa o foco.</p><p class="note" id="gamepadStatus" role="status" aria-live="polite">Controle web: aguardando detecção do navegador. Não representa suporte ao controle nativo do Xbox 360.</p><div id="grid" class="grid" role="list" aria-label="Jogos da biblioteca"></div>
+<div class="panel"><h2>Pastas do emulador</h2><p>ROMs: <code>games/roms/</code> · Capas: <code>covers/</code> · Favoritos: <code>favorites/favorites.json</code></p><p>Save Data: <code>save_data/</code> · Save States: <code>save_states/</code> · Música: <code>music/startup/</code> e <code>music/menu/</code></p><p class="note">A grade usa jogos fictícios para demonstrar o layout. A descoberta de ROMs e a abertura de jogos ainda não estão conectadas ao núcleo de emulação.</p></div>
+</section>
+<section id="settingsView" hidden>
+<div class="headline"><div><h1>Qualidade e desempenho</h1><p>Preferências de demonstração salvas neste navegador.</p></div></div>
+<div class="panel settings">
+<label>Perfil gráfico<select id="quality"><option value="performance">Desempenho</option><option value="balanced" selected>Equilibrado</option><option value="quality">Qualidade</option></select></label>
+<label>Filtro de textura<select id="filter"><option value="nearest">Nearest (nítido)</option><option value="linear" selected>Linear (suave)</option></select></label>
+<label>Resolução<select id="resolution"><option>Automática</option><option>640×480</option><option>1280×720</option></select></label>
+<label>Som do menu<select id="audio"><option value="off">Desligado</option><option value="on">Ligado (quando implementado)</option></select></label>
+</div><div class="panel"><h2>Salvar preferências</h2><p>Essas opções são apenas configuração visual. Não alteram o desempenho real do Xbox 360 até serem conectadas ao renderizador.</p><button id="saveSettings">Salvar preferências</button> <span id="saved" class="note" role="status"></span></div>
+</section>
+<footer>WiiGalaxy360 · Protótipo de frontend v2.28b · Sem emulação de jogos nesta página.</footer>
+</main></div>
+<script>
+(function(){
+const demo=[{id:"demo-blue",name:"Jogo de demonstração azul",category:"test",tone:"linear-gradient(145deg,#0e5fa5,#1c9be9 48%,#d8f0ff)",demo:true},{id:"demo-white",name:"Jogo de demonstração branco",category:"test",tone:"linear-gradient(145deg,#16446b,#77c9ff 55%,#f5fbff)",demo:true},{id:"wii-placeholder",name:"Adicionar jogos à pasta ROMs",category:"wii",tone:"linear-gradient(145deg,#0a315a,#147ac2 60%,#e5f6ff)",demo:true}];
+let games=load("wg-catalog",demo), favorites=load("wg-favorites",[]), recent=load("wg-recent",[]), active="all";
+const viewState=load("wg-library-view",{search:"",sort:"name",platform:"all",active:"all"});
+const $=id=>document.getElementById(id);
+const storageWarnings=[];
+function validStoredValue(k,v){
+ if(k==="wg-catalog")return Array.isArray(v)&&v.every(g=>g&&typeof g==="object"&&!Array.isArray(g)&&typeof g.id==="string"&&typeof (g.name||g.title)==="string");
+ if(k==="wg-favorites"||k==="wg-recent")return Array.isArray(v)&&v.every(x=>typeof x==="string");
+ if(k==="wg-library-view")return !!v&&typeof v==="object"&&!Array.isArray(v);
+ if(k==="wg-settings")return !!v&&typeof v==="object"&&!Array.isArray(v);
+ return true;
+}
+function load(k,fallback){
+ try{
+  const raw=localStorage.getItem(k);
+  if(raw===null)return fallback;
+  const v=JSON.parse(raw);
+  if(!validStoredValue(k,v)){storageWarnings.push(k+": formato inválido; valores padrão usados");return fallback}
+  return v;
+ }catch(e){storageWarnings.push(k+": dados ilegíveis ou armazenamento indisponível; valores padrão usados");return fallback}
+}
+function persist(k,v){
+ try{localStorage.setItem(k,JSON.stringify(v));return true}
+ catch(e){storageWarnings.push(k+": não foi possível salvar (quota ou armazenamento indisponível)");return false}
+}
+function runDiagnostics(){const out=$("diagnosticsResults");out.replaceChildren();const checks=[];const add=(n,ok,d)=>checks.push({n,ok,d});let bad=0,dup=0;const ids=new Set();games.forEach(g=>{if(!g||typeof g!=="object"){bad++;return}const id=String(g.id||"");if(!id)bad++;else if(ids.has(id))dup++;else ids.add(id);if(g.coverData&&typeof g.coverData==="string"&&!g.coverData.startsWith("data:image/"))bad++});add("Estrutura do catálogo",bad===0,bad+" registro(s) com campos inválidos");add("IDs duplicados",dup===0,dup+" duplicata(s)");add("Catálogo",true,games.length+" registro(s), "+games.filter(g=>!g.demo).length+" importado(s)");add("Favoritos",Array.isArray(favorites)&&favorites.every(x=>typeof x==="string"),favorites.length+" ID(s)");add("Recentes",Array.isArray(recent)&&recent.every(x=>typeof x==="string"),recent.length+" ID(s)");add("Capas",true,games.filter(g=>g.coverData).length+" capa(s) embutida(s); arquivos externos não verificados");let storage=false;try{localStorage.setItem("wg-diagnostic-probe","ok");storage=localStorage.getItem("wg-diagnostic-probe")==="ok";localStorage.removeItem("wg-diagnostic-probe")}catch(e){}add("Armazenamento",storage,storage?"Leitura/gravação básica disponível":"Armazenamento indisponível ou bloqueado");checks.forEach(c=>{const p=document.createElement("p");const b=document.createElement("strong");b.textContent=(c.ok?"✓ ":"⚠ ")+c.n+": ";const s=document.createElement("span");s.textContent=c.d;p.append(b,s);out.append(p)});$("diagnosticsPanel").hidden=false;status("Diagnóstico local concluído. Não houve execução de jogos.")}
+function status(t){$("importStatus").textContent=t}
+function render(){const q=$("search").value.toLowerCase().trim();let items=games.filter(g=>(active!=="favorites"||favorites.includes(g.id))&&(active!=="recent"||recent.includes(g.id))&&($("platform").value==="all"||$("platform").value===g.category)&&((g.name||g.title||"").toLowerCase().includes(q)));if($("sort").value==="recent")items.sort((a,b)=>recent.indexOf(a.id)-recent.indexOf(b.id));else items.sort((a,b)=>(a.name||a.title||"").localeCompare(b.name||b.title||"","pt-BR"));$("count").textContent=items.length+" item(ns) no catálogo · "+games.filter(g=>!g.demo).length+" importado(s)";$("grid").innerHTML="";if(!items.length){$("grid").innerHTML='<div class="empty">Nenhum item corresponde ao filtro atual.</div>';return}items.forEach(g=>{const name=g.name||g.title||g.id;const card=document.createElement("article");card.className="game";const star=document.createElement("button");star.className="star";star.textContent=favorites.includes(g.id)?"★":"☆";star.title="Alternar favorito";star.setAttribute("aria-label","Alternar favorito de "+name);star.onclick=()=>{favorites=favorites.includes(g.id)?favorites.filter(x=>x!==g.id):favorites.concat(g.id);persist("wg-favorites",favorites);render()};const cover=document.createElement("div");cover.className="cover";cover.style.background=g.tone||"linear-gradient(145deg,#0e5fa5,#1c9be9 48%,#d8f0ff)";cover.textContent=name;if(g.coverData){const img=document.createElement("img");img.src=g.coverData;img.alt="Capa de "+name;img.style.cssText="width:100%;height:100%;object-fit:cover;position:absolute;inset:0";cover.textContent="";cover.append(img)}const title=document.createElement("h3");title.textContent=name;const meta=document.createElement("div");meta.className="meta";meta.textContent=(g.category==="wii"?"Wii":g.category==="test"?"Demonstração":g.category||"Importado")+(g.path?" · "+g.path:"");card.setAttribute("role","listitem");const open=document.createElement("button");open.className="open";open.textContent="Detalhes";open.setAttribute("aria-label","Ver detalhes de "+name);open.onclick=()=>{recent=[g.id].concat(recent.filter(x=>x!==g.id));persist("wg-recent",recent);render();alert(g.demo?"Item ilustrativo: não é um jogo carregável.":"Registro de catálogo selecionado. O carregamento da ROM ainda não está ligado ao núcleo de emulação.");};card.append(star,cover,title,meta,open);$("grid").append(card)})}
+$("nav").addEventListener("click",e=>{const b=e.target.closest("button[data-filter]");if(!b)return;active=b.dataset.filter;document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x===b));$("library").hidden=active==="settings";$("settingsView").hidden=active!=="settings";if(active!=="settings")render()});
+["search","sort","platform"].forEach(id=>$(id).addEventListener("input",()=>{persist("wg-library-view",{search: $("search").value,sort:$("sort").value,platform:$("platform").value,active});render()}));
+$("clearFilters").onclick=()=>{$("search").value="";$("sort").value="name";$("platform").value="all";active="all";document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x.dataset.filter==="all"));$("library").hidden=false;$("settingsView").hidden=true;persist("wg-library-view",{search:"",sort:"name",platform:"all",active});render();status("Pesquisa, ordenação e filtros foram limpos.")};
+$("runDiagnostics").onclick=runDiagnostics;
+$("importCatalog").onclick=()=>$("catalogFile").click();
+$("catalogFile").onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{if(file.size>5*1024*1024)throw new Error("O catálogo excede o limite de 5 MiB.");const data=JSON.parse(await file.text());const list=Array.isArray(data)?data:data.games;if(!Array.isArray(list))throw new Error("O JSON deve conter uma lista ou uma propriedade games.");if(list.length>10000)throw new Error("O catálogo excede o limite de 10.000 registros.");const imported=[],issues=[],seen=new Set(games.map(g=>String(g.id)));list.forEach((g,i)=>{if(!g||typeof g!=="object"||Array.isArray(g)){issues.push("linha "+(i+1)+": registro inválido");return}const rawId=g.id??g.gameId;const name=String(g.name||g.title||"").trim();const id=String(rawId??"").trim();if(!id){issues.push("linha "+(i+1)+": ID ausente");return}if(id.length>128||/[\\u0000-\\u001f\\u007f]/.test(id)){issues.push("linha "+(i+1)+": ID muito longo ou contém caracteres de controle");return}if(seen.has(id)){issues.push("linha "+(i+1)+": ID duplicado ("+id+")");return}if(!name){issues.push("linha "+(i+1)+": nome ausente");return}if(name.length>200||/[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]/.test(name)){issues.push("linha "+(i+1)+": nome muito longo ou contém caracteres inválidos");return}const category=String(g.category||g.platform||"wii").trim().toLowerCase();if(!["wii","test"].includes(category)){issues.push("linha "+(i+1)+": categoria não suportada ("+category+")");return}const path=String(g.path||g.file||"").trim();if(path.length>512||/[\\u0000-\\u001f\\u007f]/.test(path)){issues.push("linha "+(i+1)+": caminho muito longo ou contém caracteres de controle");return}const cover=String(g.cover||"").trim();seen.add(id);imported.push({id,name,category,path,cover,demo:false})});games=games.concat(imported);const saved=persist("wg-catalog",games);const summary="Novos: "+imported.length+"; rejeitados: "+issues.length+". Registros existentes foram preservados. "+(saved?"Catálogo salvo localmente.":"Atenção: armazenamento local insuficiente; mantenha o JSON original.");status(summary+(issues.length?" Problemas: "+issues.slice(0,5).join("; ")+(issues.length>5?"…":""):"")+" Metadados apenas; ROMs não foram verificadas nem abertas.");render()}catch(err){status("Falha ao importar catálogo: "+err.message)}e.target.value=""};
+$("importCovers").onclick=()=>$("coverFiles").click();
+$("coverFiles").onchange=async e=>{let n=0,failed=0;for(const file of Array.from(e.target.files||[])){if(!file.type.startsWith("image/"))continue;if(file.size>2*1024*1024){failed++;continue}const key=file.name.replace(/\.[^.]+$/,"");const game=games.find(g=>g.id===key||g.name===key||g.title===key);if(!game)continue;try{const data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)});game.coverData=data;n++}catch(err){failed++}}const ok=persist("wg-catalog",games);render();status(n+" capa(s) associada(s) e "+(ok?"salvas localmente.":"não foi possível persistir; armazenamento cheio.")+(failed?" Falhas de leitura: "+failed+".":""));e.target.value=""};
+$("exportCatalog").onclick=()=>{const exportGames=games.filter(g=>!g.demo).map(g=>({id:String(g.id),name:String(g.name||g.title||""),category:String(g.category||"wii"),path:String(g.path||""),cover:String(g.cover||"")}));const payload={schema_version:1,generated_by:"WiiGalaxy360 v2.32b library prototype",games:exportGames};const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="wiigalaxy360-catalog.json";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status("Exportados "+exportGames.length+" registros válidos. Capas e ROMs não são incorporadas ao JSON.");};
+$("mute").onclick=()=>{const muted=$("mute").getAttribute("aria-pressed")==="true";$("mute").setAttribute("aria-pressed",String(!muted));$("mute").textContent=muted?"♫ Áudio: ligado*":"♫ Áudio: desligado";};
+$("saveSettings").onclick=()=>{const obj={quality:$("quality").value,filter:$("filter").value,resolution:$("resolution").value,audio:$("audio").value};$("saved").textContent=persist("wg-settings",obj)?"Preferências salvas.":"Não foi possível salvar neste navegador.";};
+// Navegação espacial entre cartões; funciona mesmo com foco no botão de favorito.
+function navigateByKey(e){
+ const keys=["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Home","End"];
+ if($("library").hidden||!keys.includes(e.key))return;
+ const target=e.target;
+ if(target&&(/INPUT|TEXTAREA|SELECT/.test(target.tagName)||target.isContentEditable))return;
+ const cards=Array.from(document.querySelectorAll("#grid .game"));
+ if(!cards.length)return;
+ const current=target&&target.closest?target.closest(".game"):null;
+ const idx=cards.indexOf(current);
+ if(idx<0)return;
+ if(e.key==="Home"||e.key==="End"){
+   e.preventDefault();
+   const card=cards[e.key==="Home"?0:cards.length-1];
+   const control=card.querySelector(".open");
+   if(control)control.focus();
+   return;
+ }
+ const here=cards[idx].getBoundingClientRect();
+ const cx=here.left+here.width/2, cy=here.top+here.height/2;
+ const horizontal=e.key==="ArrowLeft"||e.key==="ArrowRight";
+ const direction=(e.key==="ArrowRight"||e.key==="ArrowDown")?1:-1;
+ let candidates=cards.map((card,i)=>{
+   if(i===idx)return null;
+   const rect=card.getBoundingClientRect(), x=rect.left+rect.width/2, y=rect.top+rect.height/2;
+   const primary=horizontal?(x-cx)*direction:(y-cy)*direction;
+   if(primary<=1)return null;
+   const secondary=horizontal?Math.abs(y-cy):Math.abs(x-cx);
+   return {card,score:primary+secondary*1.8};
+ }).filter(Boolean);
+ candidates.sort((a,b)=>a.score-b.score);
+ const next=candidates[0]?.card;
+ if(!next)return;
+ const control=next.querySelector(".open");
+ if(control){e.preventDefault();control.focus();}
+}
+document.addEventListener("keydown",navigateByKey);
+
+// Gamepad API do navegador: experimento exclusivo da interface web.
+const gamepadStatus=$("gamepadStatus");
+let activePadIndex=null, padFrame=0, lastPadButtons=[], lastPadMoveAt=0;
+const padDeadzone=0.55;
+function connectedPads(){
+ return navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(p=>p&&p.connected) : [];
+}
+function updatePadStatus(){
+ const pads=connectedPads();
+ if(activePadIndex===null || !pads.some(p=>p.index===activePadIndex)){
+  activePadIndex=pads.length?pads[0].index:null;
+ }
+ const pad=pads.find(p=>p.index===activePadIndex);
+ gamepadStatus.textContent=pad
+  ? "Controle web conectado: "+(pad.id||"dispositivo desconhecido")+" · "+(pad.mapping||"mapeamento não padronizado")+". Xbox 360 nativo não testado."
+  : "Nenhum controle web detectado. Teclado e mouse continuam disponíveis.";
+}
+function stopPadLoop(){
+ if(padFrame){cancelAnimationFrame(padFrame);padFrame=0;}
+ lastPadButtons=[];
+}
+function ensurePadLoop(){
+ if(!padFrame && connectedPads().length) padFrame=requestAnimationFrame(readPadFrame);
+}
+function activateFocusedControl(){
+ const el=document.activeElement;
+ if(el && el!==document.body && el.matches("button,a,[role=button]")) el.click();
+ else if(!$("library").hidden){
+  const cards=Array.from(document.querySelectorAll("#grid .game .open"));
+  if(cards.length) cards[0].focus();
+ }
+}
+function handlePadBack(){
+ if(!$("settingsView").hidden){
+  const all=$('nav button[data-filter="all"]'); if(all) all.click();
+ } else if(document.activeElement && document.activeElement.closest("#grid .game")){
+  $("search").focus();
+ }
+}
+function readPadFrame(){
+ padFrame=0;
+ const pads=connectedPads();
+ const pad=pads.find(p=>p.index===activePadIndex)||pads[0];
+ if(!pad){activePadIndex=null;updatePadStatus();lastPadButtons=[];return;}
+ activePadIndex=pad.index;
+ const now=performance.now();
+ const axisX=pad.axes&&pad.axes.length>0?pad.axes[0]:0;
+ const axisY=pad.axes&&pad.axes.length>1?pad.axes[1]:0;
+ const pressed=i=>!!pad.buttons[i]&&(pad.buttons[i].pressed||pad.buttons[i].value>0.7);
+ const wasPressed=i=>!!lastPadButtons[i];
+ const dir=[
+  {key:"ArrowUp",hit:pressed(12)||axisY < -padDeadzone},
+  {key:"ArrowDown",hit:pressed(13)||axisY > padDeadzone},
+  {key:"ArrowLeft",hit:pressed(14)||axisX < -padDeadzone},
+  {key:"ArrowRight",hit:pressed(15)||axisX > padDeadzone}
+ ];
+ if(!$("library").hidden && now-lastPadMoveAt>190){
+  const d=dir.find(x=>x.hit);
+  if(d){
+   const fakeEvent={key:d.key,target:document.activeElement,preventDefault(){}};
+   navigateByKey(fakeEvent);
+   lastPadMoveAt=now;
+  }
+ }
+ // Mapeamento padrão comum: 0 principal, 1 secundário. Pode variar.
+ if(pressed(0)&&!wasPressed(0)) activateFocusedControl();
+ if(pressed(1)&&!wasPressed(1)) handlePadBack();
+ lastPadButtons=pad.buttons.map(b=>!!b&&(b.pressed||b.value>0.7));
+ padFrame=requestAnimationFrame(readPadFrame);
+}
+window.addEventListener("gamepadconnected",e=>{
+ activePadIndex=e.gamepad.index; updatePadStatus(); ensurePadLoop();
+});
+window.addEventListener("gamepaddisconnected",e=>{
+ if(activePadIndex===e.gamepad.index) activePadIndex=null;
+ updatePadStatus();
+ if(!connectedPads().length) stopPadLoop(); else ensurePadLoop();
+});
+window.addEventListener("pointerdown",()=>{updatePadStatus();ensurePadLoop();},{passive:true});
+updatePadStatus();
+ensurePadLoop();
+
+const settings=load("wg-settings",{});["quality","filter","resolution","audio"].forEach(id=>{if(settings[id])$(id).value=settings[id]});
+if(viewState&&typeof viewState==="object"){$("search").value=typeof viewState.search==="string"?viewState.search:"";$("sort").value=["name","recent"].includes(viewState.sort)?viewState.sort:"name";$("platform").value=["all","wii","test"].includes(viewState.platform)?viewState.platform:"all";if(["all","favorites","recent"].includes(viewState.active))active=viewState.active;document.querySelectorAll("#nav button").forEach(x=>x.classList.toggle("active",x.dataset.filter===active));}
+render();
+if(storageWarnings.length)status("Aviso de armazenamento: "+storageWarnings.slice(0,4).join("; ")+(storageWarnings.length>4?"…":"")+". A biblioteca abriu com os dados disponíveis; reimporte o catálogo se necessário.");
+})();
+</script>
+</body></html>
