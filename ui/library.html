@@ -155,7 +155,7 @@ function activateFocusedControl(){
 }
 function handlePadBack(){
  if(!$("settingsView").hidden){
-  const all=$('nav button[data-filter="all"]'); if(all) all.click();
+  const all=document.querySelector('nav button[data-filter="all"]'); if(all) all.click();
  } else if(document.activeElement && document.activeElement.closest("#grid .game")){
   $("search").focus();
  }
