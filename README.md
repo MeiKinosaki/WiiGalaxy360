@@ -220,3 +220,11 @@ O protótipo `ui/library.html` agora detecta controles expostos pela Gamepad API
 
 Esta implementação usa a Gamepad API do **navegador**. Não representa suporte nativo ao controle do Xbox 360 nem muda o estado do núcleo de emulação: o projeto continua sem carregamento funcional de jogos Wii demonstrado. Consulte `docs/v2.31b-gamepad-validation.md` para os critérios de aceitação.
 
+
+
+## v2.32b — limites defensivos de importação
+
+O protótipo agora rejeita catálogos JSON acima de 5 MiB e listas com mais de 10.000 entradas. IDs, nomes e caminhos têm verificações adicionais de comprimento e caracteres de controle; imagens de capa acima de 2 MiB são ignoradas. O exportador identifica a versão v2.32b.
+
+**Validação pendente:** ainda não foram executados testes automatizados, validação em navegador ou testes em hardware. Esses limites protegem o frontend contra entradas excessivas, mas não verificam arquivos ROM nem implementam carregamento de jogos. As capas continuam sujeitas à quota do armazenamento local do navegador. O núcleo Wii e a integração ao `default.xex` permanecem incompletos.
+Consulte `docs/v2.32b-import-hardening.md`.
