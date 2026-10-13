@@ -212,3 +212,11 @@ A presença das pastas não significa que o XEX já as leia. O suporte real a co
 - Não inclua músicas, capas ou outros materiais protegidos sem permissão.
 - Não distribua o XEX de diagnóstico como se fosse uma versão funcional do emulador.
 
+## v2.31b — navegação experimental com Gamepad API no navegador
+
+O protótipo `ui/library.html` agora detecta controles expostos pela Gamepad API, mostra o estado de conexão e oferece navegação experimental da biblioteca usando direcional/analógico e botões padrão de ação/retorno. Teclado e mouse continuam disponíveis. A rotina de navegação espacial é compartilhada com o tratamento de teclado.
+
+**Validação pendente:** esta alteração foi registrada na branch `v2.31b-gamepad-navigation`, mas ainda precisa de testes manuais em navegadores e controles reais. O mapeamento de botões pode variar conforme o dispositivo/navegador. Não há teste comprovado com controle físico no Xbox 360, nem integração com o `default.xex`.
+
+Esta implementação usa a Gamepad API do **navegador**. Não representa suporte nativo ao controle do Xbox 360 nem muda o estado do núcleo de emulação: o projeto continua sem carregamento funcional de jogos Wii demonstrado. Consulte `docs/v2.31b-gamepad-validation.md` para os critérios de aceitação.
+
