@@ -235,3 +235,8 @@ Consulte `docs/v2.32b-import-hardening.md`.
 A importação de capas agora aceita até 20 arquivos por lote, com máximo de 2 MiB por arquivo e 10 MiB somados por lote. Arquivos que não são imagens são contabilizados como ignorados. Consulte `docs/v2.33b-cover-import.md`.
 
 **Validação pendente:** ainda não foram executados testes de navegador, testes automatizados ou testes em Xbox 360. As capas continuam armazenadas como Data URLs no `localStorage`, cuja quota pode ser menor que o limite do lote. Esta mudança é da interface de biblioteca e não implementa carregamento de ROM nem execução de jogos Wii.
+
+
+## v2.34b — referência de testes PPC subfc
+
+Adicionada uma referência executável em `tests/ppc_subfc_reference.py` para o resultado de 32 bits da instrução `subfc`, a semântica de carry unsigned e a preservação dos bits XER. Execução: `python3 tests/ppc_subfc_reference.py`. Os sete testes da referência passaram localmente; isso **não** testa o interpretador real do emulador nem demonstra compatibilidade de jogos. Consulte `docs/v2.34b-ppc-subfc-reference-tests.md`.
