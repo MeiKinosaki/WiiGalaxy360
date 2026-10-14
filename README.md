@@ -250,3 +250,8 @@ Adicionada a suíte `tests/ppc_arithmetic_reference.py` com dez cenários de ref
 ## v2.36b — referência de comparações PowerPC
 
 Adicionada `tests/ppc_compare_reference.py` com 12 testes de referência para comparações signed/unsigned de 32 bits e resultados LT/GT/EQ. Os 12 testes passaram localmente. A suíte ainda não está ligada ao núcleo PowerPC real; integração, build Xenon e testes em Xbox 360 permanecem pendentes. Consulte `docs/v2.36b-ppc-compare-reference.md`.
+
+
+## v2.37b — referência de memória PowerPC
+
+Adicionada `tests/ppc_memory_reference.py` com dez testes para leitura/escrita big-endian de 16/32 bits, limites de memória, truncamento e preservação de bytes adjacentes. Execute com `python3 tests/ppc_memory_reference.py`. Os helpers são modelos de referência e não estão integrados ao barramento real do emulador; MMIO, alinhamento arquitetural, exceções, compilação Xenon e testes em hardware continuam pendentes. Consulte `docs/v2.37b-ppc-memory-reference-tests.md`.
