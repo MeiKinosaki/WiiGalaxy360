@@ -255,3 +255,8 @@ Adicionada `tests/ppc_compare_reference.py` com 12 testes de referência para co
 ## v2.37b — referência de memória PowerPC
 
 Adicionada `tests/ppc_memory_reference.py` com dez testes para leitura/escrita big-endian de 16/32 bits, limites de memória, truncamento e preservação de bytes adjacentes. Execute com `python3 tests/ppc_memory_reference.py`. Os helpers são modelos de referência e não estão integrados ao barramento real do emulador; MMIO, alinhamento arquitetural, exceções, compilação Xenon e testes em hardware continuam pendentes. Consulte `docs/v2.37b-ppc-memory-reference-tests.md`.
+
+
+## v2.38b — referência de alinhamento de memória
+
+Adicionada `tests/ppc_alignment_reference.py` com dez casos para acessos de 8/16/32 bits, alinhamento, limites de região e larguras não suportadas. Execute com `python3 tests/ppc_alignment_reference.py`. Este é um modelo de referência, não o mecanismo de exceções nem o barramento real do emulador. A regra de alinhamento ainda precisa ser verificada contra as instruções implementadas. Consulte `docs/v2.38b-ppc-alignment-reference.md`.
