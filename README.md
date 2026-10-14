@@ -260,3 +260,8 @@ Adicionada `tests/ppc_memory_reference.py` com dez testes para leitura/escrita b
 ## v2.38b — referência de alinhamento de memória
 
 Adicionada `tests/ppc_alignment_reference.py` com dez casos para acessos de 8/16/32 bits, alinhamento, limites de região e larguras não suportadas. Execute com `python3 tests/ppc_alignment_reference.py`. Este é um modelo de referência, não o mecanismo de exceções nem o barramento real do emulador. A regra de alinhamento ainda precisa ser verificada contra as instruções implementadas. Consulte `docs/v2.38b-ppc-alignment-reference.md`.
+
+
+## v2.39b — referência de classificação de falhas de memória
+
+Adicionada `tests/ppc_exception_reference.py` com dez cenários de referência para classificar acessos válidos, desalinhados, fora dos limites e de largura/tipo não suportado. Execute com `python3 tests/ppc_exception_reference.py`. O modelo não implementa os registradores/vetores de exceção PowerPC e não está ligado ao núcleo real. Consulte `docs/v2.39b-ppc-exception-reference.md`.
