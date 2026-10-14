@@ -240,3 +240,8 @@ A importação de capas agora aceita até 20 arquivos por lote, com máximo de 2
 ## v2.34b — referência de testes PPC subfc
 
 Adicionada uma referência executável em `tests/ppc_subfc_reference.py` para o resultado de 32 bits da instrução `subfc`, a semântica de carry unsigned e a preservação dos bits XER. Execução: `python3 tests/ppc_subfc_reference.py`. Os sete testes da referência passaram localmente; isso **não** testa o interpretador real do emulador nem demonstra compatibilidade de jogos. Consulte `docs/v2.34b-ppc-subfc-reference-tests.md`.
+
+
+## v2.35b — referência aritmética PowerPC
+
+Adicionada a suíte `tests/ppc_arithmetic_reference.py` com dez cenários de referência para `addc`, `subf` e `subfe`, incluindo carry, empréstimo e preservação de bits XER. Execute com `python3 tests/ppc_arithmetic_reference.py`. Os helpers não estão integrados ao dispatcher real da CPU; a validação do núcleo, a compilação Xenon e os testes no Xbox 360 continuam pendentes. Consulte `docs/v2.35b-ppc-arithmetic-reference.md`.
