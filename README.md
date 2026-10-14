@@ -245,3 +245,8 @@ Adicionada uma referência executável em `tests/ppc_subfc_reference.py` para o 
 ## v2.35b — referência aritmética PowerPC
 
 Adicionada a suíte `tests/ppc_arithmetic_reference.py` com dez cenários de referência para `addc`, `subf` e `subfe`, incluindo carry, empréstimo e preservação de bits XER. Execute com `python3 tests/ppc_arithmetic_reference.py`. Os helpers não estão integrados ao dispatcher real da CPU; a validação do núcleo, a compilação Xenon e os testes no Xbox 360 continuam pendentes. Consulte `docs/v2.35b-ppc-arithmetic-reference.md`.
+
+
+## v2.36b — referência de comparações PowerPC
+
+Adicionada `tests/ppc_compare_reference.py` com 12 testes de referência para comparações signed/unsigned de 32 bits e resultados LT/GT/EQ. Os 12 testes passaram localmente. A suíte ainda não está ligada ao núcleo PowerPC real; integração, build Xenon e testes em Xbox 360 permanecem pendentes. Consulte `docs/v2.36b-ppc-compare-reference.md`.
