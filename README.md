@@ -255,3 +255,46 @@ Adicionada `tests/ppc_compare_reference.py` com 12 testes de referência para co
 ## v2.37b — referência de memória PowerPC
 
 Adicionada `tests/ppc_memory_reference.py` com dez testes para leitura/escrita big-endian de 16/32 bits, limites de memória, truncamento e preservação de bytes adjacentes. Execute com `python3 tests/ppc_memory_reference.py`. Os helpers são modelos de referência e não estão integrados ao barramento real do emulador; MMIO, alinhamento arquitetural, exceções, compilação Xenon e testes em hardware continuam pendentes. Consulte `docs/v2.37b-ppc-memory-reference-tests.md`.
+
+
+## Estrutura atual do repositório
+
+```text
+WiiGalaxy360/
+├── docs/
+│   └── DEVELOPMENT_STATUS.md
+├── src/
+│   ├── README.md
+│   ├── cpu/README.md
+│   ├── memory/README.md
+│   ├── video/README.md
+│   ├── audio/README.md
+│   └── ios/README.md
+├── tests/
+│   ├── README.md
+│   ├── ppc_subfc_reference.py
+│   ├── ppc_arithmetic_reference.py
+│   ├── ppc_compare_reference.py
+│   ├── ppc_memory_reference.py
+│   ├── ppc_alignment_reference.py
+│   └── ppc_exception_reference.py
+├── LICENSE
+└── README.md
+```
+
+Os arquivos em `src/*/README.md` descrevem componentes planejados; não representam núcleos de CPU, memória, vídeo, áudio ou IOS já implementados. Os scripts `*_reference.py` são modelos de teste independentes e ainda não estão conectados a um núcleo C/C++ real.
+
+## Testes de referência disponíveis
+
+Executar cada script com Python 3, por exemplo:
+
+```sh
+python3 tests/ppc_subfc_reference.py
+python3 tests/ppc_arithmetic_reference.py
+python3 tests/ppc_compare_reference.py
+python3 tests/ppc_memory_reference.py
+python3 tests/ppc_alignment_reference.py
+python3 tests/ppc_exception_reference.py
+```
+
+Esses comandos são instruções de execução; a suíte completa ainda precisa ser executada e registrada no checkout antes de considerar os resultados validados. Eles não comprovam boot de jogos Wii nem compatibilidade com Xbox 360.
