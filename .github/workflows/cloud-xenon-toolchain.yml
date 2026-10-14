@@ -1,0 +1,150 @@
+name: Cloud Xenon toolchain
+
+on:
+  push:
+    branches:
+      - main
+      - v2.8b-cloud-toolchain
+      - v2.9b-xenon-elf32-link
+      - v2.10b-xex-packer-audit
+      - v2.11b-cloud-xex-packaging
+      - v2.12b-runtime-startup-check
+      - v2.13b-cpu-fault-diagnostics
+      - v2.14b-arithmetic-logical-opcodes
+      - v2.15b-condition-register-cr0
+      - v2.16b-xer-carry-addc
+      - v2.17b-xer-subfc
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host-tests:
+    name: Host regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install host compiler
+        run: sudo apt-get update && sudo apt-get install -y g++ make
+      - name: Run host tests
+        run: make clean host-test
+      - name: Compile and execute Broadway startup diagnostic on host
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -O2 -Isrc src/memory_bus.cpp src/broadway_cpu.cpp src/xenon_smoke_main.cpp -o build/broadway-startup-diagnostic
+          ./build/broadway-startup-diagnostic
+
+  xenon-cross-compile:
+    name: Compile, link and pack smoke-test XEX
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install host-side packer runtime
+        run: sudo apt-get update && sudo apt-get install -y python3 git
+
+      - name: Pull libXenon build image
+        run: docker pull free60/libxenon:latest
+
+      - name: Audit available XEX packaging tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/xenon
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" free60/libxenon:latest bash -lc '
+            set -eu
+            export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
+            {
+              echo "WiiGalaxy360 v2.17b — XEX tool inventory"
+              echo "Image: free60/libxenon:latest"
+              echo "DEVKITXENON=$DEVKITXENON"
+              echo
+              echo "Executables whose names contain xex:"
+              find /usr/local /usr/bin /opt -type f -iname "*xex*" -perm /111 -print 2>/dev/null || true
+              echo
+              echo "Relevant binutils:"
+              find "$DEVKITXENON/bin" -maxdepth 1 -type f \( -name "*objcopy*" -o -name "*objdump*" -o -name "*strip*" -o -name "*ld" \) -print 2>/dev/null || true
+              echo
+              echo "The external pinned elf2xex.py packer is used in the next step; ELF output is not itself XEX."
+            } > /work/build/xenon/xex-tool-inventory.txt
+            cat /work/build/xenon/xex-tool-inventory.txt
+          '
+
+      - name: Compile core and link Xenon XER subfc diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build/xenon
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/work" \
+            -w /work \
+            free60/libxenon:latest \
+            bash -lc '
+              set -euo pipefail
+              export DEVKITXENON="${DEVKITXENON:-/usr/local/xenon}"
+              export PATH="$PATH:$DEVKITXENON/bin:$DEVKITXENON/usr/bin"
+              compiler="$DEVKITXENON/bin/xenon-g++"
+              test -x "$compiler" || { echo "ERROR: expected compiler not found: $compiler" >&2; exit 1; }
+              echo "Compiler: $compiler"
+              echo "Target: $("$compiler" -dumpmachine)"
+              flags="-m32 -mpowerpc64 -maltivec -mhard-float -fno-pic -DXENON"
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/memory_bus.cpp -o build/xenon/memory_bus.o
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -Isrc -c src/broadway_cpu.cpp -o build/xenon/broadway_cpu.o
+              "$compiler" -std=gnu++11 -Wall -Wextra -O2 -fno-exceptions -fno-rtti $flags -c src/xenon_smoke_main.cpp -o build/xenon/xenon_smoke_main.o
+              # Use a nonzero Xenon image base in the linker script itself; objcopy does not reliably relocate PT_LOAD addresses.
+              sed -E "s/^([[:space:]]*\.[[:space:]]*=[[:space:]]*)0x80000000([;[:space:]]|$)/\\1 0x80000000\\2\\n\\1 0x80001000;/" "$DEVKITXENON/app.lds" > build/xenon/xenon_app.lds
+              grep -q '0x80001000' build/xenon/xenon_app.lds || { echo "ERROR: failed to set Xenon link base" >&2; sed -n '1,100p' "$DEVKITXENON/app.lds" >&2; exit 1; }
+              "$compiler" $flags -Wl,--gc-sections -Wl,-Ttext-segment=0x80000000 -L"$DEVKITXENON/usr/lib" -L"$DEVKITXENON/xenon/lib/32" -T build/xenon/xenon_app.lds build/xenon/xenon_smoke_main.o build/xenon/memory_bus.o build/xenon/broadway_cpu.o -lxenon -lm -o build/xenon/WiiGalaxy360-smoke.elf
+              "$DEVKITXENON/bin/xenon-objcopy" -O elf32-powerpc build/xenon/WiiGalaxy360-smoke.elf build/xenon/WiiGalaxy360-smoke.elf32
+              "$DEVKITXENON/bin/xenon-strip" build/xenon/WiiGalaxy360-smoke.elf32
+              readelf -h build/xenon/WiiGalaxy360-smoke.elf32
+              readelf -l build/xenon/WiiGalaxy360-smoke.elf32
+              readelf -S build/xenon/WiiGalaxy360-smoke.elf32
+              file build/xenon/WiiGalaxy360-smoke.elf32
+              readelf -h build/xenon/WiiGalaxy360-smoke.elf32 | grep -q "Class:.*ELF32"
+              readelf -h build/xenon/WiiGalaxy360-smoke.elf32 | grep -q "Machine:.*PowerPC"
+            '
+
+      - name: Fetch pinned XEX packer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/Team-Resurgent/RXDK360.git /tmp/RXDK360
+          git -C /tmp/RXDK360 checkout --detach ca06a4db2bc91a44cecfa1f2895adb8f23e91ba3
+          test -f /tmp/RXDK360/tools/elf2xex.py
+          test -f /tmp/RXDK360/tools/xex_debugsign.py
+          git -C /tmp/RXDK360 rev-parse HEAD
+
+      - name: Pack and structurally validate default.xex
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 /tmp/RXDK360/tools/elf2xex.py build/xenon/WiiGalaxy360-smoke.elf32 \
+            --base 0x80000000 --no-sign -o build/xenon/default.xex
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("build/xenon/default.xex")
+          data = p.read_bytes()
+          assert len(data) > 0x100, f"XEX unexpectedly small: {len(data)} bytes"
+          assert data[:4] == b"XEX2", f"bad XEX2 magic: {data[:4]!r}"
+          assert len(data) >= 24, "truncated XEX header"
+          print(f"PASS: XEX2 magic, {len(data)} bytes; unsigned/unencrypted smoke-test image")
+          PY
+
+      - name: Upload Xenon XER subfc ELF, XEX and tool inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: WiiGalaxy360-v2.17b-xer-subfc
+          path: |
+            build/xenon/default.xex
+            build/xenon/WiiGalaxy360-smoke.elf
+            build/xenon/WiiGalaxy360-smoke.elf32
+            build/xenon/*.o
+            build/xenon/xex-tool-inventory.txt
+          if-no-files-found: error
+          retention-days: 14
