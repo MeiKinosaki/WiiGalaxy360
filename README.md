@@ -310,3 +310,12 @@ Foram adicionados testes unitários C para imediato positivo, imediato negativo 
 
 Registro da implementação: https://github.com/MeiKinosaki/WiiGalaxy360/commit/e00d6f177e4c59a8d239d9dca12b56e764f7fdd2
 Registro dos testes: https://github.com/MeiKinosaki/WiiGalaxy360/commit/76ca913cbb1f27c23c5478e3cacca53b42c5ec3b
+
+
+## v2.39b — integração real de `ori` ao dispatcher da CPU
+
+O dispatcher C agora também executa a instrução PowerPC D-form `ori` (opcode 24), além de `addi` e `subfc`. `ori` usa o campo RS como registrador de origem, o campo RA como destino e o imediato de 16 bits com extensão por zero; preserva CR e XER[CA] e avança o PC em 4 bytes após execução bem-sucedida.
+
+Os testes do núcleo foram ampliados para verificar imediato OR, destino no campo RA, preservação de CR/XER[CA] e a diferença entre as semânticas de registrador zero de `ori` e `addi`. O CI foi acionado automaticamente pelos commits de código/testes; a validação de v2.39b ainda está pendente até o workflow concluir.
+
+**Limites:** a CPU ainda só implementa `addi`, `ori` e `subfc` no dispatcher. Memória real, exceções, GPU/Flipper, áudio, IOS, boot de jogos, toolchain Xenon e execução no Xbox 360 RGH continuam incompletos ou sem evidência confirmada.
