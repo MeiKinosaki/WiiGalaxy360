@@ -22,6 +22,22 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
 
     if (cpu == 0) return PPC_STEP_UNSUPPORTED;
 
+    /* I-form unconditional branch. Displacement is a signed 26-bit value
+     * whose low two bits are zero; AA selects absolute vs relative target. */
+    if (opcode == 18u) {
+        const uint32_t raw_disp = instruction & 0x03fffffcu;
+        const int64_t displacement = (raw_disp & 0x02000000u)
+            ? (int64_t)raw_disp - 0x04000000LL
+            : (int64_t)raw_disp;
+        const uint32_t old_pc = cpu->pc;
+        const uint32_t target = (instruction & 2u)
+            ? (uint32_t)displacement
+            : old_pc + (uint32_t)displacement;
+        if ((instruction & 1u) != 0u) cpu->lr = old_pc + 4u;
+        cpu->pc = target;
+        return PPC_STEP_OK;
+    }
+
     /* D-form loads/stores use a signed displacement and RA=0 as base zero. */
     if (opcode == 32u || opcode == 34u || opcode == 36u || opcode == 38u ||
         opcode == 40u || opcode == 44u) {
