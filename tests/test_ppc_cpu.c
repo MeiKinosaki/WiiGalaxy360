@@ -32,6 +32,12 @@ static uint32_t encode_xform(unsigned xo, unsigned rt_rs, unsigned ra, unsigned 
            ((uint32_t)rb << 11) | ((uint32_t)xo << 1);
 }
 
+static uint32_t encode_dform(unsigned opcode, unsigned rt, unsigned ra, uint16_t disp)
+{
+    return ((uint32_t)opcode << 26) | ((uint32_t)rt << 21) |
+           ((uint32_t)ra << 16) | (uint32_t)disp;
+}
+
 int main(void)
 {
     ppc_cpu_t cpu;
@@ -122,8 +128,26 @@ int main(void)
     assert(cpu.gpr[18] == 0x0ff00ff0u);
     assert(cpu.pc == 0x80003134u);
 
+    /* CPU loads/stores now use the bounded big-endian memory region. */
+    {
+        uint8_t ram[8] = {0};
+        wii_memory_t memory = { ram, sizeof(ram) };
+        cpu.gpr[19] = 0x12345678u;
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(36u, 19u, 0u, 4u), &memory) == PPC_STEP_OK);
+        assert(ram[4] == 0x12u && ram[5] == 0x34u && ram[6] == 0x56u && ram[7] == 0x78u);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 20u, 0u, 4u), &memory) == PPC_STEP_OK);
+        assert(cpu.gpr[20] == 0x12345678u);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(38u, 19u, 0u, 7u), &memory) == PPC_STEP_OK);
+        assert(ram[7] == 0x78u);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(34u, 21u, 0u, 7u), &memory) == PPC_STEP_OK);
+        assert(cpu.gpr[21] == 0x78u);
+        assert(cpu.pc == 0x80003144u);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 22u, 0u, 6u), &memory) == PPC_STEP_UNSUPPORTED);
+        assert(cpu.pc == 0x80003144u);
+    }
+
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
-    assert(cpu.pc == 0x80003134u);
+    assert(cpu.pc == 0x80003144u);
     return 0;
 }
