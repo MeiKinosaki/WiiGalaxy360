@@ -151,18 +151,25 @@ int main(void)
         assert(ram[2] == 0x56u && ram[3] == 0x78u);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(40u, 22u, 0u, 2u), &memory) == PPC_STEP_OK);
         assert(cpu.gpr[22] == 0x5678u);
-        assert(cpu.pc == 0x8000314cu);
+        /* lha sign-extends the loaded halfword; lhz above zero-extends. */
+        ram[0] = 0x80u;
+        ram[1] = 0x01u;
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(42u, 24u, 0u, 0u), &memory) == PPC_STEP_OK);
+        assert(cpu.gpr[24] == 0xffff8001u);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(42u, 25u, 0u, 2u), &memory) == PPC_STEP_OK);
+        assert(cpu.gpr[25] == 0x5678u);
+        assert(cpu.pc == 0x80003154u);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 5u), &memory) == PPC_STEP_ALIGNMENT);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(40u, 23u, 0u, 3u), &memory) == PPC_STEP_ALIGNMENT);
-        assert(cpu.pc == 0x8000314cu);
+        assert(cpu.pc == 0x80003154u);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 8u), &memory) == PPC_STEP_UNSUPPORTED);
-        assert(cpu.pc == 0x8000314cu);
+        assert(cpu.pc == 0x80003154u);
     }
 
     /* Unconditional relative branch with link stores the return address. */
     assert(ppc_cpu_step(&cpu, encode_branch(8u, 0u, 1u)) == PPC_STEP_OK);
-    assert(cpu.pc == 0x80003154u);
-    assert(cpu.lr == 0x80003150u);
+    assert(cpu.pc == 0x8000315cu);
+    assert(cpu.lr == 0x80003158u)
 
     /* Absolute branch changes PC to the encoded absolute displacement. */
     assert(ppc_cpu_step(&cpu, encode_branch(0x100u, 1u, 0u)) == PPC_STEP_OK);
