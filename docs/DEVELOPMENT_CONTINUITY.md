@@ -1,36 +1,34 @@
 # WiiGalaxy360 — registro de continuidade do desenvolvimento
 
-## Estado de continuidade
-- Resumo trazido para esta conversa: versão de trabalho informada como v0.5b.
-- Estado do repositório remoto consultado em 2026-10-15: README contém documentação de versões posteriores, chegando a v2.21b. Não reescrever a história nem renumerar silenciosamente; reconciliar o resumo de trabalho com os registros do repositório antes de criar uma nova versão.
+## Versões e histórico
+- Resumo trazido para esta conversa: o usuário indicou v0.5b como versão de trabalho. Esse número não coincide com o histórico remoto do README.
+- O histórico remoto documenta versões até v2.37b; o novo marco de código foi registrado como **v2.38b**. Não apagar nem renumerar silenciosamente a referência v0.5b: ela pode ser um contexto de trabalho diferente do histórico publicado.
 - Projeto: emulador experimental de Nintendo Wii para Xbox 360 RGH.
-- Objetivo técnico imediato: expandir a execução de instruções da CPU Broadway com testes unitários integrados, sem afirmar compatibilidade de jogos ou execução em hardware sem evidência.
 
-## Estado técnico verificado
-- src/cpu/ppc_cpu.c: reset inicializa 32 GPRs, PC, LR, CTR, CR e XER CA. ppc_cpu_step implementa atualmente opcode 31 / XO 8 (subfc), grava RT, incrementa PC em 4 e retorna PPC_STEP_UNSUPPORTED para outras instruções.
-- src/cpu/ppc_alu.c: subfc, addc e helpers de comparação/AND/OR/XOR.
-- include/ppc/ppc_cpu.h e include/ppc/ppc_alu.h definem interfaces e estado parcial.
-- tests/test_ppc_cpu.c verifica reset, subfc com e sem empréstimo, atualização de CA, PC e instrução não suportada.
-- Makefile executa test_ppc_alu e test_ppc_cpu.
-- Workflow .github/workflows/host-tests.yml executa make test no Ubuntu.
-- Run de Actions verificado: 38692026246; job ppc-alu concluiu com sucesso, incluindo compilação e execução dos testes de host. Isso não valida a toolchain Xenon nem o console.
+## Estado técnico confirmado
+- `src/cpu/ppc_cpu.c`: reset, instrução D-form `addi` (opcode 14) e X-form `subfc` (opcode 31 / XO 8).
+- `addi` implementa extensão de sinal de SI, RA=0 como literal zero, incremento de PC em 4 e preservação de CR/XER[CA].
+- `subfc` grava RT e atualiza XER[CA] conforme carry-not-borrow.
+- `tests/test_ppc_cpu.c` adiciona casos para `addi` positivo, negativo, RA=0 e preservação de estado, além de regressões de `subfc`.
+- O workflow Host tests foi acionado pelos commits `e00d6f1`, `76ca913` e `73523b5`; no momento deste registro, as execuções novas ainda não tinham resultado final confirmado. Não afirmar que passaram até consultar os logs.
+- Workflow anterior `38692026246` concluiu com sucesso, mas testava o código anterior, sem `addi`.
 
 ## Toolchain e executável
-- A toolchain de compilação cruzada Xenon precisa de validação reproduzível.
-- A documentação do repositório descreve um default.xex de diagnóstico não assinado/criptografado; não é o emulador Wii completo.
-- Cabeçalho/empacotamento XEX validado estruturalmente não comprova execução em Xbox 360 RGH.
+- A toolchain Xenon precisa de validação reproduzível no estado atual.
+- O `default.xex` descrito no README é um XEX de diagnóstico, não o emulador Wii completo.
+- Empacotamento/cabeçalho XEX não prova boot no Xbox 360 RGH.
 - Não há compatibilidade de jogos Wii comprovada.
 
 ## Escopo preservado
-- CPU Broadway e ALU PowerPC.
-- Integração com memória e ciclo busca/decodificação/execução.
+- CPU Broadway/PowerPC e ALU.
+- Memória/barramento, ciclo de execução, exceções e MMIO.
 - GPU/Flipper, áudio, IOS e inicialização de jogos.
-- Toolchain na nuvem e geração/validação de ELF32 PowerPC e default.xex.
-- Interface azul/branca inspirada no Aurora, biblioteca/capas/favoritos, configurações, saves/save states e tela/música de abertura; recursos visuais devem ser distinguidos de integração funcional.
+- Toolchain na nuvem e artefatos ELF32 PowerPC / `default.xex`.
+- UI azul/branca inspirada no Aurora, biblioteca, capas, favoritos, configurações, saves/save states e tela/música de abertura. Distinguir protótipo visual de integração real.
 
-## Regras de versão e evidência
-- Não perder funcionalidades nem histórico.
-- Não pular números de versão.
-- Não declarar testes aprovados sem logs reais.
-- Não contar plano ou protótipo como integração concluída.
-- Próximo marco: ampliar ppc_cpu_step e testes unitários; depois executar CI, registrar resultados e reconciliar a numeração da versão antes de anunciar nova versão.
+## Regras de desenvolvimento
+- Preservar histórico e funcionalidades existentes.
+- Avançar versões sequencialmente; v2.38b é o próximo marco do histórico publicado após v2.37b.
+- Não declarar testes aprovados sem resultado/logs.
+- Não contar planos ou protótipos como integração concluída.
+- Próxima prioridade: confirmar CI; então expandir instruções CPU, integrar memória e avançar na toolchain cloud.
