@@ -23,7 +23,8 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
     if (cpu == 0) return PPC_STEP_UNSUPPORTED;
 
     /* D-form loads/stores use a signed displacement and RA=0 as base zero. */
-    if (opcode == 32u || opcode == 34u || opcode == 36u || opcode == 38u) {
+    if (opcode == 32u || opcode == 34u || opcode == 36u || opcode == 38u ||
+        opcode == 40u || opcode == 44u) {
         const uint32_t raw_disp = instruction & 0xffffu;
         const int32_t disp = (raw_disp & 0x8000u)
             ? (int32_t)raw_disp - 65536
@@ -39,8 +40,14 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
             uint8_t value;
             if (!wii_memory_read8(memory, address, &value)) return PPC_STEP_UNSUPPORTED;
             cpu->gpr[rt] = value;
+        } else if (opcode == 40u) {
+            uint16_t value;
+            if (!wii_memory_read16be(memory, address, &value)) return PPC_STEP_UNSUPPORTED;
+            cpu->gpr[rt] = (uint32_t)value;
         } else if (opcode == 36u) {
             if (!wii_memory_write32be(memory, address, cpu->gpr[rt])) return PPC_STEP_UNSUPPORTED;
+        } else if (opcode == 44u) {
+            if (!wii_memory_write16be(memory, address, (uint16_t)cpu->gpr[rt])) return PPC_STEP_UNSUPPORTED;
         } else {
             if (!wii_memory_write8(memory, address, (uint8_t)cpu->gpr[rt])) return PPC_STEP_UNSUPPORTED;
         }
