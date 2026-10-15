@@ -9,7 +9,8 @@
 - `subfc`: cálculo RB − RA com atualização XER[CA] carry-not-borrow.
 - X-form `add` não altera XER[CA]; `and`, `or` e `xor` escrevem no campo RA conforme o formato PowerPC e rejeitam variantes Rc=1 ainda não suportadas.
 - Novo barramento-base `wii_memory_t` em `include/wii/memory.h` e `src/memory/memory.c`: leitura/escrita de 8/16/32 bits em ordem big-endian, verificação de limites e tratamento de ponteiros nulos.
-- `tests/test_ppc_cpu.c` cobre instruções aritméticas/lógicas, imediatos, carry e PC. `tests/test_memory.c` cobre endianness e acessos fora dos limites.
+- A CPU ganhou `ppc_cpu_step_with_memory`, integrado a `lwz`, `lbz`, `stw` e `stb`; acessos inválidos retornam `PPC_STEP_UNSUPPORTED` sem avançar PC. Ainda não há mapa de memória Wii real nem MMIO.
+- `tests/test_ppc_cpu.c` cobre instruções aritméticas/lógicas, imediatos, carry, PC e integração load/store. `tests/test_memory.c` cobre endianness e acessos fora dos limites. CI dos commits mais recentes de integração ainda está pendente.
 - O workflow Host tests confirmou sucesso para os commits de documentação de v2.39b; o resultado final após a inclusão de `addic` ainda precisa ser verificado.
 - O núcleo continua sendo um subconjunto pequeno, não um processador Broadway completo.
 - Não há comprovação registrada de jogos Wii funcionando no Xbox 360 RGH.
@@ -17,8 +18,8 @@
 ## Próximos marcos
 
 1. Confirmar CI para v2.39b e corrigir eventuais regressões.
-2. Confirmar CI da expansão de CPU e da API de memória.
-3. Ligar loads/stores da CPU à API de memória, depois adicionar MMIO e alinhamento/exceções.
+2. Confirmar CI da integração load/store e da API de memória.
+3. Adicionar mapeamento de RAM/ROM e MMIO; depois implementar alinhamento e exceções reais.
 4. Implementar exceções e fluxo de controle e expandir a cobertura PowerPC.
 5. Validar a toolchain Xenon reproduzivelmente e guardar logs/artefatos ELF32.
 6. Separar claramente o XEX de diagnóstico do executável funcional; testar em RGH apenas com evidência concreta.
