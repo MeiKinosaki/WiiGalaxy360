@@ -2,12 +2,13 @@
 
 ## Estado confirmado — v2.39b
 
-- Núcleo C da CPU em `src/cpu/ppc_cpu.c`: reset e dispatcher para `addi` (opcode 14), `ori` (opcode 24) e `subfc` (opcode 31 / XO 8).
+- Núcleo C da CPU em `src/cpu/ppc_cpu.c`: reset e dispatcher para `addi` (opcode 14), `addic` (opcode 12), `ori` (opcode 24) e `subfc` (opcode 31 / XO 8).
 - `addi`: extensão de sinal do imediato, RA=0 como literal zero, PC +4 e preservação de CR/XER[CA].
 - `ori`: OR com imediato zero-extendido, RS como fonte, RA como destino, PC +4 e preservação de CR/XER[CA]. O registrador GPR0 continua sendo fonte normal para `ori`.
+- `addic`: soma com imediato com sinal e atualiza XER[CA] conforme o carry-out de 32 bits; testes cobrem wraparound e ausência de carry.
 - `subfc`: cálculo RB − RA com atualização XER[CA] carry-not-borrow.
 - `tests/test_ppc_cpu.c` cobre os três caminhos de instrução, casos de imediatos e PC/estado.
-- O workflow Host tests já confirmou sucesso para o marco anterior `addi` (runs 38692587241, 38692591062 e 38692594563). Os testes específicos de `ori` ainda precisam de resultado final confirmado.
+- O workflow Host tests confirmou sucesso para os commits de documentação de v2.39b; o resultado final após a inclusão de `addic` ainda precisa ser verificado.
 - O núcleo continua sendo um subconjunto pequeno, não um processador Broadway completo.
 - Não há comprovação registrada de jogos Wii funcionando no Xbox 360 RGH.
 
