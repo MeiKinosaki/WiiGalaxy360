@@ -91,7 +91,7 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
 
     if (opcode == 31u) {
         /* X-form add: RT <- RA + RB; does not update XER[CA]. */
-        if (xo == 266u) {
+        if (xo == 266u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = cpu->gpr[ra] + cpu->gpr[rb];
             cpu->pc += 4u;
             return PPC_STEP_OK;
@@ -118,7 +118,7 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         }
 
         /* X-form subfc: RT <- RB - RA, XER[CA]=1 when no borrow. */
-        if (xo == 8u) {
+        if (xo == 8u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = ppc_subfc(&cpu->alu, cpu->gpr[ra], cpu->gpr[rb]);
             cpu->pc += 4u;
             return PPC_STEP_OK;
