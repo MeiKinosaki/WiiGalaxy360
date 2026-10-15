@@ -13,7 +13,7 @@
 - `subfc`: RB − RA com atualização carry-not-borrow em XER[CA].
 - `add`: soma X-form sem alteração de XER[CA]. `and`, `or` e `xor` seguem o formato lógico PowerPC; variantes Rc=1 seguem não suportadas.
 - Barramento-base adicionado em `include/wii/memory.h` e `src/memory/memory.c`: acessos de 8/16/32 bits big-endian, checagem de limites e falha segura para ponteiros nulos.
-- `ppc_cpu_step_with_memory` conecta `lwz`, `lbz`, `lhz`, `stw`, `stb` e `sth` ao barramento. Falhas de endereço não avançam PC; acessos desalinhados de palavra/meia-palavra retornam `PPC_STEP_ALIGNMENT`. O mapa Wii, MMIO e vetores de exceção reais continuam pendentes.
+- `ppc_cpu_step_with_memory` conecta `lwz`, `lbz`, `lhz`, `stw`, `stb` e `sth` ao barramento. Falhas de endereço não avançam PC; acessos desalinhados de palavra/meia-palavra retornam `PPC_STEP_ALIGNMENT`. O mapa Wii, MMIO e vetores de exceção reais continuam pendentes. `lha` estende o sinal do halfword carregado.
 - `addic`: soma com imediato sinalizado e atualização de XER[CA]; testes acrescentados para wraparound e ausência de carry. CI para os testes da CPU após expansão ainda precisa de resultado final.
 - Testes C no dispatcher foram atualizados para esses caminhos. CI confirmou os commits anteriores de `addi` e `ori`. Os workflows mais recentes de integração CPU/memória precisam terminar antes de declarar a nova etapa validada.
 - O núcleo não é um Broadway completo. Memória/barramento, exceções, MMIO, GPU/Flipper, áudio, IOS e startup não estão completos ou não têm validação confirmada.
