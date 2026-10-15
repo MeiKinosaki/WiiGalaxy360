@@ -34,6 +34,20 @@ ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
         return PPC_STEP_OK;
     }
 
+    /* D-form addic: RT <- RA + sign_extend(SI), updating XER[CA]. */
+    if (opcode == 12u) {
+        const uint32_t raw_imm = instruction & 0xffffu;
+        const int32_t simm = (raw_imm & 0x8000u)
+            ? (int32_t)raw_imm - 65536
+            : (int32_t)raw_imm;
+        const uint32_t base = (ra == 0u) ? 0u : cpu->gpr[ra];
+        const uint64_t wide_sum = (uint64_t)base + (uint64_t)(uint32_t)simm;
+        cpu->gpr[rt] = (uint32_t)wide_sum;
+        cpu->alu.xer_ca = (uint32_t)(wide_sum >> 32);
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
     /* D-form ori: RA <- RS | zero_extend(UI); unlike addi, RA=0 is a GPR. */
     if (opcode == 24u) {
         const uint32_t uimm = instruction & 0xffffu;
