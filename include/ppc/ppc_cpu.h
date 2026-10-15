@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "ppc/ppc_alu.h"
+#include "wii/memory.h"
 
 typedef struct {
     uint32_t gpr[32];
@@ -23,5 +24,8 @@ void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc);
  * add (XO 266), and (XO 28), xor (XO 316), or (XO 444), subfc (XO 8).
  * Logical Rc=1 variants and unsupported instructions are rejected. */
 ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction);
+/* Memory-aware step supports lwz/lbz/stw/stb against a bounded memory region. */
+ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
+                                           wii_memory_t *memory);
 
 #endif
