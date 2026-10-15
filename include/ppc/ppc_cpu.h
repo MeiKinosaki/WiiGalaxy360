@@ -16,7 +16,8 @@ typedef struct {
 
 typedef enum {
     PPC_STEP_OK = 0,
-    PPC_STEP_UNSUPPORTED = 1
+    PPC_STEP_UNSUPPORTED = 1,
+    PPC_STEP_ALIGNMENT = 2
 } ppc_step_result_t;
 
 void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc);
