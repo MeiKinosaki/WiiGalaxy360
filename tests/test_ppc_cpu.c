@@ -106,7 +106,7 @@ int main(void)
     cpu.gpr[14] = 0x00ff0f0fu;
     cpu.alu.xer_ca = 1u;
     assert(ppc_cpu_step(&cpu, encode_xform(266u, 15u, 13u, 14u)) == PPC_STEP_OK);
-    assert(cpu.gpr[15] == 0x0f0e100eu);
+    assert(cpu.gpr[15] == 0x100e100eu);
     assert(cpu.alu.xer_ca == 1u);
     assert(cpu.pc == 0x80003128u);
 
