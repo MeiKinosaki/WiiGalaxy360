@@ -2,8 +2,9 @@
 
 ## Estado confirmado — v2.39b
 
-- Núcleo C da CPU em `src/cpu/ppc_cpu.c`: reset e dispatcher para `b`, `addi`, `addic`, `ori`, `subfc`, `add` e operações lógicas X-form `and`, `or`, `xor`.
+- Núcleo C da CPU em `src/cpu/ppc_cpu.c`: reset e dispatcher para `b`, `addi`, `addis`, `addic`, `ori`, `xori`, `subfc`, `add` e operações lógicas X-form `and`, `or`, `xor`.
 - `b`: salto incondicional I-form com deslocamento com sinal, seleção AA absoluto/relativo e atualização de LR quando LK=1; testes cobrem salto relativo com link e salto absoluto.
+- `addis`: extensão de sinal do imediato deslocado 16 bits; `xori`: XOR com imediato zero-extendido e GPR0 como registrador normal.
 - `addi`: extensão de sinal do imediato, RA=0 como literal zero, PC +4 e preservação de CR/XER[CA].
 - `ori`: OR com imediato zero-extendido, RS como fonte, RA como destino, PC +4 e preservação de CR/XER[CA]. O registrador GPR0 continua sendo fonte normal para `ori`.
 - `addic`: soma com imediato com sinal e atualiza XER[CA] conforme o carry-out de 32 bits; testes cobrem wraparound e ausência de carry.
