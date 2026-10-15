@@ -298,3 +298,15 @@ python3 tests/ppc_exception_reference.py
 ```
 
 Esses comandos são instruções de execução; a suíte completa ainda precisa ser executada e registrada no checkout antes de considerar os resultados validados. Eles não comprovam boot de jogos Wii nem compatibilidade com Xbox 360.
+
+
+## v2.38b — primeira integração real de `addi` no dispatcher da CPU
+
+O núcleo C `src/cpu/ppc_cpu.c` agora executa a instrução PowerPC D-form `addi` (opcode 14), além da X-form `subfc` (opcode 31 / XO 8). A implementação de `addi` faz extensão de sinal do imediato de 16 bits, trata RA=0 como literal zero e avança o PC em 4 bytes após uma instrução suportada. A instrução não altera CR nem XER[CA].
+
+Foram adicionados testes unitários C para imediato positivo, imediato negativo com extensão de sinal, semântica especial de RA=0, preservação de CR/XER[CA], incremento de PC e regressão de `subfc`. O workflow **Host tests** foi acionado pelos commits; a execução dos novos testes ainda está pendente de resultado confirmado no momento deste registro.
+
+**Limites:** o dispatcher ainda suporta somente `addi` e `subfc`; não é um núcleo Broadway completo. Integração de barramento/memória, exceções, GPU/Flipper, áudio, IOS, boot de jogos, compilação Xenon e validação em Xbox 360 RGH permanecem pendentes ou não comprovados. O `default.xex` histórico é diagnóstico e não deve ser tratado como emulador Wii funcional.
+
+Registro da implementação: https://github.com/MeiKinosaki/WiiGalaxy360/commit/e00d6f177e4c59a8d239d9dca12b56e764f7fdd2
+Registro dos testes: https://github.com/MeiKinosaki/WiiGalaxy360/commit/76ca913cbb1f27c23c5478e3cacca53b42c5ec3b
