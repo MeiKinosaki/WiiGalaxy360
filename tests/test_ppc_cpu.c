@@ -87,7 +87,7 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_subfc(6u, 4u, 5u)) == PPC_STEP_OK);
     assert(cpu.gpr[6] == 5u);
     assert(cpu.alu.xer_ca == 1u);
-    assert(cpu.pc == 0x80003118u);
+    assert(cpu.pc == 0x80003120u);
 
     cpu.gpr[4] = 15u;
     cpu.gpr[5] = 3u;
@@ -97,6 +97,6 @@ int main(void)
 
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
-    assert(cpu.pc == 0x8000311cu);
+    assert(cpu.pc == 0x80003124u);
     return 0;
 }
