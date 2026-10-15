@@ -12,8 +12,9 @@
 - `subfc`: RB − RA com atualização carry-not-borrow em XER[CA].
 - `add`: soma X-form sem alteração de XER[CA]. `and`, `or` e `xor` seguem o formato lógico PowerPC; variantes Rc=1 seguem não suportadas.
 - Barramento-base adicionado em `include/wii/memory.h` e `src/memory/memory.c`: acessos de 8/16/32 bits big-endian, checagem de limites e falha segura para ponteiros nulos.
+- `ppc_cpu_step_with_memory` conecta `lwz`, `lbz`, `stw` e `stb` ao barramento. Falhas de endereço não avançam PC; o mapa Wii e MMIO ainda não existem.
 - `addic`: soma com imediato sinalizado e atualização de XER[CA]; testes acrescentados para wraparound e ausência de carry. CI para os testes da CPU após expansão ainda precisa de resultado final.
-- Testes C no dispatcher foram atualizados para esses caminhos. CI confirmou os commits anteriores de `addi` e `ori`. Os workflows da expansão de CPU e memória precisam terminar antes de declarar a nova etapa validada.
+- Testes C no dispatcher foram atualizados para esses caminhos. CI confirmou os commits anteriores de `addi` e `ori`. Os workflows mais recentes de integração CPU/memória precisam terminar antes de declarar a nova etapa validada.
 - O núcleo não é um Broadway completo. Memória/barramento, exceções, MMIO, GPU/Flipper, áudio, IOS e startup não estão completos ou não têm validação confirmada.
 
 ## Toolchain e executável
@@ -29,4 +30,4 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Versões sequenciais sem pular números: v2.39b é o marco publicado atual.
 - Não afirmar teste aprovado sem logs reais.
 - Não contar planos ou protótipos como implementação concluída.
-- Próxima prioridade: validar CI, conectar loads/stores à memória, então desenvolver MMIO/exceções; continuar GPU/Flipper, áudio, IOS, UI e toolchain em marcos verificáveis.
+- Próxima prioridade: validar CI de load/store; desenvolver mapa de memória, MMIO, alinhamento/exceções; continuar GPU/Flipper, áudio, IOS, UI e toolchain em marcos verificáveis.
