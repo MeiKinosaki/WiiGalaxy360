@@ -146,6 +146,9 @@ int main(void)
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(40u, 22u, 0u, 2u), &memory) == PPC_STEP_OK);
         assert(cpu.gpr[22] == 0x5678u);
         assert(cpu.pc == 0x8000314cu);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 5u), &memory) == PPC_STEP_ALIGNMENT);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(40u, 23u, 0u, 3u), &memory) == PPC_STEP_ALIGNMENT);
+        assert(cpu.pc == 0x8000314cu);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 6u), &memory) == PPC_STEP_UNSUPPORTED);
         assert(cpu.pc == 0x8000314cu);
     }
