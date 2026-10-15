@@ -1,0 +1,18 @@
+name: Host tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ppc-alu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up C compiler
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+      - name: Compile and run PowerPC ALU tests
+        run: make test
