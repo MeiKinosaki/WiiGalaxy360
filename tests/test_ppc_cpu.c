@@ -179,5 +179,16 @@ int main(void)
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x100u);
+
+    /* Additional D-form coverage: addis shifts the signed immediate by 16,
+     * while xori uses an unsigned immediate and treats GPR0 as a real register. */
+    ppc_cpu_reset(&cpu, 0x200u);
+    assert(ppc_cpu_step(&cpu, encode_dform(15u, 3u, 0u, 0x1234u)) == PPC_STEP_OK);
+    assert(cpu.gpr[3] == 0x12340000u && cpu.pc == 0x204u);
+    assert(ppc_cpu_step(&cpu, encode_dform(26u, 3u, 4u, 0xffffu)) == PPC_STEP_OK);
+    assert(cpu.gpr[4] == 0xedcbffffu && cpu.pc == 0x208u);
+    cpu.gpr[0] = 0xaaaaaaaa;
+    assert(ppc_cpu_step(&cpu, encode_dform(26u, 0u, 0u, 0x00ffu)) == PPC_STEP_OK);
+    assert(cpu.gpr[0] == 0xaaaaaa55u && cpu.pc == 0x20cu);
     return 0;
 }
