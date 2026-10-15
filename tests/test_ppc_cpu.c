@@ -169,7 +169,7 @@ int main(void)
     /* Unconditional relative branch with link stores the return address. */
     assert(ppc_cpu_step(&cpu, encode_branch(8u, 0u, 1u)) == PPC_STEP_OK);
     assert(cpu.pc == 0x8000315cu);
-    assert(cpu.lr == 0x80003158u)
+    assert(cpu.lr == 0x80003158u);
 
     /* Absolute branch changes PC to the encoded absolute displacement. */
     assert(ppc_cpu_step(&cpu, encode_branch(0x100u, 1u, 0u)) == PPC_STEP_OK);
