@@ -32,6 +32,10 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         const uint32_t base = (ra == 0u) ? 0u : cpu->gpr[ra];
         const uint32_t address = base + (uint32_t)disp;
         if (memory == 0) return PPC_STEP_UNSUPPORTED;
+        if ((opcode == 32u || opcode == 36u) && (address & 3u) != 0u)
+            return PPC_STEP_ALIGNMENT;
+        if ((opcode == 40u || opcode == 44u) && (address & 1u) != 0u)
+            return PPC_STEP_ALIGNMENT;
         if (opcode == 32u) {
             uint32_t value;
             if (!wii_memory_read32be(memory, address, &value)) return PPC_STEP_UNSUPPORTED;
