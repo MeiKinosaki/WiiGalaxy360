@@ -6,9 +6,10 @@
 - Projeto: emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
 ## Estado técnico
-- `src/cpu/ppc_cpu.c`: reset e execução real das instruções `addi`, `addic`, `ori`, `subfc`, `add`, `and`, `or` e `xor`.
+- `src/cpu/ppc_cpu.c`: reset e execução real das instruções `b`, `addi`, `addic`, `ori`, `subfc`, `add`, `and`, `or` e `xor`.
 - `addi`: imediato com sinal, RA=0 literal zero, PC +4.
 - `ori`: imediato sem sinal, RS como fonte e RA como destino, GPR0 funciona como registrador de origem, PC +4.
+- `b`: salto incondicional com deslocamento assinado, AA absoluto/relativo e LR quando LK está ativo.
 - `subfc`: RB − RA com atualização carry-not-borrow em XER[CA].
 - `add`: soma X-form sem alteração de XER[CA]. `and`, `or` e `xor` seguem o formato lógico PowerPC; variantes Rc=1 seguem não suportadas.
 - Barramento-base adicionado em `include/wii/memory.h` e `src/memory/memory.c`: acessos de 8/16/32 bits big-endian, checagem de limites e falha segura para ponteiros nulos.
