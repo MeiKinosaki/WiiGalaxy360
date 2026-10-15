@@ -6,12 +6,14 @@
 - Projeto: emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
 ## Estado técnico
-- `src/cpu/ppc_cpu.c`: reset e execução real das instruções `addi`, `addic`, `ori` e `subfc`.
+- `src/cpu/ppc_cpu.c`: reset e execução real das instruções `addi`, `addic`, `ori`, `subfc`, `add`, `and`, `or` e `xor`.
 - `addi`: imediato com sinal, RA=0 literal zero, PC +4.
 - `ori`: imediato sem sinal, RS como fonte e RA como destino, GPR0 funciona como registrador de origem, PC +4.
 - `subfc`: RB − RA com atualização carry-not-borrow em XER[CA].
-- `addic`: soma com imediato sinalizado e atualização de XER[CA]; testes acrescentados para wraparound e ausência de carry. CI para o commit dos testes ainda está em andamento.
-- Testes C no dispatcher foram atualizados para esses caminhos. CI confirmou os commits anteriores de `addi` e `ori`. Os workflows de `addic` ainda precisam terminar antes de declarar a nova alteração validada.
+- `add`: soma X-form sem alteração de XER[CA]. `and`, `or` e `xor` seguem o formato lógico PowerPC; variantes Rc=1 seguem não suportadas.
+- Barramento-base adicionado em `include/wii/memory.h` e `src/memory/memory.c`: acessos de 8/16/32 bits big-endian, checagem de limites e falha segura para ponteiros nulos.
+- `addic`: soma com imediato sinalizado e atualização de XER[CA]; testes acrescentados para wraparound e ausência de carry. CI para os testes da CPU após expansão ainda precisa de resultado final.
+- Testes C no dispatcher foram atualizados para esses caminhos. CI confirmou os commits anteriores de `addi` e `ori`. Os workflows da expansão de CPU e memória precisam terminar antes de declarar a nova etapa validada.
 - O núcleo não é um Broadway completo. Memória/barramento, exceções, MMIO, GPU/Flipper, áudio, IOS e startup não estão completos ou não têm validação confirmada.
 
 ## Toolchain e executável
@@ -27,4 +29,4 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Versões sequenciais sem pular números: v2.39b é o marco publicado atual.
 - Não afirmar teste aprovado sem logs reais.
 - Não contar planos ou protótipos como implementação concluída.
-- Próxima prioridade: confirmar CI de `addic`, continuar o conjunto de instruções com testes, integrar memória/barramento e validar a toolchain na nuvem.
+- Próxima prioridade: validar CI, conectar loads/stores à memória, então desenvolver MMIO/exceções; continuar GPU/Flipper, áudio, IOS, UI e toolchain em marcos verificáveis.
