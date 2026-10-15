@@ -14,6 +14,12 @@ static uint32_t encode_addi(unsigned rt, unsigned ra, uint16_t simm)
            (uint32_t)simm;
 }
 
+static uint32_t encode_ori(unsigned rs, unsigned ra, uint16_t uimm)
+{
+    return (24u << 26) | ((uint32_t)rs << 21) | ((uint32_t)ra << 16) |
+           (uint32_t)uimm;
+}
+
 int main(void)
 {
     ppc_cpu_t cpu;
@@ -42,12 +48,25 @@ int main(void)
     assert(cpu.gpr[8] == 0xfffffffeu);
     assert(cpu.pc == 0x8000310cu);
 
+    /* ori zero-extends its immediate and writes the RA field. */
+    cpu.cr = 0x87654321u;
+    cpu.alu.xer_ca = 1u;
+    assert(ppc_cpu_step(&cpu, encode_ori(6u, 10u, 0x8000u)) == PPC_STEP_OK);
+    assert(cpu.gpr[10] == 0x807du);
+    assert(cpu.cr == 0x87654321u && cpu.alu.xer_ca == 1u);
+    assert(cpu.pc == 0x80003110u);
+
+    /* For ori, RS=0 reads GPR0; it is not addi's literal-zero special case. */
+    assert(ppc_cpu_step(&cpu, encode_ori(0u, 9u, 0x00f0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[9] == 0xabcdeff1u);
+    assert(cpu.pc == 0x80003114u);
+
     cpu.gpr[4] = 9u;
     cpu.gpr[5] = 14u;
     assert(ppc_cpu_step(&cpu, encode_subfc(6u, 4u, 5u)) == PPC_STEP_OK);
     assert(cpu.gpr[6] == 5u);
     assert(cpu.alu.xer_ca == 1u);
-    assert(cpu.pc == 0x80003110u);
+    assert(cpu.pc == 0x80003118u);
 
     cpu.gpr[4] = 15u;
     cpu.gpr[5] = 3u;
@@ -57,6 +76,6 @@ int main(void)
 
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
-    assert(cpu.pc == 0x80003114u);
+    assert(cpu.pc == 0x8000311cu);
     return 0;
 }
