@@ -155,7 +155,7 @@ int main(void)
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 5u), &memory) == PPC_STEP_ALIGNMENT);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(40u, 23u, 0u, 3u), &memory) == PPC_STEP_ALIGNMENT);
         assert(cpu.pc == 0x8000314cu);
-        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 6u), &memory) == PPC_STEP_UNSUPPORTED);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 8u), &memory) == PPC_STEP_UNSUPPORTED);
         assert(cpu.pc == 0x8000314cu);
     }
 
