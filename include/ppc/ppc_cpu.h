@@ -21,9 +21,9 @@ typedef enum {
 } ppc_step_result_t;
 
 void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc);
-/* Supported subset: D-form addi (14), addic (12), ori (24), and X-form
+/* Supported subset: I-form b (18); D-form addi (14), addic (12), ori (24); X-form
  * add (XO 266), and (XO 28), xor (XO 316), or (XO 444), subfc (XO 8).
- * Logical Rc=1 variants and unsupported instructions are rejected. */
+ * b supports AA/LK; unsupported arithmetic record forms are rejected. */
 ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction);
 /* Memory-aware step supports lbz/lhz/lwz/stb/sth/stw against bounded memory. */
 ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
