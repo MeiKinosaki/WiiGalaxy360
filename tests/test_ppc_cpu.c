@@ -38,6 +38,12 @@ static uint32_t encode_dform(unsigned opcode, unsigned rt, unsigned ra, uint16_t
            ((uint32_t)ra << 16) | (uint32_t)disp;
 }
 
+static uint32_t encode_branch(uint32_t displacement, unsigned absolute, unsigned link)
+{
+    return (18u << 26) | (displacement & 0x03fffffcu) |
+           ((uint32_t)(absolute != 0u) << 1) | (uint32_t)(link != 0u);
+}
+
 int main(void)
 {
     ppc_cpu_t cpu;
@@ -153,8 +159,18 @@ int main(void)
         assert(cpu.pc == 0x8000314cu);
     }
 
+    /* Unconditional relative branch with link stores the return address. */
+    assert(ppc_cpu_step(&cpu, encode_branch(8u, 0u, 1u)) == PPC_STEP_OK);
+    assert(cpu.pc == 0x80003154u);
+    assert(cpu.lr == 0x80003150u);
+
+    /* Absolute branch changes PC to the encoded absolute displacement. */
+    assert(ppc_cpu_step(&cpu, encode_branch(0x100u, 1u, 0u)) == PPC_STEP_OK);
+    assert(cpu.pc == 0x100u);
+    assert(cpu.lr == 0x80003150u);
+
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
-    assert(cpu.pc == 0x8000314cu);
+    assert(cpu.pc == 0x100u);
     return 0;
 }
