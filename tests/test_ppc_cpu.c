@@ -26,6 +26,12 @@ static uint32_t encode_addic(unsigned rt, unsigned ra, uint16_t simm)
            (uint32_t)simm;
 }
 
+static uint32_t encode_xform(unsigned xo, unsigned rt_rs, unsigned ra, unsigned rb)
+{
+    return (31u << 26) | ((uint32_t)rt_rs << 21) | ((uint32_t)ra << 16) |
+           ((uint32_t)rb << 11) | ((uint32_t)xo << 1);
+}
+
 int main(void)
 {
     ppc_cpu_t cpu;
@@ -95,8 +101,29 @@ int main(void)
     assert(cpu.gpr[6] == (uint32_t)(3u - 15u));
     assert(cpu.alu.xer_ca == 0u);
 
+    /* X-form integer add and logical operations. */
+    cpu.gpr[13] = 0x0f0f00ffu;
+    cpu.gpr[14] = 0x00ff0f0fu;
+    cpu.alu.xer_ca = 1u;
+    assert(ppc_cpu_step(&cpu, encode_xform(266u, 15u, 13u, 14u)) == PPC_STEP_OK);
+    assert(cpu.gpr[15] == 0x0f0e100eu);
+    assert(cpu.alu.xer_ca == 1u);
+    assert(cpu.pc == 0x80003128u);
+
+    assert(ppc_cpu_step(&cpu, encode_xform(28u, 13u, 16u, 14u)) == PPC_STEP_OK);
+    assert(cpu.gpr[16] == 0x000f000fu);
+    assert(cpu.pc == 0x8000312cu);
+
+    assert(ppc_cpu_step(&cpu, encode_xform(444u, 13u, 17u, 14u)) == PPC_STEP_OK);
+    assert(cpu.gpr[17] == 0x0fff0fffu);
+    assert(cpu.pc == 0x80003130u);
+
+    assert(ppc_cpu_step(&cpu, encode_xform(316u, 13u, 18u, 14u)) == PPC_STEP_OK);
+    assert(cpu.gpr[18] == 0x0ff00ff0u);
+    assert(cpu.pc == 0x80003134u);
+
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
-    assert(cpu.pc == 0x80003124u);
+    assert(cpu.pc == 0x80003134u);
     return 0;
 }
