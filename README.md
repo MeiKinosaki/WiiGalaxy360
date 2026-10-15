@@ -2,6 +2,10 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
+## Continuidade de desenvolvimento (marco de trabalho v2.39b)
+
+O marco atual amplia o subconjunto da CPU PowerPC com `addic`, `add`, `and`, `or` e `xor`, mantendo `addi`, `ori` e `subfc`. Também introduz uma API de memória de região com acessos big-endian de 8/16/32 bits e verificação de limites. Consulte [`docs/DEVELOPMENT_STATUS.md`](docs/DEVELOPMENT_STATUS.md) e [`docs/DEVELOPMENT_CONTINUITY.md`](docs/DEVELOPMENT_CONTINUITY.md). Estas alterações ainda precisam passar pela CI; não representam CPU Broadway completa nem comprovam inicialização de jogos Wii no Xbox 360 RGH. A numeração permanece em v2.39b durante a validação, sem novo salto de versão.
+
 ## Estado real — v2.17b: subfc e carry do XER
 
 A v2.17b implementa `subfc` (XO=8), calculando RB − RA e atualizando CA do XER segundo a semântica carry-not-borrow: CA é definido quando RB ≥ RA e limpo quando ocorre empréstimo. Mantém `addc`, CR0 e as instruções anteriores. Testes adicionados cobrem subtração com e sem empréstimo, incluindo o resultado de 32 bits com wraparound. O diagnóstico inicial também executa `subfc`. A validação da v2.17b passou: testes de host, diagnóstico inicial, compilação/ligação Xenon e empacotamento/validação estrutural de `default.xex` concluídos com sucesso. Logs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/38298337507.
