@@ -56,10 +56,41 @@ ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
         return PPC_STEP_OK;
     }
 
-    /* X-form subfc: RT <- RB - RA, with XER[CA] set on no borrow. */
-    if (opcode != 31u || xo != 8u) return PPC_STEP_UNSUPPORTED;
+    if (opcode == 31u) {
+        /* X-form add: RT <- RA + RB; does not update XER[CA]. */
+        if (xo == 266u) {
+            cpu->gpr[rt] = cpu->gpr[ra] + cpu->gpr[rb];
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
 
-    cpu->gpr[rt] = ppc_subfc(&cpu->alu, cpu->gpr[ra], cpu->gpr[rb]);
-    cpu->pc += 4u;
-    return PPC_STEP_OK;
+        /* X-form logical instructions use RS (encoded in rt) and RB,
+         * writing the result to RA. Rc=0 is required by this subset. */
+        if ((instruction & 1u) == 0u) {
+            if (xo == 28u) {
+                cpu->gpr[ra] = ppc_and(cpu->gpr[rt], cpu->gpr[rb]);
+                cpu->pc += 4u;
+                return PPC_STEP_OK;
+            }
+            if (xo == 444u) {
+                cpu->gpr[ra] = ppc_or(cpu->gpr[rt], cpu->gpr[rb]);
+                cpu->pc += 4u;
+                return PPC_STEP_OK;
+            }
+            if (xo == 316u) {
+                cpu->gpr[ra] = ppc_xor(cpu->gpr[rt], cpu->gpr[rb]);
+                cpu->pc += 4u;
+                return PPC_STEP_OK;
+            }
+        }
+
+        /* X-form subfc: RT <- RB - RA, XER[CA]=1 when no borrow. */
+        if (xo == 8u) {
+            cpu->gpr[rt] = ppc_subfc(&cpu->alu, cpu->gpr[ra], cpu->gpr[rb]);
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+    }
+
+    return PPC_STEP_UNSUPPORTED;
 }
