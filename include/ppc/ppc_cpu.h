@@ -20,7 +20,8 @@ typedef enum {
 
 void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc);
 /* Supported subset: D-form addi (14), addic (12), ori (24), and X-form
- * subfc (31 / XO 8). Unsupported instructions do not advance PC. */
+ * add (XO 266), and (XO 28), xor (XO 316), or (XO 444), subfc (XO 8).
+ * Logical Rc=1 variants and unsupported instructions are rejected. */
 ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction);
 
 #endif
