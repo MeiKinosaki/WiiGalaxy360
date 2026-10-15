@@ -34,6 +34,14 @@ ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
         return PPC_STEP_OK;
     }
 
+    /* D-form ori: RA <- RS | zero_extend(UI); unlike addi, RA=0 is a GPR. */
+    if (opcode == 24u) {
+        const uint32_t uimm = instruction & 0xffffu;
+        cpu->gpr[ra] = cpu->gpr[rt] | uimm;
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
     /* X-form subfc: RT <- RB - RA, with XER[CA] set on no borrow. */
     if (opcode != 31u || xo != 8u) return PPC_STEP_UNSUPPORTED;
 
