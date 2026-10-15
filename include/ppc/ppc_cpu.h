@@ -19,8 +19,8 @@ typedef enum {
 } ppc_step_result_t;
 
 void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc);
-/* Executes a deliberately small, explicit subset: opcode 31 / XO 8 (subfc).
- * Unsupported instructions are not executed and do not advance PC. */
+/* Supported subset: D-form addi (opcode 14) and X-form subfc
+ * (opcode 31 / XO 8). Unsupported instructions do not advance PC. */
 ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction);
 
 #endif
