@@ -20,6 +20,12 @@ static uint32_t encode_ori(unsigned rs, unsigned ra, uint16_t uimm)
            (uint32_t)uimm;
 }
 
+static uint32_t encode_addic(unsigned rt, unsigned ra, uint16_t simm)
+{
+    return (12u << 26) | ((uint32_t)rt << 21) | ((uint32_t)ra << 16) |
+           (uint32_t)simm;
+}
+
 int main(void)
 {
     ppc_cpu_t cpu;
@@ -60,6 +66,21 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_ori(0u, 9u, 0x00f0u)) == PPC_STEP_OK);
     assert(cpu.gpr[9] == 0xabcdeff1u);
     assert(cpu.pc == 0x80003114u);
+
+    /* addic updates carry-out; 0xffffffff + 1 wraps and sets CA. */
+    cpu.gpr[11] = 0xffffffffu;
+    cpu.cr = 0x13572468u;
+    assert(ppc_cpu_step(&cpu, encode_addic(12u, 11u, 1u)) == PPC_STEP_OK);
+    assert(cpu.gpr[12] == 0u);
+    assert(cpu.alu.xer_ca == 1u && cpu.cr == 0x13572468u);
+    assert(cpu.pc == 0x80003118u);
+
+    /* No carry-out when adding -1 to zero. */
+    cpu.gpr[11] = 0u;
+    assert(ppc_cpu_step(&cpu, encode_addic(12u, 11u, 0xffffu)) == PPC_STEP_OK);
+    assert(cpu.gpr[12] == 0xffffffffu);
+    assert(cpu.alu.xer_ca == 0u);
+    assert(cpu.pc == 0x8000311cu);
 
     cpu.gpr[4] = 9u;
     cpu.gpr[5] = 14u;
