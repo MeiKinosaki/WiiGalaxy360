@@ -12,7 +12,7 @@ void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc)
     cpu->alu.xer_ca = 0u;
 }
 
-ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
+ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction, wii_memory_t *memory)
 {
     const uint32_t opcode = instruction >> 26;
     const uint32_t rt = (instruction >> 21) & 31u;
@@ -21,6 +21,32 @@ ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
     const uint32_t xo = (instruction >> 1) & 1023u;
 
     if (cpu == 0) return PPC_STEP_UNSUPPORTED;
+
+    /* D-form loads/stores use a signed displacement and RA=0 as base zero. */
+    if (opcode == 32u || opcode == 34u || opcode == 36u || opcode == 38u) {
+        const uint32_t raw_disp = instruction & 0xffffu;
+        const int32_t disp = (raw_disp & 0x8000u)
+            ? (int32_t)raw_disp - 65536
+            : (int32_t)raw_disp;
+        const uint32_t base = (ra == 0u) ? 0u : cpu->gpr[ra];
+        const uint32_t address = base + (uint32_t)disp;
+        if (memory == 0) return PPC_STEP_UNSUPPORTED;
+        if (opcode == 32u) {
+            uint32_t value;
+            if (!wii_memory_read32be(memory, address, &value)) return PPC_STEP_UNSUPPORTED;
+            cpu->gpr[rt] = value;
+        } else if (opcode == 34u) {
+            uint8_t value;
+            if (!wii_memory_read8(memory, address, &value)) return PPC_STEP_UNSUPPORTED;
+            cpu->gpr[rt] = value;
+        } else if (opcode == 36u) {
+            if (!wii_memory_write32be(memory, address, cpu->gpr[rt])) return PPC_STEP_UNSUPPORTED;
+        } else {
+            if (!wii_memory_write8(memory, address, (uint8_t)cpu->gpr[rt])) return PPC_STEP_UNSUPPORTED;
+        }
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
 
     /* D-form addi: RT <- (RA == 0 ? 0 : GPR[RA]) + sign_extend(SI). */
     if (opcode == 14u) {
@@ -93,4 +119,10 @@ ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
     }
 
     return PPC_STEP_UNSUPPORTED;
+}
+
+
+ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
+{
+    return ppc_cpu_step_with_memory(cpu, instruction, 0);
 }
