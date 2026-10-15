@@ -76,6 +76,18 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         return PPC_STEP_OK;
     }
 
+    /* D-form addis: RT <- (RA == 0 ? 0 : GPR[RA]) + (sign_extend(SI) << 16). */
+    if (opcode == 15u) {
+        const uint32_t raw_imm = instruction & 0xffffu;
+        const int32_t simm = (raw_imm & 0x8000u)
+            ? (int32_t)raw_imm - 65536
+            : (int32_t)raw_imm;
+        const uint32_t base = (ra == 0u) ? 0u : cpu->gpr[ra];
+        cpu->gpr[rt] = base + ((uint32_t)simm << 16);
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
     /* D-form addi: RT <- (RA == 0 ? 0 : GPR[RA]) + sign_extend(SI). */
     if (opcode == 14u) {
         const uint32_t raw_imm = instruction & 0xffffu;
@@ -98,6 +110,14 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         const uint64_t wide_sum = (uint64_t)base + (uint64_t)(uint32_t)simm;
         cpu->gpr[rt] = (uint32_t)wide_sum;
         cpu->alu.xer_ca = (uint32_t)(wide_sum >> 32);
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
+    /* D-form xori: RA <- RS ^ zero_extend(UI); RA=0 is a normal GPR. */
+    if (opcode == 26u) {
+        const uint32_t uimm = instruction & 0xffffu;
+        cpu->gpr[ra] = cpu->gpr[rt] ^ uimm;
         cpu->pc += 4u;
         return PPC_STEP_OK;
     }
