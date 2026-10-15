@@ -1,34 +1,29 @@
 # WiiGalaxy360 — registro de continuidade do desenvolvimento
 
 ## Versões e histórico
-- Resumo trazido para esta conversa: o usuário indicou v0.5b como versão de trabalho. Esse número não coincide com o histórico remoto do README.
-- O histórico remoto documenta versões até v2.37b; o novo marco de código foi registrado como **v2.38b**. Não apagar nem renumerar silenciosamente a referência v0.5b: ela pode ser um contexto de trabalho diferente do histórico publicado.
+- O resumo de trabalho trazido à conversa mencionava v0.5b; o README remoto já documentava versões posteriores. Não apagar nem renumerar silenciosamente essa referência de contexto.
+- Histórico publicado avançado sequencialmente: v2.38b (`addi`) e v2.39b (`ori`), após v2.37b.
 - Projeto: emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Estado técnico confirmado
-- `src/cpu/ppc_cpu.c`: reset, instrução D-form `addi` (opcode 14) e X-form `subfc` (opcode 31 / XO 8).
-- `addi` implementa extensão de sinal de SI, RA=0 como literal zero, incremento de PC em 4 e preservação de CR/XER[CA].
-- `subfc` grava RT e atualiza XER[CA] conforme carry-not-borrow.
-- `tests/test_ppc_cpu.c` adiciona casos para `addi` positivo, negativo, RA=0 e preservação de estado, além de regressões de `subfc`.
-- O workflow Host tests foi acionado pelos commits `e00d6f1`, `76ca913` e `73523b5`; no momento deste registro, as execuções novas ainda não tinham resultado final confirmado. Não afirmar que passaram até consultar os logs.
-- Workflow anterior `38692026246` concluiu com sucesso, mas testava o código anterior, sem `addi`.
+## Estado técnico
+- `src/cpu/ppc_cpu.c`: reset e execução real das instruções `addi`, `ori` e `subfc`.
+- `addi`: imediato com sinal, RA=0 literal zero, PC +4.
+- `ori`: imediato sem sinal, RS como fonte e RA como destino, GPR0 funciona como registrador de origem, PC +4.
+- `subfc`: RB − RA com atualização carry-not-borrow em XER[CA].
+- Testes C no dispatcher foram atualizados para esses caminhos. CI confirmou o marco `addi`; o resultado final do CI para `ori` ainda deve ser verificado.
+- O núcleo não é um Broadway completo. Memória/barramento, exceções, MMIO, GPU/Flipper, áudio, IOS e startup não estão completos ou não têm validação confirmada.
 
 ## Toolchain e executável
-- A toolchain Xenon precisa de validação reproduzível no estado atual.
-- O `default.xex` descrito no README é um XEX de diagnóstico, não o emulador Wii completo.
-- Empacotamento/cabeçalho XEX não prova boot no Xbox 360 RGH.
-- Não há compatibilidade de jogos Wii comprovada.
+- A toolchain Xenon ainda exige validação reproduzível no estado atual.
+- O `default.xex` histórico é de diagnóstico, não o emulador Wii completo.
+- Um cabeçalho XEX válido não comprova boot no Xbox 360 RGH; jogos Wii funcionando não foram demonstrados.
 
 ## Escopo preservado
-- CPU Broadway/PowerPC e ALU.
-- Memória/barramento, ciclo de execução, exceções e MMIO.
-- GPU/Flipper, áudio, IOS e inicialização de jogos.
-- Toolchain na nuvem e artefatos ELF32 PowerPC / `default.xex`.
-- UI azul/branca inspirada no Aurora, biblioteca, capas, favoritos, configurações, saves/save states e tela/música de abertura. Distinguir protótipo visual de integração real.
+CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/`default.xex`, UI azul/branca estilo Aurora, biblioteca/capas/favoritos/configurações/saves e abertura/música. Distinguir estrutura/protótipo de integração funcional.
 
-## Regras de desenvolvimento
-- Preservar histórico e funcionalidades existentes.
-- Avançar versões sequencialmente; v2.38b é o próximo marco do histórico publicado após v2.37b.
-- Não declarar testes aprovados sem resultado/logs.
-- Não contar planos ou protótipos como integração concluída.
-- Próxima prioridade: confirmar CI; então expandir instruções CPU, integrar memória e avançar na toolchain cloud.
+## Regras
+- Preservar histórico e funcionalidades.
+- Versões sequenciais sem pular números: v2.39b é o marco publicado atual.
+- Não afirmar teste aprovado sem logs reais.
+- Não contar planos ou protótipos como implementação concluída.
+- Próxima prioridade: validar CI de `ori`, adicionar instruções com testes, integrar memória e validar toolchain na nuvem.
