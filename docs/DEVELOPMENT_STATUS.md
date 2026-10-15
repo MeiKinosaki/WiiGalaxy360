@@ -9,8 +9,8 @@
 - `subfc`: cálculo RB − RA com atualização XER[CA] carry-not-borrow.
 - X-form `add` não altera XER[CA]; `and`, `or` e `xor` escrevem no campo RA conforme o formato PowerPC e rejeitam variantes Rc=1 ainda não suportadas.
 - Novo barramento-base `wii_memory_t` em `include/wii/memory.h` e `src/memory/memory.c`: leitura/escrita de 8/16/32 bits em ordem big-endian, verificação de limites e tratamento de ponteiros nulos.
-- A CPU ganhou `ppc_cpu_step_with_memory`, integrado a `lwz`, `lbz`, `stw` e `stb`; acessos inválidos retornam `PPC_STEP_UNSUPPORTED` sem avançar PC. Ainda não há mapa de memória Wii real nem MMIO.
-- `tests/test_ppc_cpu.c` cobre instruções aritméticas/lógicas, imediatos, carry, PC e integração load/store. `tests/test_memory.c` cobre endianness e acessos fora dos limites. CI dos commits mais recentes de integração ainda está pendente.
+- A CPU ganhou `ppc_cpu_step_with_memory`, integrado a `lwz`, `lbz`, `lhz`, `stw`, `stb` e `sth`; acessos inválidos retornam `PPC_STEP_UNSUPPORTED` sem avançar PC. Ainda não há mapa de memória Wii real nem MMIO; acessos desalinhados ainda não geram exceções PowerPC.
+- `tests/test_ppc_cpu.c` cobre instruções aritméticas/lógicas, imediatos, carry, PC e integração load/store de byte, meia-palavra e palavra. `tests/test_memory.c` cobre endianness e acessos fora dos limites. CI dos commits mais recentes de integração e meia-palavra precisa ser conferida.
 - O workflow Host tests confirmou sucesso para os commits de documentação de v2.39b; o resultado final após a inclusão de `addic` ainda precisa ser verificado.
 - O núcleo continua sendo um subconjunto pequeno, não um processador Broadway completo.
 - Não há comprovação registrada de jogos Wii funcionando no Xbox 360 RGH.
