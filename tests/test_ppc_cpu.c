@@ -141,13 +141,17 @@ int main(void)
         assert(ram[7] == 0x78u);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(34u, 21u, 0u, 7u), &memory) == PPC_STEP_OK);
         assert(cpu.gpr[21] == 0x78u);
-        assert(cpu.pc == 0x80003144u);
-        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 22u, 0u, 6u), &memory) == PPC_STEP_UNSUPPORTED);
-        assert(cpu.pc == 0x80003144u);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(44u, 19u, 0u, 2u), &memory) == PPC_STEP_OK);
+        assert(ram[2] == 0x56u && ram[3] == 0x78u);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(40u, 22u, 0u, 2u), &memory) == PPC_STEP_OK);
+        assert(cpu.gpr[22] == 0x5678u);
+        assert(cpu.pc == 0x8000314cu);
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 6u), &memory) == PPC_STEP_UNSUPPORTED);
+        assert(cpu.pc == 0x8000314cu);
     }
 
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
-    assert(cpu.pc == 0x80003144u);
+    assert(cpu.pc == 0x8000314cu);
     return 0;
 }
