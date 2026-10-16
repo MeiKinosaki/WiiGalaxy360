@@ -192,7 +192,7 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_cond_branch(16u, 0u, 0xfffcu, 0u, 0u)) == PPC_STEP_OK);
     assert(cpu.ctr == 1u && cpu.pc == 0x4fcu); /* CTR nonzero */
     assert(ppc_cpu_step(&cpu, encode_cond_branch(16u, 0u, 0xfffcu, 0u, 0u)) == PPC_STEP_OK);
-    assert(cpu.ctr == 0u && cpu.pc == 0x504u); /* CTR reached zero */
+    assert(cpu.ctr == 0u && cpu.pc == 0x500u); /* CTR reached zero */
 
     /* Absolute branch changes PC to the encoded absolute displacement. */
     assert(ppc_cpu_step(&cpu, encode_branch(0x100u, 1u, 0u)) == PPC_STEP_OK);
