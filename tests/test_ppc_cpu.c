@@ -38,6 +38,14 @@ static uint32_t encode_dform(unsigned opcode, unsigned rt, unsigned ra, uint16_t
            ((uint32_t)ra << 16) | (uint32_t)disp;
 }
 
+static uint32_t encode_cond_branch(unsigned bo, unsigned bi, uint16_t displacement,
+                                   unsigned absolute, unsigned link)
+{
+    return (16u << 26) | ((uint32_t)bo << 21) | ((uint32_t)bi << 16) |
+           ((uint32_t)displacement & 0xfffcu) |
+           ((uint32_t)(absolute != 0u) << 1) | (uint32_t)(link != 0u);
+}
+
 static uint32_t encode_branch(uint32_t displacement, unsigned absolute, unsigned link)
 {
     return (18u << 26) | (displacement & 0x03fffffcu) |
@@ -170,6 +178,21 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_branch(8u, 0u, 1u)) == PPC_STEP_OK);
     assert(cpu.pc == 0x8000315cu);
     assert(cpu.lr == 0x80003158u);
+
+    /* Conditional branch: test CR bit, update PC, and optionally link. */
+    ppc_cpu_reset(&cpu, 0x400u);
+    cpu.cr = 0x80000000u;
+    assert(ppc_cpu_step(&cpu, encode_cond_branch(12u, 0u, 8u, 0u, 1u)) == PPC_STEP_OK);
+    assert(cpu.pc == 0x408u && cpu.lr == 0x404u);
+    cpu.cr = 0u;
+    assert(ppc_cpu_step(&cpu, encode_cond_branch(12u, 0u, 8u, 0u, 0u)) == PPC_STEP_OK);
+    assert(cpu.pc == 0x40cu); /* not taken: fall through */
+    ppc_cpu_reset(&cpu, 0x500u);
+    cpu.ctr = 2u;
+    assert(ppc_cpu_step(&cpu, encode_cond_branch(16u, 0u, 0xfffcu, 0u, 0u)) == PPC_STEP_OK);
+    assert(cpu.ctr == 1u && cpu.pc == 0x4fcu); /* CTR nonzero */
+    assert(ppc_cpu_step(&cpu, encode_cond_branch(16u, 0u, 0xfffcu, 0u, 0u)) == PPC_STEP_OK);
+    assert(cpu.ctr == 0u && cpu.pc == 0x504u); /* CTR reached zero */
 
     /* Absolute branch changes PC to the encoded absolute displacement. */
     assert(ppc_cpu_step(&cpu, encode_branch(0x100u, 1u, 0u)) == PPC_STEP_OK);
