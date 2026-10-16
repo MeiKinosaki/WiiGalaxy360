@@ -190,5 +190,20 @@ int main(void)
     cpu.gpr[0] = 0xaaaaaaaa;
     assert(ppc_cpu_step(&cpu, encode_dform(26u, 0u, 0u, 0x00ffu)) == PPC_STEP_OK);
     assert(cpu.gpr[0] == 0xaaaaaa55u && cpu.pc == 0x20cu);
+    /* cmpwi/cmplwi update the selected CR field using signed/unsigned rules. */
+    ppc_cpu_reset(&cpu, 0x300u);
+    cpu.gpr[5] = 0xffffffffu;
+    cpu.cr = 0x12345678u;
+    assert(ppc_cpu_step(&cpu, encode_dform(11u, 0u, 5u, 0xffffu)) == PPC_STEP_OK);
+    assert((cpu.cr >> 28) == 2u); /* signed -1 equals immediate -1 */
+    assert(cpu.pc == 0x304u);
+    assert(ppc_cpu_step(&cpu, encode_dform(10u, 0u, 5u, 1u)) == PPC_STEP_OK);
+    assert((cpu.cr >> 28) == 4u); /* unsigned 0xffffffff > 1 */
+    assert((cpu.cr & 0x0fffffffu) == 0x02345678u);
+    cpu.gpr[6] = 0x7fffffffu;
+    assert(ppc_cpu_step(&cpu, encode_dform(11u, 0u, 6u, 0x8000u)) == PPC_STEP_OK);
+    assert((cpu.cr >> 28) == 4u); /* signed max > -32768 */
+    assert(ppc_cpu_step(&cpu, encode_dform(11u, 0u, 6u, 0u) | (1u << 21)) == PPC_STEP_UNSUPPORTED);
+    assert(cpu.pc == 0x30cu);
     return 0;
 }
