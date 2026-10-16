@@ -76,6 +76,33 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         return PPC_STEP_OK;
     }
 
+    /* D-form compare immediates: update one CR field with LT/GT/EQ.
+     * L=1 requests a 64-bit compare and is unsupported by this 32-bit core. */
+    if (opcode == 10u || opcode == 11u) {
+        const uint32_t bf = (instruction >> 23) & 7u;
+        const uint32_t ra_idx = (instruction >> 16) & 31u;
+        const uint32_t raw_imm = instruction & 0xffffu;
+        const uint32_t shift = 28u - (bf * 4u);
+        uint32_t relation = 0u;
+        if ((instruction & (1u << 21)) != 0u) return PPC_STEP_UNSUPPORTED;
+        if (opcode == 11u) {
+            const int32_t simm = (raw_imm & 0x8000u)
+                ? (int32_t)raw_imm - 65536
+                : (int32_t)raw_imm;
+            const int32_t lhs = (int32_t)cpu->gpr[ra_idx];
+            if (lhs < simm) relation = 8u;
+            else if (lhs > simm) relation = 4u;
+            else relation = 2u;
+        } else {
+            if (cpu->gpr[ra_idx] < raw_imm) relation = 8u;
+            else if (cpu->gpr[ra_idx] > raw_imm) relation = 4u;
+            else relation = 2u;
+        }
+        cpu->cr = (cpu->cr & ~(0xfu << shift)) | (relation << shift);
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
     /* D-form addis: RT <- (RA == 0 ? 0 : GPR[RA]) + (sign_extend(SI) << 16). */
     if (opcode == 15u) {
         const uint32_t raw_imm = instruction & 0xffffu;
