@@ -174,7 +174,7 @@ int main(void)
     /* Absolute branch changes PC to the encoded absolute displacement. */
     assert(ppc_cpu_step(&cpu, encode_branch(0x100u, 1u, 0u)) == PPC_STEP_OK);
     assert(cpu.pc == 0x100u);
-    assert(cpu.lr == 0x80003150u);
+    assert(cpu.lr == 0x80003158u);
 
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
@@ -186,7 +186,7 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_dform(15u, 3u, 0u, 0x1234u)) == PPC_STEP_OK);
     assert(cpu.gpr[3] == 0x12340000u && cpu.pc == 0x204u);
     assert(ppc_cpu_step(&cpu, encode_dform(26u, 3u, 4u, 0xffffu)) == PPC_STEP_OK);
-    assert(cpu.gpr[4] == 0xedcbffffu && cpu.pc == 0x208u);
+    assert(cpu.gpr[4] == 0x1234ffffu && cpu.pc == 0x208u);
     cpu.gpr[0] = 0xaaaaaaaa;
     assert(ppc_cpu_step(&cpu, encode_dform(26u, 0u, 0u, 0x00ffu)) == PPC_STEP_OK);
     assert(cpu.gpr[0] == 0xaaaaaa55u && cpu.pc == 0x20cu);
