@@ -7,7 +7,7 @@
 
 ## Estado técnico
 - `src/cpu/ppc_cpu.c`: reset e execução real das instruções `b`, `addi`, `addis`, `addic`, `ori`, `xori`, `subfc`, `add`, `and`, `or` e `xor`.
-- `addis`: imediato com sinal deslocado 16 bits; `xori`: XOR com imediato sem sinal, permitindo GPR0 como origem/destino.
+- `cmpwi`/`cmplwi`: comparação imediata assinada/não assinada com atualização do CR; L=1 de 64 bits não suportado. `addis`: imediato com sinal deslocado 16 bits; `xori`: XOR com imediato sem sinal, permitindo GPR0 como origem/destino.
 - `addi`: imediato com sinal, RA=0 literal zero, PC +4.
 - `ori`: imediato sem sinal, RS como fonte e RA como destino, GPR0 funciona como registrador de origem, PC +4.
 - `b`: salto incondicional com deslocamento assinado, AA absoluto/relativo e LR quando LK está ativo.
