@@ -174,6 +174,9 @@ int main(void)
         assert(cpu.pc == 0x80003154u);
     }
 
+    /* Restore the baseline PC before the original unconditional-branch tests. */
+    ppc_cpu_reset(&cpu, 0x80003154u);
+
     /* Unconditional relative branch with link stores the return address. */
     assert(ppc_cpu_step(&cpu, encode_branch(8u, 0u, 1u)) == PPC_STEP_OK);
     assert(cpu.pc == 0x8000315cu);
