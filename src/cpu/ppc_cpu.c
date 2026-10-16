@@ -22,6 +22,38 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
 
     if (cpu == 0) return PPC_STEP_UNSUPPORTED;
 
+    /* B-form conditional branch. BO controls CR and CTR tests; BD is signed
+     * and word-aligned. This subset does not model branch prediction hints. */
+    if (opcode == 16u) {
+        const uint32_t bo = (instruction >> 21) & 31u;
+        const uint32_t bi = (instruction >> 16) & 31u;
+        const uint32_t raw_disp = instruction & 0x0000fffcu;
+        const int32_t displacement = (raw_disp & 0x00008000u)
+            ? (int32_t)raw_disp - 0x00010000
+            : (int32_t)raw_disp;
+        const uint32_t old_pc = cpu->pc;
+        int cr_ok = 1;
+        int ctr_ok = 1;
+        if ((bo & 0x10u) == 0u) {
+            const uint32_t cr_bit = (cpu->cr >> (31u - bi)) & 1u;
+            cr_ok = cr_bit == ((bo & 0x08u) != 0u ? 1u : 0u);
+        }
+        if ((bo & 0x04u) == 0u) {
+            cpu->ctr -= 1u;
+            ctr_ok = ((cpu->ctr != 0u) != ((bo & 0x02u) != 0u));
+        }
+        if (cr_ok && ctr_ok) {
+            const uint32_t target = (instruction & 2u)
+                ? (uint32_t)displacement
+                : old_pc + (uint32_t)displacement;
+            if ((instruction & 1u) != 0u) cpu->lr = old_pc + 4u;
+            cpu->pc = target;
+        } else {
+            cpu->pc = old_pc + 4u;
+        }
+        return PPC_STEP_OK;
+    }
+
     /* I-form unconditional branch. Displacement is a signed 26-bit value
      * whose low two bits are zero; AA selects absolute vs relative target. */
     if (opcode == 18u) {
