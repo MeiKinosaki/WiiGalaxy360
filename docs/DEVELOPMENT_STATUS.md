@@ -3,6 +3,7 @@
 ## Estado confirmado — v2.39b
 
 - Núcleo C da CPU em `src/cpu/ppc_cpu.c`: reset e dispatcher para `b`, `addi`, `addis`, `addic`, `ori`, `xori`, `subfc`, `add` e operações lógicas X-form `and`, `or`, `xor`.
+- `bc`: salto condicional B-form, avaliação dos bits CR e decremento/teste de CTR conforme BO, AA/LK e deslocamento com sinal.
 - `b`: salto incondicional I-form com deslocamento com sinal, seleção AA absoluto/relativo e atualização de LR quando LK=1; testes cobrem salto relativo com link e salto absoluto.
 - `cmpwi`/`cmplwi`: comparação imediata assinada/não assinada e atualização do campo CR selecionado; variante L=1 de 64 bits é rejeitada. `addis`: extensão de sinal do imediato deslocado 16 bits; `xori`: XOR com imediato zero-extendido e GPR0 como registrador normal.
 - `addi`: extensão de sinal do imediato, RA=0 como literal zero, PC +4 e preservação de CR/XER[CA].
