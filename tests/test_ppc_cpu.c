@@ -166,6 +166,9 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_spr(339u, 7u, 1u)) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x80003010u);
 
+    /* Reset PC so the memory tests retain their own known starting point. */
+    ppc_cpu_reset(&cpu, 0x80003134u);
+
     /* CPU loads/stores now use the bounded big-endian memory region. */
     {
         uint8_t ram[8] = {0};
