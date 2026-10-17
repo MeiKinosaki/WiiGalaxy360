@@ -26,6 +26,13 @@ static uint32_t encode_addic(unsigned rt, unsigned ra, uint16_t simm)
            (uint32_t)simm;
 }
 
+static uint32_t encode_spr(unsigned xo, unsigned rt, unsigned spr)
+{
+    return (31u << 26) | ((uint32_t)rt << 21) |
+           ((spr & 31u) << 16) | (((spr >> 5) & 31u) << 11) |
+           (xo << 1);
+}
+
 static uint32_t encode_xform(unsigned xo, unsigned rt_rs, unsigned ra, unsigned rb)
 {
     return (31u << 26) | ((uint32_t)rt_rs << 21) | ((uint32_t)ra << 16) |
@@ -141,6 +148,23 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_xform(316u, 13u, 18u, 14u)) == PPC_STEP_OK);
     assert(cpu.gpr[18] == 0x0ff00ff0u);
     assert(cpu.pc == 0x80003134u);
+
+    /* Move to/from the supported LR and CTR special-purpose registers. */
+    ppc_cpu_reset(&cpu, 0x80003000u);
+    cpu.lr = 0x12345678u;
+    cpu.ctr = 0x87654321u;
+    assert(ppc_cpu_step(&cpu, encode_spr(339u, 3u, 8u)) == PPC_STEP_OK);
+    assert(cpu.gpr[3] == 0x12345678u && cpu.pc == 0x80003004u);
+    assert(ppc_cpu_step(&cpu, encode_spr(339u, 4u, 9u)) == PPC_STEP_OK);
+    assert(cpu.gpr[4] == 0x87654321u && cpu.pc == 0x80003008u);
+    cpu.gpr[5] = 0xaabbccddu;
+    assert(ppc_cpu_step(&cpu, encode_spr(467u, 5u, 8u)) == PPC_STEP_OK);
+    assert(cpu.lr == 0xaabbccddu && cpu.pc == 0x8000300cu);
+    cpu.gpr[6] = 0x0badf00du;
+    assert(ppc_cpu_step(&cpu, encode_spr(467u, 6u, 9u)) == PPC_STEP_OK);
+    assert(cpu.ctr == 0x0badf00du && cpu.pc == 0x80003010u);
+    assert(ppc_cpu_step(&cpu, encode_spr(339u, 7u, 1u)) == PPC_STEP_UNSUPPORTED);
+    assert(cpu.pc == 0x80003010u);
 
     /* CPU loads/stores now use the bounded big-endian memory region. */
     {
