@@ -190,6 +190,21 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
     }
 
     if (opcode == 31u) {
+        /* mfspr/mtspr subset: SPR encodes LR=8 and CTR=9. */
+        if (xo == 339u || xo == 467u) {
+            const uint32_t spr = ((instruction >> 16) & 31u) |
+                                 (((instruction >> 11) & 31u) << 5);
+            uint32_t *special = 0;
+            if (spr == 8u) special = &cpu->lr;
+            else if (spr == 9u) special = &cpu->ctr;
+            if (special == 0 || (instruction & 1u) != 0u)
+                return PPC_STEP_UNSUPPORTED;
+            if (xo == 339u) cpu->gpr[rt] = *special;
+            else *special = cpu->gpr[rt];
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form add: RT <- RA + RB; does not update XER[CA]. */
         if (xo == 266u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = cpu->gpr[ra] + cpu->gpr[rb];
