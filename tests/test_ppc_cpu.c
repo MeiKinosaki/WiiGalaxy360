@@ -200,7 +200,7 @@ int main(void)
     /* Absolute branch changes PC to the encoded absolute displacement. */
     assert(ppc_cpu_step(&cpu, encode_branch(0x100u, 1u, 0u)) == PPC_STEP_OK);
     assert(cpu.pc == 0x100u);
-    assert(cpu.lr == 0x80003158u);
+    assert(cpu.lr == 0u); /* the intervening reset cleared LR */
 
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
