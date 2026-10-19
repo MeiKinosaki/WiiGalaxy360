@@ -20,6 +20,12 @@ static uint32_t encode_ori(unsigned rs, unsigned ra, uint16_t uimm)
            (uint32_t)uimm;
 }
 
+static uint32_t encode_addc(unsigned rt, unsigned ra, unsigned rb)
+{
+    return (31u << 26) | ((uint32_t)rt << 21) | ((uint32_t)ra << 16) |
+           ((uint32_t)rb << 11) | (10u << 1);
+}
+
 static uint32_t encode_addic(unsigned rt, unsigned ra, uint16_t simm)
 {
     return (12u << 26) | ((uint32_t)rt << 21) | ((uint32_t)ra << 16) |
@@ -127,6 +133,18 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_subfc(6u, 4u, 5u)) == PPC_STEP_OK);
     assert(cpu.gpr[6] == (uint32_t)(3u - 15u));
     assert(cpu.alu.xer_ca == 0u);
+
+    /* X-form addc updates CA on unsigned carry-out and clears it otherwise. */
+    ppc_cpu_reset(&cpu, 0x80003120u);
+    cpu.gpr[4] = 0xffffffffu;
+    cpu.gpr[5] = 1u;
+    assert(ppc_cpu_step(&cpu, encode_addc(6u, 4u, 5u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0u && cpu.alu.xer_ca == 1u);
+    assert(cpu.pc == 0x80003124u);
+    cpu.gpr[4] = 10u;
+    cpu.gpr[5] = 20u;
+    assert(ppc_cpu_step(&cpu, encode_addc(6u, 4u, 5u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 30u && cpu.alu.xer_ca == 0u);
 
     /* X-form integer add and logical operations. */
     cpu.gpr[13] = 0x0f0f00ffu;
