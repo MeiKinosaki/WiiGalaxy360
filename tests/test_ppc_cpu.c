@@ -145,6 +145,8 @@ int main(void)
     cpu.gpr[5] = 20u;
     assert(ppc_cpu_step(&cpu, encode_addc(6u, 4u, 5u)) == PPC_STEP_OK);
     assert(cpu.gpr[6] == 30u && cpu.alu.xer_ca == 0u);
+    /* Restore the PC expected by the following legacy instruction sequence. */
+    ppc_cpu_reset(&cpu, 0x80003124u);
 
     /* X-form integer add and logical operations. */
     cpu.gpr[13] = 0x0f0f00ffu;
