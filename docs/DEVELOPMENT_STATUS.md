@@ -11,6 +11,7 @@
 - `ori`: OR com imediato zero-extendido, RS como fonte, RA como destino, PC +4 e preservação de CR/XER[CA]. O registrador GPR0 continua sendo fonte normal para `ori`.
 - `addic`: soma com imediato com sinal e atualiza XER[CA] conforme o carry-out de 32 bits; testes cobrem wraparound e ausência de carry.
 - `subfc`: cálculo RB − RA com atualização XER[CA] carry-not-borrow.
+- `addc` (X-form, XO 10) integrado ao dispatcher: soma RA + RB em 32 bits e atualiza XER[CA] com o carry-out; testes incluem wraparound `0xffffffff + 1` e soma sem carry. CI dos commits novos ainda está em execução.
 - X-form `add` não altera XER[CA]; `and`, `or` e `xor` escrevem no campo RA conforme o formato PowerPC e rejeitam variantes Rc=1 ainda não suportadas.
 - Novo barramento-base `wii_memory_t` em `include/wii/memory.h` e `src/memory/memory.c`: leitura/escrita de 8/16/32 bits em ordem big-endian, verificação de limites e tratamento de ponteiros nulos.
 - A CPU ganhou `ppc_cpu_step_with_memory`, integrado a `lwz`, `lbz`, `lhz`, `lha` (com extensão de sinal), `stw`, `stb` e `sth`; endereços desalinhados em meia-palavra/palavra retornam `PPC_STEP_ALIGNMENT`, e acessos fora dos limites retornam `PPC_STEP_UNSUPPORTED`, sem avançar PC. Ainda não há mapa de memória Wii real nem MMIO. O alinhamento é detectado, mas o tratamento ainda é um resultado de erro do núcleo, não um vetor de exceção PowerPC completo.
