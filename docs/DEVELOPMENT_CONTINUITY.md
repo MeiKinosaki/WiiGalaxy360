@@ -14,6 +14,7 @@
 - `bc`: salto condicional B-form com testes CR/CTR, deslocamento assinado e opções AA/LK.
 - `b`: salto incondicional com deslocamento assinado, AA absoluto/relativo e LR quando LK está ativo.
 - `subfc`: RB − RA com atualização carry-not-borrow em XER[CA].
+- `addc` (X-form, XO 10) foi integrado ao dispatcher e aos testes: soma RA + RB, escreve RT e atualiza XER[CA] pelo carry-out. A suíte CI após a alteração ainda deve ser conferida.
 - `add`: soma X-form sem alteração de XER[CA]. `and`, `or` e `xor` seguem o formato lógico PowerPC; variantes Rc=1 seguem não suportadas.
 - Barramento-base adicionado em `include/wii/memory.h` e `src/memory/memory.c`: acessos de 8/16/32 bits big-endian, checagem de limites e falha segura para ponteiros nulos.
 - `ppc_cpu_step_with_memory` conecta `lwz`, `lbz`, `lhz`, `stw`, `stb` e `sth` ao barramento. Falhas de endereço não avançam PC; acessos desalinhados de palavra/meia-palavra retornam `PPC_STEP_ALIGNMENT`. O mapa Wii, MMIO e vetores de exceção reais continuam pendentes. `lha` estende o sinal do halfword carregado.
