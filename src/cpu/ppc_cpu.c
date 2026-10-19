@@ -205,6 +205,13 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
             return PPC_STEP_OK;
         }
 
+        /* X-form addc: RT <- RA + RB, updating XER[CA] with carry-out. */
+        if (xo == 10u && (instruction & 1u) == 0u) {
+            cpu->gpr[rt] = ppc_addc(&cpu->alu, cpu->gpr[ra], cpu->gpr[rb]);
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form add: RT <- RA + RB; does not update XER[CA]. */
         if (xo == 266u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = cpu->gpr[ra] + cpu->gpr[rb];
