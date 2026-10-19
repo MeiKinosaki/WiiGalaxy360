@@ -36,3 +36,10 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Não afirmar teste aprovado sem logs reais.
 - Não contar planos ou protótipos como implementação concluída.
 - Próxima prioridade: validar CI de load/store de byte/meia-palavra/palavra; desenvolver mapa de memória, MMIO, alinhamento/exceções; continuar GPU/Flipper, áudio, IOS, UI e toolchain em marcos verificáveis.
+
+
+## Continuação mais recente — addze
+- Implementado `addze` (X-form XO 202) em `src/cpu/ppc_cpu.c`: soma o registrador RA com o carry de entrada XER[CA], grava RT e atualiza XER[CA] com o carry-out.
+- Adicionados testes em `tests/test_ppc_cpu.c` para wraparound `0xffffffff + 1` e caso sem carry-in.
+- Commits: implementação `7e3c1276a3b051cdded31cf3b53331552dc57009`; testes `2d11cb1e1731278ca9e09a03d58f2fe6f54d3b07`.
+- Estado: implementação e testes enviados; não considerar validado até o workflow Host tests terminar com sucesso.
