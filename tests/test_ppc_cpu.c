@@ -412,6 +412,24 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_xform(24u, 3u, 5u, 4u)) == PPC_STEP_OK);
     assert(cpu.gpr[5] == 0u && cpu.pc == 0x68cu);
 
+    /* sraw/srawi: sign extension and CA for discarded one-bits. */
+    ppc_cpu_reset(&cpu, 0x6a0u);
+    cpu.gpr[3] = 0xfffffff1u; /* -15 */
+    cpu.gpr[4] = 2u;
+    assert(ppc_cpu_step(&cpu, encode_xform(792u, 3u, 5u, 4u)) == PPC_STEP_OK);
+    assert(cpu.gpr[5] == 0xfffffffcu && cpu.alu.xer_ca == 1u);
+    assert(cpu.pc == 0x6a4u);
+    cpu.gpr[3] = 0x7fffffffu;
+    assert(ppc_cpu_step(&cpu, encode_xform(824u, 3u, 6u, 1u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0x3fffffffu && cpu.alu.xer_ca == 0u);
+    cpu.gpr[3] = 0x80000000u;
+    cpu.gpr[4] = 32u;
+    assert(ppc_cpu_step(&cpu, encode_xform(792u, 3u, 7u, 4u)) == PPC_STEP_OK);
+    assert(cpu.gpr[7] == 0xffffffffu && cpu.alu.xer_ca == 1u);
+    cpu.gpr[3] = 0xffffffffu;
+    assert(ppc_cpu_step(&cpu, encode_xform(792u, 3u, 7u, 4u)) == PPC_STEP_OK);
+    assert(cpu.gpr[7] == 0xffffffffu && cpu.alu.xer_ca == 0u);
+
     /* Additional integer core: andc, cntlzw, extsb and extsh. */
     ppc_cpu_reset(&cpu, 0x700u);
     cpu.gpr[3] = 0xf0f00ff0u;
