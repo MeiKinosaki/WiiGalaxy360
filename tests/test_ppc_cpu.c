@@ -174,7 +174,7 @@ int main(void)
 
     /* X-form nor writes bitwise NOT(RS | RB) to RA. */
     ppc_cpu_reset(&cpu, 0x80003124u);
-    cpu.gpr[4] = 0x0f0f0f0fu;
+    cpu.gpr[6] = 0x0f0f0f0fu; /* RS is the source; RA is the destination. */
     cpu.gpr[5] = 0x33333333u;
     assert(ppc_cpu_step(&cpu, encode_xform(124u, 6u, 4u, 5u)) == PPC_STEP_OK);
     assert(cpu.gpr[4] == 0xc0c0c0c0u);
