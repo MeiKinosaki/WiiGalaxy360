@@ -314,6 +314,35 @@ static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruct
             }
         }
 
+        /* X-form andc: RA <- RS & ~RB. */
+        if (xo == 60u && (instruction & 1u) == 0u) {
+            cpu->gpr[ra] = cpu->gpr[rt] & ~cpu->gpr[rb];
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
+        /* X-form cntlzw: count leading zero bits in RS. */
+        if (xo == 26u && rb == 0u && (instruction & 1u) == 0u) {
+            uint32_t value = cpu->gpr[rt];
+            uint32_t count = 0u;
+            while (count < 32u && (value & (0x80000000u >> count)) == 0u)
+                ++count;
+            cpu->gpr[ra] = count;
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
+        /* X-form extsb/extsh: sign-extend byte/halfword from RS. */
+        if ((xo == 954u || xo == 922u) && rb == 0u &&
+            (instruction & 1u) == 0u) {
+            if (xo == 954u)
+                cpu->gpr[ra] = (uint32_t)(int32_t)(int8_t)cpu->gpr[rt];
+            else
+                cpu->gpr[ra] = (uint32_t)(int32_t)(int16_t)cpu->gpr[rt];
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form neg: RT <- -RA; reserved RB must be zero. */
         if (xo == 104u && rb == 0u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = 0u - cpu->gpr[ra];
