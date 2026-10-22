@@ -187,6 +187,20 @@ int main(void)
     assert(cpu.gpr[6] == (uint32_t)(3u - 15u) && cpu.alu.xer_ca == 0u);
     ppc_cpu_reset(&cpu, 0x80003124u);
 
+    /* D-form subfic sets CA iff unsigned immediate >= RA (no borrow). */
+    ppc_cpu_reset(&cpu, 0x80003124u);
+    cpu.gpr[4] = 3u;
+    assert(ppc_cpu_step(&cpu, encode_dform(8u, 6u, 4u, 7u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 4u && cpu.alu.xer_ca == 1u);
+    assert(cpu.pc == 0x80003128u);
+    cpu.gpr[4] = 9u;
+    assert(ppc_cpu_step(&cpu, encode_dform(8u, 6u, 4u, 7u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == (uint32_t)(7u - 9u) && cpu.alu.xer_ca == 0u);
+    cpu.gpr[4] = 0xffffffffu;
+    assert(ppc_cpu_step(&cpu, encode_dform(8u, 6u, 4u, 0xffffu)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0u && cpu.alu.xer_ca == 1u);
+    ppc_cpu_reset(&cpu, 0x80003124u);
+
     /* X-form addze consumes XER[CA] as carry-in and updates carry-out. */
     ppc_cpu_reset(&cpu, 0x80003124u);
     cpu.gpr[4] = 0xffffffffu;
