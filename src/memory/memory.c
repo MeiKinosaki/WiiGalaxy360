@@ -87,6 +87,31 @@ bool wii_bus_map(wii_bus_t *bus, uint32_t base, uint8_t *data,
     return true;
 }
 
+
+bool wii_bus_map_wii_ram(wii_bus_t *bus, uint8_t *mem1, size_t mem1_size,
+                         uint8_t *mem2, size_t mem2_size)
+{
+    /* Map only after checking the complete request fits the available slots.
+     * Roll back the region count if any mapping fails, avoiding partial maps. */
+    size_t original_count;
+    if (bus == 0 || mem1 == 0 || mem2 == 0 ||
+        mem1_size == 0u || mem2_size == 0u ||
+        mem1_size > 0x01800000u || mem2_size > 0x04000000u)
+        return false;
+    original_count = bus->count;
+    if (WII_BUS_MAX_REGIONS - bus->count < 6u) return false;
+    if (!wii_bus_map(bus, 0x00000000u, mem1, mem1_size, true) ||
+        !wii_bus_map(bus, 0x80000000u, mem1, mem1_size, true) ||
+        !wii_bus_map(bus, 0xc0000000u, mem1, mem1_size, true) ||
+        !wii_bus_map(bus, 0x10000000u, mem2, mem2_size, true) ||
+        !wii_bus_map(bus, 0x90000000u, mem2, mem2_size, true) ||
+        !wii_bus_map(bus, 0xd0000000u, mem2, mem2_size, true)) {
+        bus->count = original_count;
+        return false;
+    }
+    return true;
+}
+
 static const wii_bus_region_t *bus_find(const wii_bus_t *bus,
                                          uint32_t address, size_t width)
 {
