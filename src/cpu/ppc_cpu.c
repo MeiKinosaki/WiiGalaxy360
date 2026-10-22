@@ -10,6 +10,38 @@ void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc)
     cpu->ctr = 0u;
     cpu->cr = 0u;
     cpu->alu.xer_ca = 0u;
+    cpu->srr0 = 0u;
+    cpu->srr1 = 0u;
+    cpu->dar = 0u;
+    cpu->dsisr = 0u;
+    cpu->exception_vector = 0u;
+    cpu->exception_pending = 0u;
+}
+
+void ppc_cpu_raise_exception(ppc_cpu_t *cpu, ppc_exception_t exception,
+                             uint32_t fault_pc, uint32_t fault_address)
+{
+    uint32_t vector;
+    if (cpu == 0) return;
+    switch (exception) {
+    case PPC_EXCEPTION_RESET: vector = 0x100u; break;
+    case PPC_EXCEPTION_MACHINE_CHECK: vector = 0x200u; break;
+    case PPC_EXCEPTION_DATA_STORAGE: vector = 0x300u; break;
+    case PPC_EXCEPTION_INSTRUCTION_STORAGE: vector = 0x400u; break;
+    case PPC_EXCEPTION_EXTERNAL: vector = 0x500u; break;
+    case PPC_EXCEPTION_ALIGNMENT: vector = 0x600u; break;
+    case PPC_EXCEPTION_PROGRAM: vector = 0x700u; break;
+    case PPC_EXCEPTION_SYSTEM_CALL: vector = 0xc00u; break;
+    default: return;
+    }
+    /* MSR is not modelled yet; SRR1 records zero until privileged state lands. */
+    cpu->srr0 = fault_pc;
+    cpu->srr1 = 0u;
+    cpu->dar = fault_address;
+    cpu->dsisr = (exception == PPC_EXCEPTION_DATA_STORAGE) ? 0x02000000u : 0u;
+    cpu->exception_vector = vector;
+    cpu->exception_pending = (uint32_t)exception + 1u;
+    cpu->pc = vector;
 }
 
 static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruction, wii_memory_t *memory, wii_bus_t *bus)
