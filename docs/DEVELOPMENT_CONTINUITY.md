@@ -78,3 +78,8 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Testes adicionados para padrões mistos e `0 NOR 0 = 0xffffffff`.
 - Commits: implementação `4eadd8bc0b996005b16fab6982cb7bbde8176a48`; testes `8b9234dbaecc5efa12c422cd18af9b184aafb05f`.
 - CI dos novos testes pendente.
+
+
+## Correção de teste — nor
+- O primeiro teste de `nor` falhou porque verificava `RT` em vez de `RA`, que é o destino arquitetural da instrução.
+- Corrigidas as asserções no commit `27c371f7922d2eb94fc5ee357f4c28766291c325`. Aguardar workflow antes de marcar como validado.
