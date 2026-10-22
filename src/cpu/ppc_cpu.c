@@ -331,3 +331,13 @@ ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction)
 {
     return ppc_cpu_step_with_memory(cpu, instruction, 0);
 }
+
+ppc_step_result_t ppc_cpu_step_from_memory(ppc_cpu_t *cpu, wii_memory_t *memory)
+{
+    uint32_t instruction;
+    if (cpu == 0 || memory == 0) return PPC_STEP_UNSUPPORTED;
+    if ((cpu->pc & 3u) != 0u) return PPC_STEP_ALIGNMENT;
+    if (!wii_memory_read32be(memory, cpu->pc, &instruction))
+        return PPC_STEP_UNSUPPORTED;
+    return ppc_cpu_step_with_memory(cpu, instruction, memory);
+}
