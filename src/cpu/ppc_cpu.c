@@ -264,6 +264,32 @@ static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruct
             return PPC_STEP_OK;
         }
 
+        /* X-form sraw/srawi: arithmetic right shift; CA records discarded
+         * one-bits only when the source is negative. */
+        if ((xo == 792u || xo == 824u) && (instruction & 1u) == 0u) {
+            const uint32_t source = cpu->gpr[rt];
+            const uint32_t shift = (xo == 824u) ? ((instruction >> 11) & 31u)
+                                                : (cpu->gpr[rb] & 63u);
+            const int negative = (source & 0x80000000u) != 0u;
+            uint32_t result;
+            uint32_t discarded = 0u;
+            if (shift == 0u) {
+                result = source;
+            } else if (shift >= 32u) {
+                result = negative ? 0xffffffffu : 0u;
+                discarded = (source != 0xffffffffu) ? 1u : 0u;
+            } else {
+                const uint32_t mask = (1u << shift) - 1u;
+                discarded = (source & mask) != 0u;
+                result = source >> shift;
+                if (negative) result |= (0xffffffffu << (32u - shift));
+            }
+            cpu->gpr[ra] = result;
+            cpu->alu.xer_ca = (uint32_t)(negative && discarded);
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form addc: RT <- RA + RB, updating XER[CA] with carry-out. */
         if (xo == 10u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = ppc_addc(&cpu->alu, cpu->gpr[ra], cpu->gpr[rb]);
