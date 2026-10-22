@@ -5,8 +5,8 @@
 #include <string.h>
 
 #define STATE_HEADER_SIZE 24u
-#define STATE_CPU_SIZE 148u
-#define STATE_VERSION 1u
+#define STATE_CPU_SIZE 172u
+#define STATE_VERSION 2u
 
 static const uint8_t state_magic[8] = {'W','G','3','6','0','S','T','1'};
 
@@ -32,7 +32,11 @@ static void encode_cpu(uint8_t *p, const ppc_cpu_t *cpu)
     for (i=0;i<32u;++i,p+=4) put32(p,cpu->gpr[i]);
     put32(p,cpu->pc); p+=4; put32(p,cpu->lr); p+=4;
     put32(p,cpu->ctr); p+=4; put32(p,cpu->cr); p+=4;
-    put32(p,cpu->alu.xer_ca);
+    put32(p,cpu->alu.xer_ca); p+=4;
+    put32(p,cpu->srr0); p+=4; put32(p,cpu->srr1); p+=4;
+    put32(p,cpu->dar); p+=4; put32(p,cpu->dsisr); p+=4;
+    put32(p,cpu->exception_vector); p+=4;
+    put32(p,cpu->exception_pending);
 }
 static void decode_cpu(ppc_cpu_t *cpu, const uint8_t *p)
 {
@@ -40,7 +44,11 @@ static void decode_cpu(ppc_cpu_t *cpu, const uint8_t *p)
     for (i=0;i<32u;++i,p+=4) cpu->gpr[i]=get32(p);
     cpu->pc=get32(p); p+=4; cpu->lr=get32(p); p+=4;
     cpu->ctr=get32(p); p+=4; cpu->cr=get32(p); p+=4;
-    cpu->alu.xer_ca=get32(p);
+    cpu->alu.xer_ca=get32(p); p+=4;
+    cpu->srr0=get32(p); p+=4; cpu->srr1=get32(p); p+=4;
+    cpu->dar=get32(p); p+=4; cpu->dsisr=get32(p); p+=4;
+    cpu->exception_vector=get32(p); p+=4;
+    cpu->exception_pending=get32(p);
 }
 static bool valid_args(const char *path, const ppc_cpu_t *cpu,
                        const uint8_t *m1, size_t n1,
