@@ -2,9 +2,9 @@ CC ?= cc
 CFLAGS ?= -std=c11 -Wall -Wextra -Werror -pedantic -O2
 CPPFLAGS ?= -Iinclude
 
-.PHONY: test test-ppc-alu test-ppc-cpu test-memory clean
+.PHONY: test test-ppc-alu test-ppc-cpu test-memory test-state clean
 
-test: test-ppc-alu test-ppc-cpu test-memory
+test: test-ppc-alu test-ppc-cpu test-memory test-state
 
 test-ppc-alu:
 	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c tests/test_ppc_alu.c -o test_ppc_alu
