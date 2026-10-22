@@ -31,5 +31,27 @@ int main(void)
     assert(!wii_memory_read8(0, 0u, &b));
     assert(!wii_memory_write8(0, 0u, 1u));
     assert(!wii_memory_read8(&memory, 0u, 0));
+
+    /* Guest bus: mapped RAM, read-only regions, aliases and unmapped faults. */
+    {
+        uint8_t ram[16] = {0};
+        uint8_t rom[4] = {0x12u, 0x34u, 0x56u, 0x78u};
+        wii_bus_t bus;
+        uint32_t word = 0u;
+        uint8_t byte = 0u;
+        wii_bus_init(&bus);
+        assert(wii_bus_map(&bus, 0x1000u, ram, sizeof(ram), true));
+        assert(wii_bus_map(&bus, 0x8000u, ram, sizeof(ram), true));
+        assert(wii_bus_map(&bus, 0xfff00000u, rom, sizeof(rom), false));
+        assert(!wii_bus_map(&bus, 0x1008u, rom, sizeof(rom), true));
+        assert(wii_bus_write32be(&bus, 0x1004u, 0x89abcdefu));
+        assert(wii_bus_read32be(&bus, 0x8004u, &word) && word == 0x89abcdefu);
+        assert(wii_bus_read32be(&bus, 0xfff00000u, &word) && word == 0x12345678u);
+        assert(!wii_bus_write8(&bus, 0xfff00000u, 0u));
+        assert(!wii_bus_read8(&bus, 0x4000u, &byte));
+        assert(!wii_bus_read32be(&bus, 0x100eu, &word));
+        assert(!wii_bus_map(&bus, 0xffffffffu, rom, 4u, true));
+    }
+
     return 0;
 }
