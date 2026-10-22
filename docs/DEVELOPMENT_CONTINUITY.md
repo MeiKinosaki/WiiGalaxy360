@@ -90,3 +90,9 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Testes cobrem execução sequencial de `addi` e `ori` a partir da memória, atualização de PC, alinhamento e endereço sem instrução executável suportada.
 - Atenção: o PC é tratado como offset da região limitada; isso não equivale ao mapa de memória real do Wii.
 - CI pendente no workflow https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39763454475.
+
+
+## Validação — subfze e busca integrada
+- Host tests de `subfze` passaram em run 39762503980.
+- Após corrigir isolamento de PC nos testes da busca integrada, o workflow completo passou no commit `45081eed716066d7a38d69c524ea7c6169dac2d3`, run 39763579752.
+- Próxima etapa: RAM mapeada com endereços efetivos/aliases do Wii e MMIO; não declarar esse mapa implementado ainda.
