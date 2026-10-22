@@ -486,5 +486,13 @@ int main(void)
     assert((cpu.cr >> 28) == 4u); /* signed max > -32768 */
     assert(ppc_cpu_step(&cpu, encode_dform(11u, 0u, 6u, 0u) | (1u << 21)) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x30cu);
+
+    /* Initial exception framework saves fault PC/address and redirects vector. */
+    ppc_cpu_reset(&cpu, 0x80004000u);
+    ppc_cpu_raise_exception(&cpu, PPC_EXCEPTION_ALIGNMENT, 0x80004004u, 0x1003u);
+    assert(cpu.pc == 0x600u && cpu.srr0 == 0x80004004u);
+    assert(cpu.dar == 0x1003u && cpu.exception_pending != 0u);
+    ppc_cpu_reset(&cpu, 0x80004000u);
+    assert(cpu.srr0 == 0u && cpu.exception_pending == 0u && cpu.pc == 0x80004000u);
     return 0;
 }
