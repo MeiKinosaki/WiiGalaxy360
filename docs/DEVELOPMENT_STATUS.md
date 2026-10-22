@@ -41,3 +41,5 @@ Só marcar uma etapa como concluída quando existir código real, testes reprodu
 - `mulli` (D-form, opcode 7) adicionado ao dispatcher: multiplicação assinada por imediato com retenção dos 32 bits inferiores. Testes cobrem imediato negativo e wraparound; CI ainda precisa terminar.
 
 - `subfic` (D-form, opcode 8) implementado: calcula imediato com sinal menos RA e define XER[CA] quando não há borrow. Testes cobrem carry/no-borrow e resultado wraparound; aguardar CI.
+
+- `nor` (X-form, XO 124) integrado: grava `~(RS | RB)` no destino RA. Testes cobrem padrões de bits mistos e entrada zero; CI pendente.
