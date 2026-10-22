@@ -57,3 +57,10 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Testes adicionados para negação de zero e valor positivo, codificação inválida de `neg`, produto negativo e wraparound de `mullw`.
 - Commits: código `9efaf1da09a075cf84b15df8f67ab0b1b18df967`; testes `605e8445b5f88ffe7b5b14d31bcf22f83d540fa1`.
 - CI dos novos testes pendente; não considerar concluído até resultado observado.
+
+
+## Continuação — mulli
+- Implementada instrução D-form `mulli` (opcode 7), com imediato de 16 bits com sinal e resultado limitado aos 32 bits inferiores.
+- Testes adicionados para imediato negativo e wraparound do resultado.
+- Commits: implementação `0d25060aa03a6dd4309fe09e9dc685aed4358785`; testes `09c392d52cafce2707a3e2ee14842932d714ebf7`.
+- CI pendente para a nova cobertura.
