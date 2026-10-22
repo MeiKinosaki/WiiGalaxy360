@@ -274,6 +274,12 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
                 cpu->pc += 4u;
                 return PPC_STEP_OK;
             }
+
+            if (xo == 124u) {
+                cpu->gpr[ra] = ~(cpu->gpr[rt] | cpu->gpr[rb]);
+                cpu->pc += 4u;
+                return PPC_STEP_OK;
+            }
         }
 
         /* X-form neg: RT <- -RA; reserved RB must be zero. */
