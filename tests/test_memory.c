@@ -53,5 +53,25 @@ int main(void)
         assert(!wii_bus_map(&bus, 0xffffffffu, rom, 4u, true));
     }
 
+
+    /* Wii Broadway RAM aliases share backing storage at cached/uncached and
+     * physical views. Small backing arrays keep the host test lightweight. */
+    {
+        uint8_t mem1[64] = {0};
+        uint8_t mem2[32] = {0};
+        wii_bus_t bus;
+        uint32_t word = 0u;
+        wii_bus_init(&bus);
+        assert(wii_bus_map_wii_ram(&bus, mem1, sizeof(mem1), mem2, sizeof(mem2)));
+        assert(bus.count == 6u);
+        assert(wii_bus_write32be(&bus, 0x80000010u, 0xdecafbadU));
+        assert(wii_bus_read32be(&bus, 0x00000010u, &word) && word == 0xdecafbadU);
+        assert(wii_bus_read32be(&bus, 0xc0000010u, &word) && word == 0xdecafbadU);
+        assert(wii_bus_write32be(&bus, 0x90000004u, 0x12345678u));
+        assert(wii_bus_read32be(&bus, 0x10000004u, &word) && word == 0x12345678u);
+        assert(wii_bus_read32be(&bus, 0xd0000004u, &word) && word == 0x12345678u);
+        assert(!wii_bus_map_wii_ram(&bus, mem1, sizeof(mem1), mem2, sizeof(mem2)));
+    }
+
     return 0;
 }
