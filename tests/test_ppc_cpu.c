@@ -305,6 +305,17 @@ int main(void)
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x100u);
 
+    /* D-form mulli: signed immediate multiplication keeps low 32 bits. */
+    ppc_cpu_reset(&cpu, 0x80003124u);
+    cpu.gpr[4] = 7u;
+    assert(ppc_cpu_step(&cpu, encode_dform(7u, 6u, 4u, 0xfffeu)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == (uint32_t)(0u - 14u));
+    assert(cpu.pc == 0x80003128u);
+    cpu.gpr[4] = 0x40000000u;
+    assert(ppc_cpu_step(&cpu, encode_dform(7u, 6u, 4u, 8u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0u);
+    ppc_cpu_reset(&cpu, 0x80003124u);
+
     /* Additional D-form coverage: addis shifts the signed immediate by 16,
      * while xori uses an unsigned immediate and treats GPR0 as a real register. */
     ppc_cpu_reset(&cpu, 0x200u);
