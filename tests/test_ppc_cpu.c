@@ -148,6 +148,30 @@ int main(void)
     /* Restore the PC expected by the following legacy instruction sequence. */
     ppc_cpu_reset(&cpu, 0x80003124u);
 
+    /* X-form neg computes two's-complement negation. */
+    ppc_cpu_reset(&cpu, 0x80003124u);
+    cpu.gpr[4] = 7u;
+    assert(ppc_cpu_step(&cpu, encode_xform(104u, 6u, 4u, 0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == (uint32_t)(0u - 7u));
+    assert(cpu.pc == 0x80003128u);
+    cpu.gpr[4] = 0u;
+    assert(ppc_cpu_step(&cpu, encode_xform(104u, 6u, 4u, 0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0u);
+    assert(ppc_cpu_step(&cpu, encode_xform(104u, 6u, 4u, 1u)) == PPC_STEP_UNSUPPORTED);
+
+    /* X-form mullw keeps the low 32 bits of the signed product. */
+    ppc_cpu_reset(&cpu, 0x80003124u);
+    cpu.gpr[4] = 0xfffffffdu; /* -3 */
+    cpu.gpr[5] = 7u;
+    assert(ppc_cpu_step(&cpu, encode_xform(235u, 6u, 4u, 5u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == (uint32_t)(0u - 21u));
+    assert(cpu.pc == 0x80003128u);
+    cpu.gpr[4] = 0x40000000u;
+    cpu.gpr[5] = 8u;
+    assert(ppc_cpu_step(&cpu, encode_xform(235u, 6u, 4u, 5u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0u); /* low-word wraparound */
+    ppc_cpu_reset(&cpu, 0x80003124u);
+
     /* X-form subf computes RB - RA and must preserve XER[CA]. */
     ppc_cpu_reset(&cpu, 0x80003124u);
     cpu.gpr[4] = 9u;
