@@ -19,4 +19,4 @@ test-memory:
 	./test_memory
 
 clean:
-	rm -f test_ppc_alu test_ppc_cpu test_memory
+	rm -f test_ppc_alu test_ppc_cpu test_memory test_state test_state.bin
