@@ -52,3 +52,8 @@ Só marcar uma etapa como concluída quando existir código real, testes reprodu
 - Adicionada `ppc_cpu_step_from_memory`: busca uma instrução big-endian no endereço indicado por PC, verifica alinhamento e limites e a despacha para execução com acesso à memória. Testes de integração cobrem duas instruções sequenciais, PC avançando, PC desalinhado e busca fora da região.
 - Limitação importante: este passo usa PC como deslocamento dentro da região `wii_memory_t`; ainda não traduz endereços virtuais do Wii para RAM física e não implementa o mapa de memória real/MMIO.
 - Commits da busca integrada: código `b6e7917ca9624e0bd8d6141575a97f82dace69d6`, declaração `fc478d4079c9ba2aaf1ebc3f8da7c11c9ed10bd6`, testes `d65244934fd9143931881b3d0d07d78a64d14166`. Workflow em andamento: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39763454475.
+
+
+- Validação posterior: `subfze` passou em Host tests no run [39762503980](https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39762503980).
+- A primeira rodada dos testes de busca integrada encontrou interferência no PC usado pelos testes seguintes; o teste foi isolado com reset explícito no commit `45081eed716066d7a38d69c524ea7c6169dac2d3`. O workflow Host tests passou nesse commit: [run 39763579752](https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39763579752).
+- A busca/decode/execute está validada no host para a região de memória limitada; ainda não equivale a RAM mapeada do Wii nem valida build/boot no Xbox 360 RGH.
