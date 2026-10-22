@@ -39,3 +39,5 @@
 Só marcar uma etapa como concluída quando existir código real, testes reproduzíveis e resultado observado. Documentação e modelos de referência não provam emulação funcional.
 
 - `mulli` (D-form, opcode 7) adicionado ao dispatcher: multiplicação assinada por imediato com retenção dos 32 bits inferiores. Testes cobrem imediato negativo e wraparound; CI ainda precisa terminar.
+
+- `subfic` (D-form, opcode 8) implementado: calcula imediato com sinal menos RA e define XER[CA] quando não há borrow. Testes cobrem carry/no-borrow e resultado wraparound; aguardar CI.
