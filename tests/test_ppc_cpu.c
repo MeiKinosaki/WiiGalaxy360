@@ -177,12 +177,12 @@ int main(void)
     cpu.gpr[4] = 0x0f0f0f0fu;
     cpu.gpr[5] = 0x33333333u;
     assert(ppc_cpu_step(&cpu, encode_xform(124u, 6u, 4u, 5u)) == PPC_STEP_OK);
-    assert(cpu.gpr[6] == 0xc0c0c0c0u);
+    assert(cpu.gpr[4] == 0xc0c0c0c0u);
     assert(cpu.pc == 0x80003128u);
-    cpu.gpr[4] = 0u;
+    cpu.gpr[6] = 0u;
     cpu.gpr[5] = 0u;
     assert(ppc_cpu_step(&cpu, encode_xform(124u, 6u, 4u, 5u)) == PPC_STEP_OK);
-    assert(cpu.gpr[6] == 0xffffffffu);
+    assert(cpu.gpr[4] == 0xffffffffu);
     ppc_cpu_reset(&cpu, 0x80003124u);
 
     /* X-form subf computes RB - RA and must preserve XER[CA]. */
