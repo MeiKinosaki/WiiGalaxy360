@@ -10,7 +10,11 @@
     "auto_download_covers": true,
     "cover_download_requires_network": true,
     "show_wii_intro": true,
-    "play_intro_audio": true
+    "play_intro_audio": true,
+    "startup_image": "Hdd1:/WiiGalaxy360/assets/wii_intro.png",
+    "startup_audio": "Hdd1:/WiiGalaxy360/assets/wii_intro_audio.ogg",
+    "startup_audio_mode": "play_once_then_stop",
+    "allow_audio_disable": true
   },
   "input": {
     "controller_navigation": true,
