@@ -64,3 +64,10 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Testes adicionados para imediato negativo e wraparound do resultado.
 - Commits: implementação `0d25060aa03a6dd4309fe09e9dc685aed4358785`; testes `09c392d52cafce2707a3e2ee14842932d714ebf7`.
 - CI pendente para a nova cobertura.
+
+
+## Continuação — subfic
+- Implementada instrução D-form `subfic` (opcode 8), `RT = sign_extend(SI) - RA`, com `XER[CA]` definido quando não há borrow.
+- Testes adicionados para diferença positiva, borrow e caso de wraparound.
+- Commits: código `0a51d3d5ebd34662971897b8d1f280023e22d957`; testes `0f8fab78fd603c34775aec0ecce0b39cf23729db`.
+- CI dos novos testes pendente.
