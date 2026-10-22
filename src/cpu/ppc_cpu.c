@@ -254,6 +254,16 @@ static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruct
             return PPC_STEP_OK;
         }
 
+        /* X-form slw/srw use the low six bits of RB; shifts >= 32 yield zero. */
+        if ((xo == 24u || xo == 536u) && (instruction & 1u) == 0u) {
+            const uint32_t shift = cpu->gpr[rb] & 63u;
+            if (shift >= 32u) cpu->gpr[ra] = 0u;
+            else if (xo == 24u) cpu->gpr[ra] = cpu->gpr[rt] << shift;
+            else cpu->gpr[ra] = cpu->gpr[rt] >> shift;
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form addc: RT <- RA + RB, updating XER[CA] with carry-out. */
         if (xo == 10u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = ppc_addc(&cpu->alu, cpu->gpr[ra], cpu->gpr[rb]);
