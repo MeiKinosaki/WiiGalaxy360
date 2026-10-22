@@ -297,6 +297,8 @@ int main(void)
         cpu.pc = 0x3cu;
         assert(ppc_cpu_step_from_memory(&cpu, &program_memory) == PPC_STEP_UNSUPPORTED);
     }
+    /* Keep subsequent legacy tests independent from the fetch integration PC. */
+    ppc_cpu_reset(&cpu, 0x80003134u);
 
     /* CPU loads/stores now use the bounded big-endian memory region. */
     {
