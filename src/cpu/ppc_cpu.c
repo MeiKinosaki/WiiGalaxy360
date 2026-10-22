@@ -147,6 +147,19 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         return PPC_STEP_OK;
     }
 
+    /* D-form mulli: RT <- low 32 bits of signed RA * sign_extend(SI). */
+    if (opcode == 7u) {
+        const uint32_t raw_imm = instruction & 0xffffu;
+        const int32_t simm = (raw_imm & 0x8000u)
+            ? (int32_t)raw_imm - 65536
+            : (int32_t)raw_imm;
+        const int64_t product = (int64_t)(int32_t)cpu->gpr[ra] *
+                                (int64_t)simm;
+        cpu->gpr[rt] = (uint32_t)product;
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
     /* D-form addi: RT <- (RA == 0 ? 0 : GPR[RA]) + sign_extend(SI). */
     if (opcode == 14u) {
         const uint32_t raw_imm = instruction & 0xffffu;
