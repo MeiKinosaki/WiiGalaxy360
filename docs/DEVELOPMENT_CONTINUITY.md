@@ -50,3 +50,10 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Testes adicionados em `tests/test_ppc_cpu.c` para subtração positiva, resultado negativo em 32 bits e preservação de XER[CA].
 - Commits: código `970161392eabf9b801abe5ccba3399fcded81e6d`; testes `889622912bbfb53fb041e840c2df2f118be92a98`.
 - CI ainda precisa confirmar os testes desta instrução. `addze` foi validado no workflow Host tests run 39302452017.
+
+
+## Continuação — neg e mullw
+- Implementadas instruções PowerPC X-form `neg` (XO 104, com RB reservado zero) e `mullw` (XO 235, produto assinado com resultado de 32 bits inferiores).
+- Testes adicionados para negação de zero e valor positivo, codificação inválida de `neg`, produto negativo e wraparound de `mullw`.
+- Commits: código `9efaf1da09a075cf84b15df8f67ab0b1b18df967`; testes `605e8445b5f88ffe7b5b14d31bcf22f83d540fa1`.
+- CI dos novos testes pendente; não considerar concluído até resultado observado.
