@@ -216,6 +216,28 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         return PPC_STEP_OK;
     }
 
+    /* M-form rlwinm: rotate RS left by SH, then apply the MB..ME mask.
+     * PowerPC numbers mask bits from MSB=0; wrapped masks are supported. */
+    if (opcode == 21u) {
+        const uint32_t sh = (instruction >> 11) & 31u;
+        const uint32_t mb = (instruction >> 6) & 31u;
+        const uint32_t me = (instruction >> 1) & 31u;
+        uint32_t rotated;
+        uint32_t mask = 0u;
+        uint32_t bit;
+        if ((instruction & 1u) != 0u) return PPC_STEP_UNSUPPORTED;
+        rotated = (cpu->gpr[rt] << sh) | (cpu->gpr[rt] >> ((32u - sh) & 31u));
+        for (bit = 0u; bit < 32u; ++bit) {
+            const int in_range = (mb <= me)
+                ? (bit >= mb && bit <= me)
+                : (bit >= mb || bit <= me);
+            if (in_range) mask |= (1u << (31u - bit));
+        }
+        cpu->gpr[ra] = rotated & mask;
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
     if (opcode == 31u) {
         /* mfspr/mtspr subset: SPR encodes LR=8 and CTR=9. */
         if (xo == 339u || xo == 467u) {
