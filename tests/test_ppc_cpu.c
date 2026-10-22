@@ -281,6 +281,23 @@ int main(void)
     /* Reset PC so the memory tests retain their own known starting point. */
     ppc_cpu_reset(&cpu, 0x80003134u);
 
+    /* Integrated fetch-decode-execute: instruction bytes are fetched from PC. */
+    {
+        uint8_t program_ram[64] = {0};
+        wii_memory_t program_memory = { program_ram, sizeof(program_ram) };
+        ppc_cpu_reset(&cpu, 0x20u);
+        assert(wii_memory_write32be(&program_memory, 0x20u, encode_addi(3u, 0u, 7u)));
+        assert(wii_memory_write32be(&program_memory, 0x24u, encode_ori(3u, 4u, 0x10u)));
+        assert(ppc_cpu_step_from_memory(&cpu, &program_memory) == PPC_STEP_OK);
+        assert(cpu.gpr[3] == 7u && cpu.pc == 0x24u);
+        assert(ppc_cpu_step_from_memory(&cpu, &program_memory) == PPC_STEP_OK);
+        assert(cpu.gpr[4] == 0x17u && cpu.pc == 0x28u);
+        cpu.pc = 0x29u;
+        assert(ppc_cpu_step_from_memory(&cpu, &program_memory) == PPC_STEP_ALIGNMENT);
+        cpu.pc = 0x3cu;
+        assert(ppc_cpu_step_from_memory(&cpu, &program_memory) == PPC_STEP_UNSUPPORTED);
+    }
+
     /* CPU loads/stores now use the bounded big-endian memory region. */
     {
         uint8_t ram[8] = {0};
