@@ -399,6 +399,19 @@ int main(void)
         assert(bus_cpu.gpr[4] == 0x12345678u && bus_cpu.pc == 0x1008u);
     }
 
+    /* X-form slw/srw: register shifts, including the >=32 zero case. */
+    ppc_cpu_reset(&cpu, 0x680u);
+    cpu.gpr[3] = 1u;
+    cpu.gpr[4] = 4u;
+    assert(ppc_cpu_step(&cpu, encode_xform(24u, 3u, 5u, 4u)) == PPC_STEP_OK);
+    assert(cpu.gpr[5] == 16u && cpu.pc == 0x684u);
+    cpu.gpr[3] = 0x80000000u;
+    assert(ppc_cpu_step(&cpu, encode_xform(536u, 3u, 6u, 4u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0x08000000u && cpu.pc == 0x688u);
+    cpu.gpr[4] = 32u;
+    assert(ppc_cpu_step(&cpu, encode_xform(24u, 3u, 5u, 4u)) == PPC_STEP_OK);
+    assert(cpu.gpr[5] == 0u && cpu.pc == 0x68cu);
+
     /* Additional integer core: andc, cntlzw, extsb and extsh. */
     ppc_cpu_reset(&cpu, 0x700u);
     cpu.gpr[3] = 0xf0f00ff0u;
