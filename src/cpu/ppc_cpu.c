@@ -249,6 +249,16 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
             return PPC_STEP_OK;
         }
 
+        /* X-form subfze: RT <- ~RA + XER[CA], updating carry-out. */
+        if (xo == 200u && (instruction & 1u) == 0u) {
+            const uint64_t sum = (uint64_t)(~cpu->gpr[ra]) +
+                                 (uint64_t)(cpu->alu.xer_ca != 0u);
+            cpu->gpr[rt] = (uint32_t)sum;
+            cpu->alu.xer_ca = (uint32_t)(sum >> 32);
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form add: RT <- RA + RB; does not update XER[CA]. */
         if (xo == 266u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = cpu->gpr[ra] + cpu->gpr[rb];
