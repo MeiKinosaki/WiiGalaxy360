@@ -374,6 +374,9 @@ int main(void)
                               (0u << 11) | (0u << 6) | (31u << 1) | 1u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x608u);
 
+    /* Restore the baseline state for the unsupported-instruction checks. */
+    ppc_cpu_reset(&cpu, 0x100u);
+
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x100u);
