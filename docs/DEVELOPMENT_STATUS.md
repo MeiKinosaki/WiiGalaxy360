@@ -43,3 +43,5 @@ Só marcar uma etapa como concluída quando existir código real, testes reprodu
 - `subfic` (D-form, opcode 8) implementado: calcula imediato com sinal menos RA e define XER[CA] quando não há borrow. Testes cobrem carry/no-borrow e resultado wraparound; aguardar CI.
 
 - `nor` (X-form, XO 124) integrado: grava `~(RS | RB)` no destino RA. Testes cobrem padrões de bits mistos e entrada zero; CI pendente.
+
+- Correção de regressão: o teste de `nor` agora verifica o destino arquitetural `RA` (não `RT`). Commit de correção `27c371f7922d2eb94fc5ee357f4c28766291c325`; CI ainda em execução.
