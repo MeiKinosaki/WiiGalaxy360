@@ -172,6 +172,20 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
         return PPC_STEP_OK;
     }
 
+    /* D-form subfic: RT <- sign_extend(SI) - RA; CA is set iff no borrow. */
+    if (opcode == 8u) {
+        const uint32_t raw_imm = instruction & 0xffffu;
+        const int32_t simm = (raw_imm & 0x8000u)
+            ? (int32_t)raw_imm - 65536
+            : (int32_t)raw_imm;
+        const uint32_t immediate = (uint32_t)simm;
+        const uint32_t source = cpu->gpr[ra];
+        cpu->gpr[rt] = immediate - source;
+        cpu->alu.xer_ca = (uint32_t)(immediate >= source);
+        cpu->pc += 4u;
+        return PPC_STEP_OK;
+    }
+
     /* D-form addic: RT <- RA + sign_extend(SI), updating XER[CA]. */
     if (opcode == 12u) {
         const uint32_t raw_imm = instruction & 0xffffu;
