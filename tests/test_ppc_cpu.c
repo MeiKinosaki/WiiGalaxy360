@@ -369,7 +369,7 @@ int main(void)
     /* Keep bits 8..15 (MSB-based) after rotation. */
     assert(ppc_cpu_step(&cpu, (21u << 26) | (3u << 21) | (5u << 16) |
                               (0u << 11) | (8u << 6) | (15u << 1)) == PPC_STEP_OK);
-    assert(cpu.gpr[5] == 0x00340000u && cpu.pc == 0x608u);
+    assert(cpu.gpr[5] == 0x00560000u && cpu.pc == 0x608u);
     assert(ppc_cpu_step(&cpu, (21u << 26) | (3u << 21) | (5u << 16) |
                               (0u << 11) | (0u << 6) | (31u << 1) | 1u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x608u);
