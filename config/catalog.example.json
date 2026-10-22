@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "games": [
+    {
+      "id": "GAME_ID",
+      "title": "Game title",
+      "disc_image": "Hdd1:/WiiGalaxy360/roms/game.iso",
+      "cover": "Hdd1:/WiiGalaxy360/covers/GAME_ID.png",
+      "favorite": false,
+      "last_played": null,
+      "compatibility": "unknown"
+    }
+  ]
+}
