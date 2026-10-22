@@ -43,3 +43,10 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Adicionados testes em `tests/test_ppc_cpu.c` para wraparound `0xffffffff + 1` e caso sem carry-in.
 - Commits: implementação `7e3c1276a3b051cdded31cf3b53331552dc57009`; testes `2d11cb1e1731278ca9e09a03d58f2fe6f54d3b07`.
 - Estado: implementação e testes enviados; não considerar validado até o workflow Host tests terminar com sucesso.
+
+
+## Continuação — X-form subf
+- Implementação adicionada em `src/cpu/ppc_cpu.c` para XO 40: `RT = RB - RA`, sem atualizar XER[CA].
+- Testes adicionados em `tests/test_ppc_cpu.c` para subtração positiva, resultado negativo em 32 bits e preservação de XER[CA].
+- Commits: código `970161392eabf9b801abe5ccba3399fcded81e6d`; testes `889622912bbfb53fb041e840c2df2f118be92a98`.
+- CI ainda precisa confirmar os testes desta instrução. `addze` foi validado no workflow Host tests run 39302452017.
