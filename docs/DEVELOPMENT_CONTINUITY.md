@@ -83,3 +83,10 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 ## Correção de teste — nor
 - O primeiro teste de `nor` falhou porque verificava `RT` em vez de `RA`, que é o destino arquitetural da instrução.
 - Corrigidas as asserções no commit `27c371f7922d2eb94fc5ee357f4c28766291c325`. Aguardar workflow antes de marcar como validado.
+
+
+## Continuação — integração fetch/decode/execute
+- Adicionada API `ppc_cpu_step_from_memory`, que lê a instrução de 32 bits em big-endian no PC, recusa PC desalinhado e delega a execução à CPU com a mesma região de memória para loads/stores.
+- Testes cobrem execução sequencial de `addi` e `ori` a partir da memória, atualização de PC, alinhamento e endereço sem instrução executável suportada.
+- Atenção: o PC é tratado como offset da região limitada; isso não equivale ao mapa de memória real do Wii.
+- CI pendente no workflow https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39763454475.
