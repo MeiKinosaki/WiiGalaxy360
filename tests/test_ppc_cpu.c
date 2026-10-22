@@ -214,6 +214,19 @@ int main(void)
     assert(cpu.gpr[6] == 0u && cpu.alu.xer_ca == 1u);
     ppc_cpu_reset(&cpu, 0x80003124u);
 
+    /* X-form subfze computes ~RA + XER[CA] and updates carry-out. */
+    ppc_cpu_reset(&cpu, 0x80003124u);
+    cpu.gpr[4] = 5u;
+    cpu.alu.xer_ca = 1u;
+    assert(ppc_cpu_step(&cpu, encode_xform(200u, 6u, 4u, 0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0xfffffffbu && cpu.alu.xer_ca == 0u);
+    assert(cpu.pc == 0x80003128u);
+    cpu.gpr[4] = 0u;
+    cpu.alu.xer_ca = 1u;
+    assert(ppc_cpu_step(&cpu, encode_xform(200u, 6u, 4u, 0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 0xffffffffu && cpu.alu.xer_ca == 0u);
+    ppc_cpu_reset(&cpu, 0x80003124u);
+
     /* X-form addze consumes XER[CA] as carry-in and updates carry-out. */
     ppc_cpu_reset(&cpu, 0x80003124u);
     cpu.gpr[4] = 0xffffffffu;
