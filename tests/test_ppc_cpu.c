@@ -399,6 +399,22 @@ int main(void)
         assert(bus_cpu.gpr[4] == 0x12345678u && bus_cpu.pc == 0x1008u);
     }
 
+    /* Additional integer core: andc, cntlzw, extsb and extsh. */
+    ppc_cpu_reset(&cpu, 0x700u);
+    cpu.gpr[3] = 0xf0f00ff0u;
+    cpu.gpr[4] = 0x0ff00ff0u;
+    assert(ppc_cpu_step(&cpu, encode_xform(60u, 3u, 5u, 4u)) == PPC_STEP_OK);
+    assert(cpu.gpr[5] == 0xf0000000u && cpu.pc == 0x704u);
+    cpu.gpr[3] = 0x00001000u;
+    assert(ppc_cpu_step(&cpu, encode_xform(26u, 3u, 6u, 0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 19u && cpu.pc == 0x708u);
+    cpu.gpr[3] = 0x00000080u;
+    assert(ppc_cpu_step(&cpu, encode_xform(954u, 3u, 7u, 0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[7] == 0xffffff80u && cpu.pc == 0x70cu);
+    cpu.gpr[3] = 0x00008001u;
+    assert(ppc_cpu_step(&cpu, encode_xform(922u, 3u, 8u, 0u)) == PPC_STEP_OK);
+    assert(cpu.gpr[8] == 0xffff8001u && cpu.pc == 0x710u);
+
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x100u);
