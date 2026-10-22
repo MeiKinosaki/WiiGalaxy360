@@ -71,3 +71,10 @@ CPU/ALU, memória, exceções, GPU/Flipper, áudio, IOS, cloud toolchain, ELF32/
 - Testes adicionados para diferença positiva, borrow e caso de wraparound.
 - Commits: código `0a51d3d5ebd34662971897b8d1f280023e22d957`; testes `0f8fab78fd603c34775aec0ecce0b39cf23729db`.
 - CI dos novos testes pendente.
+
+
+## Continuação — nor
+- Implementada instrução lógica X-form `nor` (XO 124), sem forma Rc=1 nesta cobertura.
+- Testes adicionados para padrões mistos e `0 NOR 0 = 0xffffffff`.
+- Commits: implementação `4eadd8bc0b996005b16fab6982cb7bbde8176a48`; testes `8b9234dbaecc5efa12c422cd18af9b184aafb05f`.
+- CI dos novos testes pendente.
