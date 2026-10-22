@@ -377,6 +377,28 @@ int main(void)
     /* Restore the baseline state for the unsupported-instruction checks. */
     ppc_cpu_reset(&cpu, 0x100u);
 
+    /* Execute instructions and data accesses through mapped guest bus. */
+    {
+        uint8_t ram[64] = {0};
+        wii_bus_t bus;
+        ppc_cpu_t bus_cpu;
+        /* addi r3, r0, 0x1020 ; lwz r4, 0(r3) */
+        ram[0] = 0x38u; ram[1] = 0x60u; ram[2] = 0x10u; ram[3] = 0x20u;
+        ram[4] = 0x80u; ram[5] = 0x83u; ram[6] = 0x00u; ram[7] = 0x00u;
+        /* Data at address 0x1020 is outside this region; map a second region
+         * over the same backing array at guest base 0x1000 for the test. */
+        ram[32] = 0x12u; ram[33] = 0x34u; ram[34] = 0x56u; ram[35] = 0x78u;
+        wii_bus_init(&bus);
+        assert(wii_bus_map(&bus, 0x1000u, ram, sizeof(ram), true));
+        /* PC is mapped address 0x1000; first instruction's RA=0 gives 0x1020. */
+        ppc_cpu_reset(&bus_cpu, 0x1000u);
+        assert(ppc_cpu_step_from_bus(&bus_cpu, &bus) == PPC_STEP_OK);
+        assert(bus_cpu.gpr[3] == 0x1020u && bus_cpu.pc == 0x1004u);
+        /* Address 0x1020 resolves to offset 32 in the same mapped region. */
+        assert(ppc_cpu_step_from_bus(&bus_cpu, &bus) == PPC_STEP_OK);
+        assert(bus_cpu.gpr[4] == 0x12345678u && bus_cpu.pc == 0x1008u);
+    }
+
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x100u);
