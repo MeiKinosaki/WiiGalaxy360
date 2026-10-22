@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "theme": "aurora-blue-white",
+  "library": {
+    "rom_directory": "Hdd1:/WiiGalaxy360/roms",
+    "cover_directory": "Hdd1:/WiiGalaxy360/covers",
+    "save_directory": "Hdd1:/WiiGalaxy360/saves",
+    "state_directory": "Hdd1:/WiiGalaxy360/states",
+    "favorites_file": "Hdd1:/WiiGalaxy360/favorites/favorites.json",
+    "auto_download_covers": true,
+    "cover_download_requires_network": true,
+    "show_wii_intro": true,
+    "play_intro_audio": true
+  },
+  "input": {
+    "controller_navigation": true,
+    "confirm_button": "A",
+    "back_button": "B"
+  },
+  "notes": "Configuration schema only until the native Xbox 360 frontend reads it."
+}
