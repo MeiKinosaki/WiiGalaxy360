@@ -7,12 +7,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  ppc-alu:
+  unit-tests:
+    name: ${{ matrix.target }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - test-ppc-alu
+          - test-ppc-cpu
+          - test-memory
+          - test-state
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
       - name: Set up C compiler
         run: sudo apt-get update && sudo apt-get install -y build-essential
-      - name: Compile and run PowerPC ALU tests
-        run: make test
+      - name: Compile and run isolated module tests
+        run: make ${{ matrix.target }}
+  full-suite:
+    name: Full host regression suite
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up C compiler
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+      - name: Compile and run all host tests
+        run: make clean test
