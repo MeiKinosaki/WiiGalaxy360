@@ -70,3 +70,14 @@ Só marcar uma etapa como concluída quando existir código real, testes reprodu
 - Teste de integração cobre `addi` seguido de `lwz` em RAM endereçada pelo barramento.
 - O barramento ainda é genérico e configurado manualmente; não representa por si só o mapa completo do Wii, MMIO, caches, exceções de acesso ou MMU.
 - A validação CI do commit de integração CPU/barramento passou: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39802666054. O teste mais recente de integração ainda aguarda execução completa.
+
+
+## Continuidade de estruturas — 22/10/2026
+
+- Save/load state de host implementado em `src/state/state.c`, com formato versionado, serialização explícita big-endian dos registradores CPU e snapshot de buffers MEM1/MEM2, hash de integridade e carregamento transacional (não modifica CPU/RAM se validação falhar).
+- Teste de ida e volta e rejeição de arquivo corrompido passou no CI: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39819521548.
+- Limite: ainda não captura FPU/MMU, GPU, áudio, IOS, MMIO, caches nem interrupções pendentes; ainda não está ligado ao frontend ou aos caminhos de armazenamento do Xbox 360.
+- Criados esquemas iniciais para catálogo, favoritos, configuração da biblioteca e tema azul/branco inspirado na Aurora, além das pastas documentadas `roms/`, `covers/`, `saves/` e `states/`.
+- Estes arquivos definem estrutura e configuração, não uma interface nativa funcional. Descoberta de jogos, navegação com controle, renderização de capas, download automático via Ethernet/Wi-Fi, tela de abertura e áudio ainda precisam de implementação no runtime Xbox 360.
+- O áudio de abertura deverá usar arquivo fornecido pelo usuário ou com licença apropriada; nenhuma faixa do sistema Wii foi incluída.
+- A toolchain Xenon e o caminho ELF → `default.xex` devem ser validados com um workflow reproduzível. Não há neste marco prova de um executável funcional do emulador iniciando em console RGH.
