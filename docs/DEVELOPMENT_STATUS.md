@@ -63,3 +63,10 @@ Só marcar uma etapa como concluída quando existir código real, testes reprodu
 - Adicionada estrutura `wii_bus_t` com regiões de endereços de convidado, permissão de escrita, rejeição de sobreposição e suporte explícito a aliases que apontam para a mesma RAM.
 - Adicionados acessos big-endian de 8/16/32 bits e testes de RAM aliasada, região somente leitura, endereços não mapeados e intervalos que ultrapassam o espaço de 32 bits.
 - Limite importante: essa é infraestrutura genérica de barramento, não um mapa Wii oficial já preenchido, nem MMIO de hardware; a CPU ainda usa a memória limitada antiga e precisa ser conectada a este barramento num marco posterior.
+
+
+## Integração CPU ↔ barramento mapeado (22/10/2026)
+- A CPU agora expõe `ppc_cpu_step_with_bus` para executar instruções e usar o barramento em load/store, além de `ppc_cpu_step_from_bus` para buscar instruções em endereços mapeados.
+- Teste de integração cobre `addi` seguido de `lwz` em RAM endereçada pelo barramento.
+- O barramento ainda é genérico e configurado manualmente; não representa por si só o mapa completo do Wii, MMIO, caches, exceções de acesso ou MMU.
+- A validação CI do commit de integração CPU/barramento passou: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39802666054. O teste mais recente de integração ainda aguarda execução completa.
