@@ -18,7 +18,7 @@ int main(void)
     assert(wii_state_save("test_state.bin",&cpu,mem1,sizeof mem1,mem2,sizeof mem2));
     memset(&loaded,0,sizeof loaded); memset(mem1,0,sizeof mem1); memset(mem2,0,sizeof mem2);
     assert(wii_state_load("test_state.bin",&loaded,mem1,sizeof mem1,mem2,sizeof mem2));
-    assert(loaded.pc==0x80003100u && loaded.gpr[3]==0x12345678u);
+    assert(loaded.pc==0x300u && loaded.gpr[3]==0x12345678u); /* exception vector */
     assert(loaded.lr==0x80003200u && loaded.ctr==9u && loaded.cr==0xdeadbeefu);
     assert(loaded.alu.xer_ca==1u && mem1[0]==0x31u && mem2[63]==0x72u);
     assert(loaded.pc==0x300u && loaded.srr0==0x80003120u);
