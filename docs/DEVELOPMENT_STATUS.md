@@ -57,3 +57,9 @@ Só marcar uma etapa como concluída quando existir código real, testes reprodu
 - Validação posterior: `subfze` passou em Host tests no run [39762503980](https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39762503980).
 - A primeira rodada dos testes de busca integrada encontrou interferência no PC usado pelos testes seguintes; o teste foi isolado com reset explícito no commit `45081eed716066d7a38d69c524ea7c6169dac2d3`. O workflow Host tests passou nesse commit: [run 39763579752](https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39763579752).
 - A busca/decode/execute está validada no host para a região de memória limitada; ainda não equivale a RAM mapeada do Wii nem valida build/boot no Xbox 360 RGH.
+
+
+## Continuação — barramento com regiões mapeadas
+- Adicionada estrutura `wii_bus_t` com regiões de endereços de convidado, permissão de escrita, rejeição de sobreposição e suporte explícito a aliases que apontam para a mesma RAM.
+- Adicionados acessos big-endian de 8/16/32 bits e testes de RAM aliasada, região somente leitura, endereços não mapeados e intervalos que ultrapassam o espaço de 32 bits.
+- Limite importante: essa é infraestrutura genérica de barramento, não um mapa Wii oficial já preenchido, nem MMIO de hardware; a CPU ainda usa a memória limitada antiga e precisa ser conectada a este barramento num marco posterior.
