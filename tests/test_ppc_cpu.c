@@ -148,6 +148,21 @@ int main(void)
     /* Restore the PC expected by the following legacy instruction sequence. */
     ppc_cpu_reset(&cpu, 0x80003124u);
 
+    /* X-form subf computes RB - RA and must preserve XER[CA]. */
+    ppc_cpu_reset(&cpu, 0x80003124u);
+    cpu.gpr[4] = 9u;
+    cpu.gpr[5] = 14u;
+    cpu.alu.xer_ca = 1u;
+    assert(ppc_cpu_step(&cpu, encode_xform(40u, 6u, 4u, 5u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == 5u && cpu.alu.xer_ca == 1u);
+    assert(cpu.pc == 0x80003128u);
+    cpu.gpr[4] = 15u;
+    cpu.gpr[5] = 3u;
+    cpu.alu.xer_ca = 0u;
+    assert(ppc_cpu_step(&cpu, encode_xform(40u, 6u, 4u, 5u)) == PPC_STEP_OK);
+    assert(cpu.gpr[6] == (uint32_t)(3u - 15u) && cpu.alu.xer_ca == 0u);
+    ppc_cpu_reset(&cpu, 0x80003124u);
+
     /* X-form addze consumes XER[CA] as carry-in and updates carry-out. */
     ppc_cpu_reset(&cpu, 0x80003124u);
     cpu.gpr[4] = 0xffffffffu;
