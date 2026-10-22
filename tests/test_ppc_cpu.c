@@ -360,6 +360,20 @@ int main(void)
     assert(cpu.pc == 0x100u);
     assert(cpu.lr == 0u); /* the intervening reset cleared LR */
 
+    /* M-form rlwinm rotates left and applies the PowerPC-numbered mask. */
+    ppc_cpu_reset(&cpu, 0x600u);
+    cpu.gpr[3] = 0x12345678u;
+    assert(ppc_cpu_step(&cpu, (21u << 26) | (3u << 21) | (4u << 16) |
+                              (8u << 11) | (0u << 6) | (31u << 1)) == PPC_STEP_OK);
+    assert(cpu.gpr[4] == 0x34567812u && cpu.pc == 0x604u);
+    /* Keep bits 8..15 (MSB-based) after rotation. */
+    assert(ppc_cpu_step(&cpu, (21u << 26) | (3u << 21) | (5u << 16) |
+                              (0u << 11) | (8u << 6) | (15u << 1)) == PPC_STEP_OK);
+    assert(cpu.gpr[5] == 0x00340000u && cpu.pc == 0x608u);
+    assert(ppc_cpu_step(&cpu, (21u << 26) | (3u << 21) | (5u << 16) |
+                              (0u << 11) | (0u << 6) | (31u << 1) | 1u) == PPC_STEP_UNSUPPORTED);
+    assert(cpu.pc == 0x608u);
+
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x100u);
