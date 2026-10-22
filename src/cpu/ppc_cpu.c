@@ -249,6 +249,13 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
             }
         }
 
+        /* X-form subf: RT <- RB - RA, preserving XER[CA]. */
+        if (xo == 40u && (instruction & 1u) == 0u) {
+            cpu->gpr[rt] = cpu->gpr[rb] - cpu->gpr[ra];
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form subfc: RT <- RB - RA, XER[CA]=1 when no borrow. */
         if (xo == 8u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = ppc_subfc(&cpu->alu, cpu->gpr[ra], cpu->gpr[rb]);
