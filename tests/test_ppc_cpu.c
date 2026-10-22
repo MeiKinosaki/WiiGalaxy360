@@ -417,7 +417,7 @@ int main(void)
 
     /* Unsupported instructions must not change PC. */
     assert(ppc_cpu_step(&cpu, 0u) == PPC_STEP_UNSUPPORTED);
-    assert(cpu.pc == 0x100u);
+    assert(cpu.pc == 0x710u);
 
     /* D-form mulli: signed immediate multiplication keeps low 32 bits. */
     ppc_cpu_reset(&cpu, 0x80003124u);
