@@ -249,6 +249,22 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
             }
         }
 
+        /* X-form neg: RT <- -RA; reserved RB must be zero. */
+        if (xo == 104u && rb == 0u && (instruction & 1u) == 0u) {
+            cpu->gpr[rt] = 0u - cpu->gpr[ra];
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
+        /* X-form mullw: low 32 bits of signed RA * RB. */
+        if (xo == 235u && (instruction & 1u) == 0u) {
+            const int64_t product = (int64_t)(int32_t)cpu->gpr[ra] *
+                                    (int64_t)(int32_t)cpu->gpr[rb];
+            cpu->gpr[rt] = (uint32_t)product;
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
         /* X-form subf: RT <- RB - RA, preserving XER[CA]. */
         if (xo == 40u && (instruction & 1u) == 0u) {
             cpu->gpr[rt] = cpu->gpr[rb] - cpu->gpr[ra];
