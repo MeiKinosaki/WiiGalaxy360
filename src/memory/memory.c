@@ -110,52 +110,83 @@ bool wii_bus_read8(const wii_bus_t *bus, uint32_t address, uint8_t *value)
     return true;
 }
 
+
 bool wii_bus_read16be(const wii_bus_t *bus, uint32_t address, uint16_t *value)
 {
-    uint8_t a, b;
-    if (value == 0 || !wii_bus_read8(bus, address, &a) ||
-        address == UINT32_MAX || !wii_bus_read8(bus, address + 1u, &b))
-        return false;
-    *value = (uint16_t)(((uint16_t)a << 8) | b);
+    const wii_bus_region_t *region = bus_find(bus, address, 2u);
+    size_t offset;
+    if (region == 0 || value == 0) return false;
+    offset = (size_t)(address - region->base);
+    *value = (uint16_t)(((uint16_t)region->data[offset] << 8) |
+                        (uint16_t)region->data[offset + 1u]);
     return true;
 }
 
 bool wii_bus_read32be(const wii_bus_t *bus, uint32_t address, uint32_t *value)
 {
-    uint16_t a, b;
-    if (value == 0 || !wii_bus_read16be(bus, address, &a) ||
-        address > UINT32_MAX - 2u ||
-        !wii_bus_read16be(bus, address + 2u, &b))
-        return false;
-    *value = ((uint32_t)a << 16) | b;
+    const wii_bus_region_t *region = bus_find(bus, address, 4u);
+    size_t offset;
+    if (region == 0 || value == 0) return false;
+    offset = (size_t)(address - region->base);
+    *value = ((uint32_t)region->data[offset] << 24) |
+             ((uint32_t)region->data[offset + 1u] << 16) |
+             ((uint32_t)region->data[offset + 2u] << 8) |
+             (uint32_t)region->data[offset + 3u];
     return true;
 }
 
 bool wii_bus_write8(wii_bus_t *bus, uint32_t address, uint8_t value)
 {
-    const wii_bus_region_t *found = bus_find(bus, address, 1u);
-    size_t offset;
-    if (found == 0 || !found->writable) return false;
-    offset = (size_t)(address - found->base);
-    bus->regions[0].count; /* intentionally no side effects; region lookup is immutable */
-    ((wii_bus_region_t *)found)->data[offset] = value;
-    return true;
+    size_t i;
+    if (bus == 0) return false;
+    for (i = 0u; i < bus->count; ++i) {
+        wii_bus_region_t *region = &bus->regions[i];
+        if (address >= region->base &&
+            (uint64_t)address - region->base < region->size) {
+            if (!region->writable) return false;
+            region->data[(size_t)(address - region->base)] = value;
+            return true;
+        }
+    }
+    return false;
 }
 
 bool wii_bus_write16be(wii_bus_t *bus, uint32_t address, uint16_t value)
 {
-    if (address == UINT32_MAX ||
-        !wii_bus_write8(bus, address, (uint8_t)(value >> 8)) ||
-        !wii_bus_write8(bus, address + 1u, (uint8_t)value))
-        return false;
-    return true;
+    size_t i;
+    if (bus == 0) return false;
+    for (i = 0u; i < bus->count; ++i) {
+        wii_bus_region_t *region = &bus->regions[i];
+        if (address >= region->base &&
+            (uint64_t)address - region->base <= region->size &&
+            2u <= region->size - (size_t)(address - region->base)) {
+            size_t offset = (size_t)(address - region->base);
+            if (!region->writable) return false;
+            region->data[offset] = (uint8_t)(value >> 8);
+            region->data[offset + 1u] = (uint8_t)value;
+            return true;
+        }
+    }
+    return false;
 }
 
 bool wii_bus_write32be(wii_bus_t *bus, uint32_t address, uint32_t value)
 {
-    if (address > UINT32_MAX - 2u ||
-        !wii_bus_write16be(bus, address, (uint16_t)(value >> 16)) ||
-        !wii_bus_write16be(bus, address + 2u, (uint16_t)value))
-        return false;
-    return true;
+    size_t i;
+    if (bus == 0) return false;
+    for (i = 0u; i < bus->count; ++i) {
+        wii_bus_region_t *region = &bus->regions[i];
+        if (address >= region->base &&
+            (uint64_t)address - region->base <= region->size &&
+            4u <= region->size - (size_t)(address - region->base)) {
+            size_t offset = (size_t)(address - region->base);
+            if (!region->writable) return false;
+            region->data[offset] = (uint8_t)(value >> 24);
+            region->data[offset + 1u] = (uint8_t)(value >> 16);
+            region->data[offset + 2u] = (uint8_t)(value >> 8);
+            region->data[offset + 3u] = (uint8_t)value;
+            return true;
+        }
+    }
+    return false;
 }
