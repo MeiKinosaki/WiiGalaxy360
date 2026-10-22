@@ -40,6 +40,13 @@ typedef struct {
 void wii_bus_init(wii_bus_t *bus);
 bool wii_bus_map(wii_bus_t *bus, uint32_t base, uint8_t *data,
                  size_t size, bool writable);
+/* Map Broadway RAM aliases. Pass the backing sizes to permit small test maps;
+ * production should pass the full 24 MiB MEM1 and 64 MiB MEM2 allocations.
+ * MEM1: 0x00000000/0x80000000/0xC0000000; MEM2: 0x10000000/0x90000000/0xD0000000.
+ * All aliases share backing storage; this maps RAM only, not MMIO or ROM. */
+bool wii_bus_map_wii_ram(wii_bus_t *bus, uint8_t *mem1, size_t mem1_size,
+                         uint8_t *mem2, size_t mem2_size);
+
 bool wii_bus_read8(const wii_bus_t *bus, uint32_t address, uint8_t *value);
 bool wii_bus_read16be(const wii_bus_t *bus, uint32_t address, uint16_t *value);
 bool wii_bus_read32be(const wii_bus_t *bus, uint32_t address, uint32_t *value);
