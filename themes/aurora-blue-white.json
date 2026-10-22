@@ -1,0 +1,15 @@
+{
+  "id": "aurora-blue-white",
+  "inspiration": "Xbox 360 Aurora-style game library",
+  "background": "#07182B",
+  "panel": "#102B46",
+  "accent": "#28A8E0",
+  "text": "#F4F8FC",
+  "muted_text": "#A8C0D4",
+  "layout": "cover-grid",
+  "cover_aspect_ratio": "2:3",
+  "focus_outline": true,
+  "show_game_title": true,
+  "show_favorite_marker": true,
+  "show_compatibility_badge": true
+}
