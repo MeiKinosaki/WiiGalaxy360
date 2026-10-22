@@ -25,9 +25,13 @@ void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc);
  * b/bc support AA/LK; bc evaluates CR and CTR conditions; unsupported arithmetic record forms are rejected. */
 ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction);
 /* Fetch one big-endian instruction from memory at PC, then execute it. */
+ppc_step_result_t ppc_cpu_step_from_bus(ppc_cpu_t *cpu, wii_bus_t *bus);
 ppc_step_result_t ppc_cpu_step_from_memory(ppc_cpu_t *cpu, wii_memory_t *memory);
 /* Memory-aware step supports lbz/lhz/lha/lwz/stb/sth/stw against bounded memory. */
 ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
                                            wii_memory_t *memory);
+/* Memory-aware step using mapped guest addresses for both fetch and data. */
+ppc_step_result_t ppc_cpu_step_with_bus(ppc_cpu_t *cpu, uint32_t instruction,
+                                        wii_bus_t *bus);
 
 #endif
