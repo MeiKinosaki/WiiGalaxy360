@@ -45,3 +45,10 @@ Só marcar uma etapa como concluída quando existir código real, testes reprodu
 - `nor` (X-form, XO 124) integrado: grava `~(RS | RB)` no destino RA. Testes cobrem padrões de bits mistos e entrada zero; CI pendente.
 
 - Correção de regressão: o teste de `nor` agora verifica o destino arquitetural `RA` (não `RT`). Commit de correção `27c371f7922d2eb94fc5ee357f4c28766291c325`; CI ainda em execução.
+
+
+## Continuação — subfze e busca de instruções integrada
+- Implementada instrução PowerPC X-form `subfze` (XO 200): `RT = ~RA + XER[CA]`, atualizando CA pelo carry-out. Os testes verificam caso com e sem carry-out. O primeiro workflow de teste revelou uma expectativa de carry incorreta no segundo caso; a expectativa foi corrigida em `8f783d2b6eedd5ee8ea2dcf0a52bff84ad675d2a`. Validar o resultado deste commit antes de fechar o marco.
+- Adicionada `ppc_cpu_step_from_memory`: busca uma instrução big-endian no endereço indicado por PC, verifica alinhamento e limites e a despacha para execução com acesso à memória. Testes de integração cobrem duas instruções sequenciais, PC avançando, PC desalinhado e busca fora da região.
+- Limitação importante: este passo usa PC como deslocamento dentro da região `wii_memory_t`; ainda não traduz endereços virtuais do Wii para RAM física e não implementa o mapa de memória real/MMIO.
+- Commits da busca integrada: código `b6e7917ca9624e0bd8d6141575a97f82dace69d6`, declaração `fc478d4079c9ba2aaf1ebc3f8da7c11c9ed10bd6`, testes `d65244934fd9143931881b3d0d07d78a64d14166`. Workflow em andamento: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/39763454475.
