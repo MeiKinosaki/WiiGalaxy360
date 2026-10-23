@@ -44,6 +44,15 @@ void ppc_cpu_raise_exception(ppc_cpu_t *cpu, ppc_exception_t exception,
     cpu->pc = vector;
 }
 
+int ppc_cpu_poll_external_interrupt(ppc_cpu_t *cpu, uint32_t active_pending,
+                                     int external_interrupts_enabled)
+{
+    if (cpu == 0 || active_pending == 0u || !external_interrupts_enabled)
+        return 0;
+    ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_EXTERNAL, cpu->pc, 0u);
+    return 1;
+}
+
 static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruction, wii_memory_t *memory, wii_bus_t *bus)
 {
     const uint32_t opcode = instruction >> 26;
