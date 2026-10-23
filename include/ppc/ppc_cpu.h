@@ -42,6 +42,11 @@ void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc);
 /* Record an exception and redirect PC to its Broadway/PowerPC vector. */
 void ppc_cpu_raise_exception(ppc_cpu_t *cpu, ppc_exception_t exception,
                              uint32_t fault_pc, uint32_t fault_address);
+/* Minimal external-interrupt gate: caller supplies enabled pending sources and
+ * the current EE/MSR policy. Returns 1 when the CPU is vectored, else 0.
+ * Device pending bits are deliberately not cleared by CPU exception delivery. */
+int ppc_cpu_poll_external_interrupt(ppc_cpu_t *cpu, uint32_t active_pending,
+                                     int external_interrupts_enabled);
 /* Supported subset: B-form bc (16), I-form b (18); D-form mulli (7), subfic (8), cmplwi (10), cmpwi (11), addi (14), addis (15), addic (12), ori (24), xori (26), M-form rlwinm (21); X-form mfspr (XO 339) and mtspr (XO 467) for LR/CTR; nor (XO 124), andc (XO 60), cntlzw (XO 26), extsb (XO 954), extsh (XO 922), slw (XO 24), srw (XO 536), sraw (XO 792), srawi (XO 824), subfze (XO 200); addc (XO 10), addze (XO 202), subf (XO 40), neg (XO 104), mullw (XO 235), add (XO 266), and (XO 28), xor (XO 316), or (XO 444), subfc (XO 8).
  * b/bc support AA/LK; bc evaluates CR and CTR conditions; unsupported arithmetic record forms are rejected. */
 ppc_step_result_t ppc_cpu_step(ppc_cpu_t *cpu, uint32_t instruction);
