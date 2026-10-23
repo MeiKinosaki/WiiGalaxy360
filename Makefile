@@ -23,7 +23,7 @@ test-state:
 	./test_state
 
 test-interrupts:
-	$(CC) $(CPPFLAGS) $(CFLAGS) src/hardware/interrupts.c tests/test_interrupts.c -o test_interrupts
+	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c src/cpu/ppc_cpu.c src/memory/memory.c src/hardware/interrupts.c tests/test_interrupts.c -o test_interrupts
 	./test_interrupts
 
 clean:
