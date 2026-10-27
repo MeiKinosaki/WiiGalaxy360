@@ -487,6 +487,22 @@ int main(void)
     assert(ppc_cpu_step(&cpu, encode_dform(11u, 0u, 6u, 0u) | (1u << 21)) == PPC_STEP_UNSUPPORTED);
     assert(cpu.pc == 0x30cu);
 
+    /* Invalid mapped data addresses and instruction fetches enter exception vectors. */
+    {
+        uint8_t ram[16] = {0};
+        wii_memory_t mem = { ram, sizeof(ram) };
+        ppc_cpu_reset(&cpu, 0u);
+        cpu.gpr[3] = 0x100u;
+        assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 4u, 3u, 0u), &mem) == PPC_STEP_UNSUPPORTED);
+        assert(cpu.pc == 0x300u && cpu.srr0 == 0u && cpu.dar == 0x100u);
+        ppc_cpu_reset(&cpu, 0x20u);
+        assert(ppc_cpu_step_from_memory(&cpu, &mem) == PPC_STEP_UNSUPPORTED);
+        assert(cpu.pc == 0x400u && cpu.srr0 == 0x20u);
+        ppc_cpu_reset(&cpu, 2u);
+        assert(ppc_cpu_step_from_memory(&cpu, &mem) == PPC_STEP_ALIGNMENT);
+        assert(cpu.pc == 0x600u && cpu.srr0 == 2u);
+    }
+
     /* Initial exception framework saves fault PC/address and redirects vector. */
     ppc_cpu_reset(&cpu, 0x80004000u);
     ppc_cpu_raise_exception(&cpu, PPC_EXCEPTION_ALIGNMENT, 0x80004004u, 0x1003u);
