@@ -326,10 +326,13 @@ int main(void)
         assert(cpu.gpr[25] == 0x5678u);
         assert(cpu.pc == 0x80003154u);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 5u), &memory) == PPC_STEP_ALIGNMENT);
+        assert(cpu.pc == 0x600u && cpu.srr0 == 0x80003154u);
+        ppc_cpu_reset(&cpu, 0x80003154u);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(40u, 23u, 0u, 3u), &memory) == PPC_STEP_ALIGNMENT);
-        assert(cpu.pc == 0x80003154u);
+        assert(cpu.pc == 0x600u && cpu.srr0 == 0x80003154u);
+        ppc_cpu_reset(&cpu, 0x80003154u);
         assert(ppc_cpu_step_with_memory(&cpu, encode_dform(32u, 23u, 0u, 8u), &memory) == PPC_STEP_UNSUPPORTED);
-        assert(cpu.pc == 0x80003154u);
+        assert(cpu.pc == 0x300u && cpu.srr0 == 0x80003154u && cpu.dar == 8u);
     }
 
     /* Restore the baseline PC before the original unconditional-branch tests. */
