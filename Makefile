@@ -19,7 +19,7 @@ test-memory:
 	./test_memory
 
 test-mmu:
-	$(CC) $(CPPFLAGS) $(CFLAGS) src/memory/mmu.c tests/test_mmu.c -o test_mmu
+	$(CC) $(CPPFLAGS) $(CFLAGS) src/memory/memory.c src/memory/mmu.c tests/test_mmu.c -o test_mmu
 	./test_mmu
 
 test-state:
