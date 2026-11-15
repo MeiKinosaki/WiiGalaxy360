@@ -16,6 +16,8 @@ jobs:
         target:
           - test-ppc-alu
           - test-ppc-cpu
+          - test-ppc-fpu
+          - test-gx-fifo
           - test-memory
           - test-mmu
           - test-state
