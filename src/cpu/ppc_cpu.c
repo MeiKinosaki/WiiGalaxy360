@@ -50,7 +50,7 @@ void ppc_cpu_raise_exception(ppc_cpu_t *cpu, ppc_exception_t exception,
 
 static void ppc_cpu_raise_data_storage(ppc_cpu_t *cpu, uint32_t address, bool store)
 {
-    ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address);
+    ppc_cpu_raise_data_storage(cpu, address, true);
     cpu->dsisr |= PPC_DSISR_TRANSLATION;
     if (store) cpu->dsisr |= PPC_DSISR_STORE;
 }
@@ -209,11 +209,11 @@ static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruct
             cpu->gpr[rt] = (opcode == 42u && (value & 0x8000u) != 0u)
                 ? (0xffff0000u | (uint32_t)value) : (uint32_t)value;
         } else if (opcode == 36u) {
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write32be(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, cpu->gpr[rt]) : wii_bus_write32be(bus, address, cpu->gpr[rt])) : wii_memory_write32be(memory, address, cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write32be(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, cpu->gpr[rt]) : wii_bus_write32be(bus, address, cpu->gpr[rt])) : wii_memory_write32be(memory, address, cpu->gpr[rt]))) { ppc_cpu_raise_data_storage(cpu, address, true); return PPC_STEP_UNSUPPORTED; }
         } else if (opcode == 44u) {
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write16be(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, (uint16_t)cpu->gpr[rt]) : wii_bus_write16be(bus, address, (uint16_t)cpu->gpr[rt])) : wii_memory_write16be(memory, address, (uint16_t)cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write16be(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, (uint16_t)cpu->gpr[rt]) : wii_bus_write16be(bus, address, (uint16_t)cpu->gpr[rt])) : wii_memory_write16be(memory, address, (uint16_t)cpu->gpr[rt]))) { ppc_cpu_raise_data_storage(cpu, address, true); return PPC_STEP_UNSUPPORTED; }
         } else {
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write8(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, (uint8_t)cpu->gpr[rt]) : wii_bus_write8(bus, address, (uint8_t)cpu->gpr[rt])) : wii_memory_write8(memory, address, (uint8_t)cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write8(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, (uint8_t)cpu->gpr[rt]) : wii_bus_write8(bus, address, (uint8_t)cpu->gpr[rt])) : wii_memory_write8(memory, address, (uint8_t)cpu->gpr[rt]))) { ppc_cpu_raise_data_storage(cpu, address, true); return PPC_STEP_UNSUPPORTED; }
         }
         cpu->pc += 4u;
         return PPC_STEP_OK;
