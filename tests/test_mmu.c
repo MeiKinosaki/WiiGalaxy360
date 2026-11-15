@@ -49,5 +49,24 @@ int main(void)
         assert(wii_mmu_translate(&mmu, 0x11004u, 3u,
                                  WII_MMU_PERM_READ, &physical));
     }
+
+    /* Exercise virtual-to-physical translation against Wii RAM aliases. */
+    {
+        uint8_t mem1[0x2000] = {0};
+        uint8_t mem2[0x1000] = {0};
+        wii_bus_t bus;
+        wii_mmu_init(&mmu);
+        wii_bus_init(&bus);
+        assert(wii_bus_map_wii_ram(&bus, mem1, sizeof(mem1), mem2, sizeof(mem2)));
+        assert(wii_mmu_tlb_map(&mmu, 0x40000000u, 0x80000000u, 9u,
+                               WII_MMU_PERM_READ | WII_MMU_PERM_WRITE));
+        assert(wii_mmu_bus_write32be(&mmu, &bus, 0x40000020u, 9u, 0xcafebabeu));
+        assert(wii_mmu_bus_read32be(&mmu, &bus, 0x40000020u, 9u, &physical));
+        assert(physical == 0xcafebabeu);
+        assert(!wii_mmu_bus_write32be(&mmu, &bus, 0x40000020u, 10u, 0u));
+        assert(wii_mmu_tlb_map(&mmu, 0x40000000u, 0x80000000u, 9u,
+                               WII_MMU_PERM_READ));
+        assert(!wii_mmu_bus_write32be(&mmu, &bus, 0x40000020u, 9u, 0u));
+    }
     return 0;
 }
