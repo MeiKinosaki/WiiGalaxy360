@@ -1,26 +1,28 @@
 # Estado e roteiro de desenvolvimento
 
-## Marco validado — v2.45b
+## Marco validado — v2.46b
 
-- Adicionados o registro SDR1 e a configuração inicial de VSID para os 16 segmentos.
-- Implementada busca inicial em PTEG primário e secundário, com oito slots cada, comparação de V/VSID/H/API e composição do endereço físico a partir de RPN e offset.
-- A tradução consulta primeiro o TLB manual; em miss, tenta o page-table walker hash. Helpers de barramento e fetch/load/store da CPU passaram a usar o fallback.
-- Teste de host cria PTE na RAM mapeada, verifica tradução para endereço físico e leitura/escrita através do resultado.
-- GitHub Actions passou em seis jobs isolados e na **Full host regression suite** (7/7): https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43752888641.
-- Commit de código validado: `cdae2eaa46b0d00f63d8103f39776ccfbd7f7328`. README e este documento foram atualizados em commits posteriores.
-- Limitações importantes: walker ainda inicial; não valida completamente os campos/tamanho de SDR1/HTABMASK, não implementa todos os campos de segment register, BAT, PR/KEY e permissões de usuário/supervisor, atualização R/C, preenchimento do TLB nem exceções de page fault precisas.
-- CI é somente host. Não comprova compilação Xenon, ELF/XEX novo, execução em RGH ou compatibilidade de jogos Wii.
+- Segment registers: configuração dos 16 VSIDs, KS/KP como chaves de proteção e N para bloqueio de execução.
+- BAT inicial: quatro entradas IBAT e quatro DBAT, seleção por acesso e permissões por modo supervisor/usuário.
+- SDR1: validação inicial de alinhamento de HTABORG e bits reservados; o hash continua limitado a uma implementação inicial de PTEG primário/secundário.
+- PTE: regras PP iniciais dependentes de KS/KP; atualização de R em leitura/execução e R+C em escrita.
+- CPU: caminhos de fetch/load/store pelo MMU respeitam PR; falha de dados preenche DAR e os bits iniciais de tradução/armazenamento em DSISR.
+- FPU Gekko inicial em src/cpu/ppc_fpu.c: 32 FPR double-backed, aritmética single/double e compare ordered/unordered com flags FPSCR iniciais. Ainda é módulo isolado, não decodificado pela CPU.
+- GX FIFO em src/hardware/gx_fifo.c: fila circular de 256 palavras, leitura/escrita e contadores de overflow/underflow. Ainda não está conectada ao endereço MMIO GX nem ao processador de comandos Flipper.
+- Testes de host: test-ppc-alu, test-ppc-cpu, test-ppc-fpu, test-gx-fifo, test-memory, test-mmu, test-state e test-interrupts passaram; a Full host regression suite também passou: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43754894926.
+- Correções de compatibilidade: setter legado de VSID mantém acesso supervisor read/write, e testes KS/KP usam valores coerentes com a chave.
+- Limitações: não há page-fault classification completa, atualização arquitetural integral de SDR1/HTABMASK, preenchimento de TLB por walker, integração da FPU ao decoder, GX FIFO no MMIO/Flipper, build Xenon desta etapa, nem execução no Xbox 360 RGH. Nenhum novo default.xex funcional foi validado.
 
-**Versão de trabalho: v2.45b. Progresso global estimado: 31%.**
+**Versão de trabalho: v2.46b. Progresso global estimado: 33%.**
 
 ## Próximo roteiro
 
-1. Validar a codificação de SDR1 e HTABMASK com testes de limites e múltiplos PTEGs.
-2. Implementar segment registers com VSID, Ks/Kp, N e controle de tradução.
-3. Implementar BAT e seleção de tradução por região.
-4. Completar PP/PR/KEY, R/C e exceções de tradução com DAR/DSISR corretos.
-5. Avançar FPU Gekko e GX FIFO/Flipper.
-6. Validar toolchain Xenon separadamente; só declarar ELF/XEX quando o artefato existir e for inspecionado.
+1. Integrar operações FPU ao decoder PowerPC e incluir FPR/FPSCR no save state.
+2. Ligar GX FIFO ao endereço MMIO 0xCC008000, decodificar comandos GX e avançar Flipper.
+3. Completar SDR1/HTABMASK, page faults, DAR/DSISR e preenchimento/invalidação do TLB.
+4. Aumentar cobertura de BAT, PP/PR/KEY e limites de segmentos.
+5. Executar build Xenon separado e inspecionar ELF/XEX apenas se os artefatos forem produzidos.
+6. Manter teste real no RGH e compatibilidade de jogos como não comprovados até evidência direta.
 
 ## Marco validado — v2.43b
 
