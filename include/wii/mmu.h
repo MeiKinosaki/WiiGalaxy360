@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "wii/memory.h"
 
 #define WII_MMU_PAGE_SHIFT 12u
 #define WII_MMU_PAGE_SIZE (1u << WII_MMU_PAGE_SHIFT)
@@ -37,5 +38,13 @@ bool wii_mmu_tlb_unmap(wii_mmu_t *mmu, uint32_t effective_base,
 bool wii_mmu_translate(const wii_mmu_t *mmu, uint32_t effective_address,
                        uint16_t asid, uint8_t access,
                        uint32_t *physical_address);
+/* Translate an effective address through the software TLB, then access
+ * the physical bus. These helpers do not implement page-table walks. */
+bool wii_mmu_bus_read32be(const wii_mmu_t *mmu, const wii_bus_t *bus,
+                          uint32_t effective_address, uint16_t asid,
+                          uint32_t *value);
+bool wii_mmu_bus_write32be(const wii_mmu_t *mmu, wii_bus_t *bus,
+                           uint32_t effective_address, uint16_t asid,
+                           uint32_t value);
 
 #endif
