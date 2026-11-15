@@ -1,5 +1,28 @@
 # Estado e roteiro de desenvolvimento
 
+## Marco validado — v2.41b
+
+- O TLB inicial de software foi adicionado em `include/wii/mmu.h` e `src/memory/mmu.c`.
+- São suportadas 32 entradas, páginas de 4 KiB, ASID, permissões R/W/X, remapeamento, remoção e substituição determinística.
+- Testes próprios cobrem hit/miss, offset, ASID, permissões e parâmetros inválidos.
+- O Makefile e o workflow Host tests incluem `test-mmu`.
+- A execução do workflow terminou com sucesso: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43662030566.
+- O TLB ainda não é o MMU fiel do Broadway: faltam page-table walker hash, PTEG/PTE, segment registers, BAT, exceções de tradução e integração completa nos acessos da CPU.
+- Sem comprovação de novo build Xenon, novo `default.xex` funcional, execução em RGH ou boot de jogos Wii.
+
+**Versão de trabalho: v2.41b. Progresso global estimado: 26%.**
+
+Consulte [registro completo v2.41b](v2.41b-milestone.md).
+
+## Próximo roteiro
+
+1. Integrar tradução aos caminhos de fetch/load/store e propagar falhas de tradução/proteção.
+2. Implementar segment registers e page-table walker SDR1/PTEG/PTE.
+3. Completar exceções privilegiadas e MSR.
+4. Desenvolver FPU Gekko e GX FIFO/Flipper com testes independentes.
+
+---
+
 ## Marco validado — v2.40b
 
 - Host tests do commit `05200faceb6991b9fe8addc9162cda85e3589acb` concluíram com sucesso: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43647958974.
