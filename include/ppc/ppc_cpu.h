@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "ppc/ppc_alu.h"
 #include "wii/memory.h"
+#include "wii/mmu.h"
 
 /* Modeled PowerPC MSR External Interrupt Enable bit. */
 #define PPC_MSR_EE 0x00008000u
@@ -63,5 +64,11 @@ ppc_step_result_t ppc_cpu_step_with_memory(ppc_cpu_t *cpu, uint32_t instruction,
 /* Memory-aware step using mapped guest addresses for both fetch and data. */
 ppc_step_result_t ppc_cpu_step_with_bus(ppc_cpu_t *cpu, uint32_t instruction,
                                         wii_bus_t *bus);
+/* Execute/fetch through the software TLB using the supplied address space ID. */
+ppc_step_result_t ppc_cpu_step_with_mmu(ppc_cpu_t *cpu, uint32_t instruction,
+                                        wii_bus_t *bus, const wii_mmu_t *mmu,
+                                        uint16_t asid);
+ppc_step_result_t ppc_cpu_step_from_mmu(ppc_cpu_t *cpu, wii_bus_t *bus,
+                                        const wii_mmu_t *mmu, uint16_t asid);
 
 #endif
