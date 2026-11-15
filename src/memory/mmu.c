@@ -106,3 +106,49 @@ bool wii_mmu_bus_write32be(const wii_mmu_t *mmu, wii_bus_t *bus,
         return false;
     return wii_bus_write32be(bus, physical_address, value);
 }
+
+bool wii_mmu_bus_read8(const wii_mmu_t *mmu, const wii_bus_t *bus,
+                       uint32_t effective_address, uint16_t asid,
+                       uint8_t *value)
+{
+    uint32_t physical_address;
+    if (value == 0 ||
+        !wii_mmu_translate(mmu, effective_address, asid,
+                           WII_MMU_PERM_READ, &physical_address))
+        return false;
+    return wii_bus_read8(bus, physical_address, value);
+}
+
+bool wii_mmu_bus_read16be(const wii_mmu_t *mmu, const wii_bus_t *bus,
+                          uint32_t effective_address, uint16_t asid,
+                          uint16_t *value)
+{
+    uint32_t physical_address;
+    if (value == 0 ||
+        !wii_mmu_translate(mmu, effective_address, asid,
+                           WII_MMU_PERM_READ, &physical_address))
+        return false;
+    return wii_bus_read16be(bus, physical_address, value);
+}
+
+bool wii_mmu_bus_write8(const wii_mmu_t *mmu, wii_bus_t *bus,
+                        uint32_t effective_address, uint16_t asid,
+                        uint8_t value)
+{
+    uint32_t physical_address;
+    if (!wii_mmu_translate(mmu, effective_address, asid,
+                           WII_MMU_PERM_WRITE, &physical_address))
+        return false;
+    return wii_bus_write8(bus, physical_address, value);
+}
+
+bool wii_mmu_bus_write16be(const wii_mmu_t *mmu, wii_bus_t *bus,
+                           uint32_t effective_address, uint16_t asid,
+                           uint16_t value)
+{
+    uint32_t physical_address;
+    if (!wii_mmu_translate(mmu, effective_address, asid,
+                           WII_MMU_PERM_WRITE, &physical_address))
+        return false;
+    return wii_bus_write16be(bus, physical_address, value);
+}
