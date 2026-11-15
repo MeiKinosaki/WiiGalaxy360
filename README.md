@@ -2,9 +2,9 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Continuidade de desenvolvimento (marco de trabalho v2.42b)
+## Continuidade de desenvolvimento (marco de trabalho v2.43b)
 
-A v2.42b corrige a ligação das novas rotinas de acesso ao barramento através do TLB: `wii_mmu_bus_read32be` e `wii_mmu_bus_write32be` traduzem o endereço efetivo com ASID/permissões e então acessam o barramento físico big-endian. Host tests passou integralmente, incluindo `test-mmu` e **Full host regression suite**: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43663892456. O TLB continua sendo uma camada inicial de software; ainda faltam o page-table walker hash SDR1/PTEG/PTE, segment registers, BAT, exceções de tradução e integração completa aos caminhos de fetch/load/store da CPU. Não há prova de build Xenon novo, `default.xex` funcional no RGH ou boot de jogos Wii. Consulte [estado de desenvolvimento](docs/DEVELOPMENT_STATUS.md).
+A v2.43b conecta o TLB aos caminhos da CPU para fetch de instrução e operações D-form de load/store. Foram expostas as APIs `ppc_cpu_step_from_mmu` e `ppc_cpu_step_with_mmu`; fetch exige permissão EXEC, leituras exigem READ e escritas exigem WRITE, sempre respeitando ASID e tradução para o barramento físico. Testes cobrem execução de instrução traduzida, load/store, bloqueio de escrita em página somente leitura e bloqueio de fetch sem EXEC. O Host tests e a regressão completa passaram: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43664116808. Ainda faltam page-table walker hash SDR1/PTEG/PTE, segment registers, BAT, exceções arquiteturais completas, tradução em todos os modos de acesso e integração fiel ao Broadway. Não há prova de build Xenon novo, `default.xex` funcional no RGH ou boot de jogos Wii. Consulte [estado de desenvolvimento](docs/DEVELOPMENT_STATUS.md).
 
 ## Estado real — v2.17b: subfc e carry do XER
 
