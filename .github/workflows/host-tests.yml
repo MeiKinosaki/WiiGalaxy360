@@ -17,6 +17,7 @@ jobs:
           - test-ppc-alu
           - test-ppc-cpu
           - test-memory
+          - test-mmu
           - test-state
           - test-interrupts
     steps:
