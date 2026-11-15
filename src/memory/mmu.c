@@ -32,7 +32,13 @@ bool wii_mmu_set_sdr1(wii_mmu_t *m,uint32_t v)
 }
 bool wii_mmu_set_segment(wii_mmu_t *m,unsigned n,uint32_t vsid,bool ks,bool kp,bool nx)
 {
- if(!m||n>=16u||vsid>0xffffffu)return false;m->segments[n].vsid=vsid;m->segments[n].ks=ks;m->segments[n].kp=kp;m->segments[n].no_execute=nx;m->segments[n].valid=true;return true;
+ if (!m || n >= 16u || vsid > 0xffffffu) return false;
+ m->segments[n].vsid = vsid;
+ m->segments[n].ks = ks;
+ m->segments[n].kp = kp;
+ m->segments[n].no_execute = nx;
+ m->segments[n].valid = true;
+ return true;
 }
 bool wii_mmu_set_segment_vsid(wii_mmu_t *m,unsigned n,uint32_t vsid){return wii_mmu_set_segment(m,n,vsid,true,true,false);}
 bool wii_mmu_set_bat(wii_mmu_t *m,bool ins,unsigned n,uint32_t ea,uint32_t pa,uint32_t mask,bool sv,bool uv,uint8_t perms)
@@ -44,7 +50,11 @@ static bool walk_pteg(const wii_bus_t *bus,uint32_t base,uint32_t vsid,uint32_t 
  unsigned slot;for(slot=0;slot<8u;slot++){uint32_t p0,p1,a=base+slot*8u;if(!wii_bus_read32be(bus,a,&p0)||!wii_bus_read32be(bus,a+4u,&p1))return false;
  if(!(p0&0x80000000u)||((p0>>7)&0xffffffu)!=vsid||(((p0>>6)&1u)!=0u)!=secondary||(p0&0x3fu)!=api)continue;
  {uint32_t pp=p1&3u;bool key=(p1&WII_MMU_PTE1_KEY)!=0u;bool r=pp!=0u,w=(pp==1u)||(!key&&pp==2u);if((access==WII_MMU_PERM_WRITE&&!w)||((access==WII_MMU_PERM_READ||access==WII_MMU_PERM_EXEC)&&!r))return false;}
- if(access==WII_MMU_PERM_WRITE)p1|=WII_MMU_PTE1_CHANGED;p1|=WII_MMU_PTE1_REFERENCED;if(!wii_bus_write32be((wii_bus_t *)bus,a+4u,p1))return false;*pa=(p1&0xfffff000u)|offset;return true;
+ if (access == WII_MMU_PERM_WRITE) p1 |= WII_MMU_PTE1_CHANGED;
+ p1 |= WII_MMU_PTE1_REFERENCED;
+ if (!wii_bus_write32be((wii_bus_t *)bus, a + 4u, p1)) return false;
+ *pa = (p1 & 0xfffff000u) | offset;
+ return true;
  }return false;
 }
 bool wii_mmu_translate_bus_ex(const wii_mmu_t *m,wii_bus_t *bus,uint32_t ea,uint16_t asid,uint8_t access,bool user,uint32_t *pa)
