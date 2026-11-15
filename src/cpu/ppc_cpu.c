@@ -70,6 +70,13 @@ static bool ppc_mmu_read16be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, 
            wii_bus_read16be(bus, pa, value);
 }
 
+static bool ppc_mmu_fetch32(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint32_t *value)
+{
+    uint32_t pa;
+    return wii_mmu_translate(mmu, ea, asid, WII_MMU_PERM_EXEC, &pa) &&
+           wii_bus_read32be(bus, pa, value);
+}
+
 static bool ppc_mmu_read32be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint32_t *value)
 {
     return wii_mmu_bus_read32be(mmu, bus, ea, asid, value);
@@ -586,7 +593,7 @@ ppc_step_result_t ppc_cpu_step_from_mmu(ppc_cpu_t *cpu, wii_bus_t *bus,
         ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_ALIGNMENT, cpu->pc, cpu->pc);
         return PPC_STEP_ALIGNMENT;
     }
-    if (!ppc_mmu_read32be(mmu, bus, cpu->pc, asid, &instruction)) {
+    if (!ppc_mmu_fetch32(mmu, bus, cpu->pc, asid, &instruction)) {
         ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_INSTRUCTION_STORAGE, cpu->pc, cpu->pc);
         return PPC_STEP_UNSUPPORTED;
     }
