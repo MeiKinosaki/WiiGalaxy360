@@ -142,6 +142,9 @@ int main(void)
         assert(wii_mmu_bus_read8(&mmu,&bus,0x234u,0u,&value));
         pte1=((uint32_t)mem1[4]<<24)|((uint32_t)mem1[5]<<16)|((uint32_t)mem1[6]<<8)|mem1[7];
         assert((pte1&WII_MMU_PTE1_REFERENCED)!=0u);
+        /* KS=0 allows supervisor write; KP=1 makes user access read-only. */
+        assert(!wii_mmu_translate_bus_ex(&mmu,&bus,0x235u,0u,WII_MMU_PERM_WRITE,true,&physical));
+        assert(wii_mmu_translate_bus_ex(&mmu,&bus,0x235u,0u,WII_MMU_PERM_WRITE,false,&physical));
         assert(wii_mmu_bus_write8(&mmu,&bus,0x235u,0u,0x77u));
         pte1=((uint32_t)mem1[4]<<24)|((uint32_t)mem1[5]<<16)|((uint32_t)mem1[6]<<8)|mem1[7];
         assert((pte1&WII_MMU_PTE1_CHANGED)!=0u);
