@@ -43,7 +43,18 @@ bool wii_mmu_set_segment(wii_mmu_t *m,unsigned n,uint32_t vsid,bool ks,bool kp,b
 bool wii_mmu_set_segment_vsid(wii_mmu_t *m,unsigned n,uint32_t vsid){return wii_mmu_set_segment(m,n,vsid,true,true,false);}
 bool wii_mmu_set_bat(wii_mmu_t *m,bool ins,unsigned n,uint32_t ea,uint32_t pa,uint32_t mask,bool sv,bool uv,uint8_t perms)
 {
- wii_mmu_bat_t *b;if(!m||n>=4u||!sv&&!uv||!perms||(perms&~7u)||(mask&0x1ffffu)!=0x1ffffu)return false;b=ins?&m->ibat[n]:&m->dbat[n];b->effective_base=ea&~mask;b->physical_base=pa&~mask;b->block_mask=mask;b->permissions=perms;b->supervisor_valid=sv;b->user_valid=uv;b->valid=true;return true;
+ wii_mmu_bat_t *b;
+ if (!m || n >= 4u || (!sv && !uv) || !perms || (perms & ~7u) ||
+     (mask & 0x1ffffu) != 0x1ffffu) return false;
+ b = ins ? &m->ibat[n] : &m->dbat[n];
+ b->effective_base = ea & ~mask;
+ b->physical_base = pa & ~mask;
+ b->block_mask = mask;
+ b->permissions = perms;
+ b->supervisor_valid = sv;
+ b->user_valid = uv;
+ b->valid = true;
+ return true;
 }
 static bool walk_pteg(const wii_bus_t *bus,uint32_t base,uint32_t vsid,uint32_t api,bool secondary,uint32_t offset,uint8_t access,uint32_t *pa)
 {
