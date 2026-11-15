@@ -16,10 +16,13 @@ int main(void)
     assert(wii_interrupts_pending(&ic) == 0u); /* masked by default */
     wii_interrupts_enable(&ic, (1u << 2) | (1u << 4));
     assert(wii_interrupts_pending(&ic) == ((1u << 2) | (1u << 4)));
-    assert(!ppc_cpu_poll_external_interrupt(&cpu, wii_interrupts_pending(&ic), 0));
+    assert(!ppc_cpu_poll_external_interrupt(&cpu, wii_interrupts_pending(&ic)));
     assert(cpu.pc == 0x80001000u);
-    assert(ppc_cpu_poll_external_interrupt(&cpu, wii_interrupts_pending(&ic), 1));
+    cpu.msr |= PPC_MSR_EE;
+    assert(ppc_cpu_poll_external_interrupt(&cpu, wii_interrupts_pending(&ic)));
     assert(cpu.pc == 0x500u && cpu.srr0 == 0x80001000u);
+    assert((cpu.srr1 & PPC_MSR_EE) != 0u && (cpu.msr & PPC_MSR_EE) == 0u);
+    assert(!ppc_cpu_poll_external_interrupt(&cpu, wii_interrupts_pending(&ic)));
     assert(wii_interrupts_pending(&ic) == ((1u << 2) | (1u << 4)));
     assert(wii_interrupts_next(&ic, &source) && source == 2u);
     wii_interrupts_clear(&ic, 2u);
