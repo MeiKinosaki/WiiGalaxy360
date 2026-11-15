@@ -2,9 +2,9 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Continuidade de desenvolvimento (marco de trabalho v2.44b)
+## Continuidade de desenvolvimento (marco de trabalho v2.45b)
 
-A v2.44b amplia os acessos da CPU através do TLB para operações D-form de byte, meia-palavra e palavra: `lbz`, `lhz`, `lha`, `lwz`, `stb`, `sth` e `stw`. Foram adicionadas também as APIs de barramento MMU para leitura/escrita traduzida de 8, 16 e 32 bits big-endian. Os testes verificam armazenamento e leitura de meia-palavra, extensão de sinal em `lha`, byte store/load, permissões e endereço da exceção de armazenamento. A regressão completa Host tests passou no commit `f8210d4a9f5284b9448e73c14e2f79583870700a`: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43750299659. A tradução ainda depende do TLB manual; faltam page-table walker hash SDR1/PTEG/PTE, segment registers, BAT e exceções arquiteturais completas. Esta validação é somente host: não comprova build Xenon, `default.xex` novo/funcional no RGH ou boot de jogos Wii. Consulte [estado de desenvolvimento](docs/DEVELOPMENT_STATUS.md).
+A v2.45b adiciona um primeiro page-table walker hash: registra SDR1, permite configurar VSID por segmento, calcula hash primário/secundário, procura PTEGs com oito entradas e confere V/VSID/H/API antes de compor o endereço físico com RPN e offset. A tradução tenta primeiro o TLB manual e, em caso de miss, consulta a tabela hash; os helpers de barramento e os caminhos MMU da CPU usam esse fallback. Testes de host cobrem tradução por PTE e acessos de byte; a regressão completa passou em 7/7 jobs: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43752888641. É uma implementação inicial, ainda não um MMU Broadway fiel: faltam validação arquitetural de SDR1/HTABMASK, segment registers completos, BAT, regras de proteção dependentes de PR/KEY, atualização R/C, preenchimento TLB e exceções de page fault precisas. Não há comprovação de compilação Xenon, `default.xex` novo/funcional no RGH ou boot de jogos Wii. Consulte [estado de desenvolvimento](docs/DEVELOPMENT_STATUS.md).
 
 ## Estado real — v2.17b: subfc e carry do XER
 
