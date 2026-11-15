@@ -513,5 +513,17 @@ int main(void)
     assert(cpu.dar == 0x1003u && cpu.exception_pending != 0u);
     ppc_cpu_reset(&cpu, 0x80004000u);
     assert(cpu.srr0 == 0u && cpu.exception_pending == 0u && cpu.pc == 0x80004000u);
+
+    /* MSR.EE gates external delivery; exception entry saves MSR in SRR1,
+     * clears EE, and rfi restores the saved PC and modeled MSR state. */
+    ppc_cpu_reset(&cpu, 0x80005000u);
+    cpu.msr = PPC_MSR_EE | 1u;
+    ppc_cpu_raise_exception(&cpu, PPC_EXCEPTION_EXTERNAL, cpu.pc, 0u);
+    assert(cpu.pc == 0x500u && cpu.srr0 == 0x80005000u);
+    assert(cpu.srr1 == (PPC_MSR_EE | 1u) && cpu.msr == 1u);
+    assert(ppc_cpu_step(&cpu, (19u << 26) | (50u << 1)) == PPC_STEP_OK);
+    assert(cpu.pc == 0x80005000u && cpu.msr == (PPC_MSR_EE | 1u));
+    assert(cpu.exception_pending == 0u);
+
     return 0;
 }
