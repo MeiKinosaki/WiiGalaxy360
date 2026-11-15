@@ -24,6 +24,9 @@ typedef struct {
 typedef struct {
     wii_mmu_tlb_entry_t entries[WII_MMU_TLB_ENTRIES];
     size_t replacement;
+    uint32_t sdr1;
+    uint32_t segment_vsid[16];
+    bool segment_valid[16];
 } wii_mmu_t;
 
 /* A deterministic software TLB scaffold. This is not yet the Broadway
@@ -38,6 +41,15 @@ bool wii_mmu_tlb_unmap(wii_mmu_t *mmu, uint32_t effective_base,
 bool wii_mmu_translate(const wii_mmu_t *mmu, uint32_t effective_address,
                        uint16_t asid, uint8_t access,
                        uint32_t *physical_address);
+/* Configure the PowerPC hashed page table and one of 16 segment VSIDs.
+ * SDR1 is retained in its architectural register encoding. */
+void wii_mmu_set_sdr1(wii_mmu_t *mmu, uint32_t sdr1);
+bool wii_mmu_set_segment_vsid(wii_mmu_t *mmu, unsigned segment,
+                              uint32_t vsid);
+/* TLB-first translation; on miss, walk primary then secondary PTEGs. */
+bool wii_mmu_translate_bus(const wii_mmu_t *mmu, const wii_bus_t *bus,
+                           uint32_t effective_address, uint16_t asid,
+                           uint8_t access, uint32_t *physical_address);
 /* Translate an effective address through the software TLB, then access
  * the physical bus. These helpers do not implement page-table walks. */
 bool wii_mmu_bus_read8(const wii_mmu_t *mmu, const wii_bus_t *bus,
