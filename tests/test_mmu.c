@@ -2,6 +2,15 @@
 #include <stdint.h>
 #include "wii/mmu.h"
 
+static void store_be32(uint8_t *p, uint32_t value)
+{
+    p[0] = (uint8_t)(value >> 24);
+    p[1] = (uint8_t)(value >> 16);
+    p[2] = (uint8_t)(value >> 8);
+    p[3] = (uint8_t)value;
+}
+
+
 int main(void)
 {
     wii_mmu_t mmu;
@@ -67,6 +76,34 @@ int main(void)
         assert(wii_mmu_tlb_map(&mmu, 0x40000000u, 0x80000000u, 9u,
                                WII_MMU_PERM_READ));
         assert(!wii_mmu_bus_write32be(&mmu, &bus, 0x40000020u, 9u, 0u));
+    }
+
+    /* Hashed page table: SDR1 -> primary PTEG, VSID/API tag, RPN and PP. */
+    {
+        uint8_t mem1[0x3000] = {0};
+        uint8_t mem2[0x1000] = {0};
+        wii_bus_t bus;
+        uint32_t translated = 0u;
+        const uint32_t vsid = 0x12345u;
+        const uint32_t pte0 = 0x80000000u | (vsid << 7);
+        const uint32_t pte1 = 0x80001000u | 1u; /* PP=01: read/write */
+        wii_mmu_init(&mmu);
+        wii_bus_init(&bus);
+        assert(wii_bus_map_wii_ram(&bus, mem1, sizeof(mem1), mem2, sizeof(mem2)));
+        wii_mmu_set_sdr1(&mmu, 0x80000000u); /* HTABORG=0x80000000, mask=0 */
+        assert(wii_mmu_set_segment_vsid(&mmu, 0u, vsid));
+        store_be32(&mem1[0], pte0);
+        store_be32(&mem1[4], pte1);
+        mem1[0x1234u] = 0x5au;
+        assert(wii_mmu_translate_bus(&mmu, &bus, 0x00000234u, 0u,
+                                     WII_MMU_PERM_READ, &translated));
+        assert(translated == 0x80001234u);
+        assert(wii_mmu_bus_read8(&mmu, &bus, 0x00000234u, 0u, &mem2[0]));
+        assert(mem2[0] == 0x5au);
+        assert(wii_mmu_bus_write8(&mmu, &bus, 0x00000235u, 0u, 0xa5u));
+        assert(mem1[0x1235u] == 0xa5u);
+        assert(!wii_mmu_translate_bus(&mmu, &bus, 0x00000234u, 0u,
+                                      WII_MMU_PERM_EXEC, &translated) == 0);
     }
     return 0;
 }
