@@ -116,8 +116,6 @@ static bool wii_mmu_walk_pteg(const wii_mmu_t *mmu, const wii_bus_t *bus,
     for (slot = 0u; slot < 8u; ++slot) {
         uint32_t pte0, pte1;
         const uint32_t address = pteg_address + slot * 8u;
-        const uint32_t pte_vsid = (address, 0u);
-        (void)pte_vsid;
         if (!wii_bus_read32be(bus, address, &pte0) ||
             !wii_bus_read32be(bus, address + 4u, &pte1))
             return false;
@@ -152,7 +150,7 @@ bool wii_mmu_translate_bus(const wii_mmu_t *mmu, const wii_bus_t *bus,
         (access != WII_MMU_PERM_READ && access != WII_MMU_PERM_WRITE &&
          access != WII_MMU_PERM_EXEC) || !mmu->segment_valid[segment])
         return false;
-    if (wii_mmu_translate(mmu, effective_address, asid, access,
+    if (wii_mmu_translate_bus(mmu, bus, effective_address, asid, access,
                           physical_address))
         return true;
     vsid = mmu->segment_vsid[segment];
