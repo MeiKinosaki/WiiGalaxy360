@@ -1,25 +1,22 @@
 # Estado e roteiro de desenvolvimento
 
-## Marco validado — v2.41b
+## Marco validado — v2.42b
 
-- O TLB inicial de software foi adicionado em `include/wii/mmu.h` e `src/memory/mmu.c`.
-- São suportadas 32 entradas, páginas de 4 KiB, ASID, permissões R/W/X, remapeamento, remoção e substituição determinística.
-- Testes próprios cobrem hit/miss, offset, ASID, permissões e parâmetros inválidos.
-- O Makefile e o workflow Host tests incluem `test-mmu`.
-- A execução do workflow terminou com sucesso: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43662030566.
-- O TLB ainda não é o MMU fiel do Broadway: faltam page-table walker hash, PTEG/PTE, segment registers, BAT, exceções de tradução e integração completa nos acessos da CPU.
-- Sem comprovação de novo build Xenon, novo `default.xex` funcional, execução em RGH ou boot de jogos Wii.
+- Implementadas `wii_mmu_bus_read32be` e `wii_mmu_bus_write32be` em `src/memory/mmu.c`.
+- Cada helper traduz endereço efetivo usando o TLB, confere ASID e permissão de leitura/escrita e então acessa o endereço físico no `wii_bus_t` com semântica big-endian.
+- Corrigida a falha anterior de linkagem do job `test-mmu`; o problema era a declaração pública sem definição correspondente.
+- CI Host tests passou integralmente no commit `1bfbafca05a63fe9b7c47ced8f73b950e726ceeb`: seis jobs isolados e **Full host regression suite** concluídos com sucesso. https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43663892456
+- Esta validação é de host. Não prova a MMU arquitetural completa do Broadway, compilação Xenon, execução no RGH ou compatibilidade de jogos Wii.
 
-**Versão de trabalho: v2.41b. Progresso global estimado: 26%.**
-
-Consulte [registro completo v2.41b](v2.41b-milestone.md).
+**Versão de trabalho: v2.42b. Progresso global estimado: 27,5%.**
 
 ## Próximo roteiro
 
-1. Integrar tradução aos caminhos de fetch/load/store e propagar falhas de tradução/proteção.
-2. Implementar segment registers e page-table walker SDR1/PTEG/PTE.
-3. Completar exceções privilegiadas e MSR.
-4. Desenvolver FPU Gekko e GX FIFO/Flipper com testes independentes.
+1. Ligar MMU aos caminhos reais de fetch/load/store da CPU e distinguir falha de tradução, proteção e acesso ao barramento.
+2. Implementar segment registers e page-table walker hash SDR1/PTEG/PTE.
+3. Completar exceções privilegiadas, MSR e retorno de exceção com testes.
+4. Avançar FPU Gekko e GX FIFO/Flipper em módulos integrados e testáveis.
+5. Revalidar a toolchain Xenon separadamente; só registrar ELF/XEX quando os artefatos forem efetivamente produzidos e inspecionados.
 
 ---
 
