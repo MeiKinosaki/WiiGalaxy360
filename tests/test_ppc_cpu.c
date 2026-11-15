@@ -553,6 +553,26 @@ int main(void)
         assert(ppc_cpu_step_with_mmu(&mmu_cpu,
                encode_dform(32u, 5u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
         assert(mmu_cpu.gpr[5] == 0xdecafbadu);
+        /* Byte/halfword accesses also pass through effective-address translation. */
+        mmu_cpu.pc = 0x1010u;
+        mmu_cpu.gpr[3] = 0x1010u;
+        mmu_cpu.gpr[4] = 0x000080ffu;
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(44u, 4u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(ram[16] == 0x80u && ram[17] == 0xffu);
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(40u, 5u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(mmu_cpu.gpr[5] == 0x80ffu);
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(42u, 6u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(mmu_cpu.gpr[6] == 0xffff80ffu);
+        mmu_cpu.gpr[4] = 0x5au;
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(38u, 4u, 3u, 2u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(ram[18] == 0x5au);
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(34u, 7u, 3u, 2u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(mmu_cpu.gpr[7] == 0x5au);
         /* Read-only mapping must reject stores and raise data-storage exception. */
         assert(wii_mmu_tlb_map(&cpu_mmu, 0x1000u, 0x80000000u, 4u,
                                WII_MMU_PERM_READ | WII_MMU_PERM_EXEC));
