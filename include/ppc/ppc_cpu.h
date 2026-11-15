@@ -8,6 +8,9 @@
 
 /* Modeled PowerPC MSR External Interrupt Enable bit. */
 #define PPC_MSR_EE 0x00008000u
+#define PPC_MSR_PR 0x00004000u
+#define PPC_DSISR_STORE 0x02000000u
+#define PPC_DSISR_TRANSLATION 0x40000000u
 
 typedef struct {
     uint32_t gpr[32];
