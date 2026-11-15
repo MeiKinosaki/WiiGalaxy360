@@ -1,22 +1,26 @@
 # Estado e roteiro de desenvolvimento
 
-## Marco validado — v2.42b
+## Marco validado — v2.43b
 
-- Implementadas `wii_mmu_bus_read32be` e `wii_mmu_bus_write32be` em `src/memory/mmu.c`.
-- Cada helper traduz endereço efetivo usando o TLB, confere ASID e permissão de leitura/escrita e então acessa o endereço físico no `wii_bus_t` com semântica big-endian.
-- Corrigida a falha anterior de linkagem do job `test-mmu`; o problema era a declaração pública sem definição correspondente.
-- CI Host tests passou integralmente no commit `1bfbafca05a63fe9b7c47ced8f73b950e726ceeb`: seis jobs isolados e **Full host regression suite** concluídos com sucesso. https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43663892456
-- Esta validação é de host. Não prova a MMU arquitetural completa do Broadway, compilação Xenon, execução no RGH ou compatibilidade de jogos Wii.
+- A CPU ganhou `ppc_cpu_step_with_mmu` para executar instruções com acesso a dados traduzido e `ppc_cpu_step_from_mmu` para buscar instruções por endereço efetivo.
+- O caminho de fetch exige `WII_MMU_PERM_EXEC`; load exige `WII_MMU_PERM_READ`; store exige `WII_MMU_PERM_WRITE`. Os acessos respeitam ASID, offset da página e endereço físico resultante do TLB.
+- Testes C integrados cobrem fetch de uma instrução mapeada, `stw`/`lwz` por endereço traduzido, recusa de store em página somente leitura e recusa de fetch sem permissão EXEC.
+- Makefile atualizado para ligar `src/memory/mmu.c` aos alvos de teste da CPU e dependentes.
+- CI Host tests passou integralmente no commit `3631459524a03f2e7a1f2ec3f3855b2a9b4d6955`: seis jobs isolados e **Full host regression suite** concluídos com sucesso. https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43664116808
+- A integração usa o TLB manual de software já existente; ainda não há page-table walker hash SDR1/PTEG/PTE, segment registers, BAT, tradução arquitetural completa ou todos os formatos de acesso integrados.
+- Esta validação é somente host. Não comprova compilação Xenon, ELF/XEX novo, execução no RGH ou compatibilidade de jogos Wii.
 
-**Versão de trabalho: v2.42b. Progresso global estimado: 27,5%.**
+**Versão de trabalho: v2.43b. Progresso global estimado: 29%.**
 
 ## Próximo roteiro
 
-1. Ligar MMU aos caminhos reais de fetch/load/store da CPU e distinguir falha de tradução, proteção e acesso ao barramento.
-2. Implementar segment registers e page-table walker hash SDR1/PTEG/PTE.
-3. Completar exceções privilegiadas, MSR e retorno de exceção com testes.
-4. Avançar FPU Gekko e GX FIFO/Flipper em módulos integrados e testáveis.
-5. Revalidar a toolchain Xenon separadamente; só registrar ELF/XEX quando os artefatos forem efetivamente produzidos e inspecionados.
+1. Implementar page-table walker hash do PowerPC/Broadway (SDR1, PTEG/PTE) e segment registers.
+2. Adicionar BAT e regras de tradução/proteção privilegiadas.
+3. Diferenciar falhas de tradução, proteção e barramento com DAR/DSISR e vetores corretos.
+4. Integrar mais formatos de fetch/load/store e validar exceções.
+5. Avançar FPU Gekko e GX FIFO/Flipper em módulos testáveis.
+6. Revalidar toolchain Xenon separadamente; só registrar ELF/XEX quando artefatos forem produzidos e inspecionados.
+
 
 ---
 
