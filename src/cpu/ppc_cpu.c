@@ -56,24 +56,24 @@ int ppc_cpu_poll_external_interrupt(ppc_cpu_t *cpu, uint32_t active_pending)
     return 1;
 }
 
-static bool ppc_mmu_read8(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint8_t *value)
+static bool ppc_mmu_read8(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, bool user, uint8_t *value)
 {
     uint32_t pa;
-    return wii_mmu_translate_bus(mmu, bus, ea, asid, WII_MMU_PERM_READ, &pa) &&
+    return wii_mmu_translate_bus_ex(mmu, bus, ea, asid, WII_MMU_PERM_READ, user, &pa) &&
            wii_bus_read8(bus, pa, value);
 }
 
-static bool ppc_mmu_read16be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint16_t *value)
+static bool ppc_mmu_read16be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, bool user, uint16_t *value)
 {
     uint32_t pa;
-    return wii_mmu_translate(mmu, ea, asid, WII_MMU_PERM_READ, &pa) &&
+    return wii_mmu_translate_bus_ex(mmu, bus, ea, asid, WII_MMU_PERM_READ, user, &pa) &&
            wii_bus_read16be(bus, pa, value);
 }
 
-static bool ppc_mmu_fetch32(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint32_t *value)
+static bool ppc_mmu_fetch32(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, bool user, uint32_t *value)
 {
     uint32_t pa;
-    return wii_mmu_translate(mmu, ea, asid, WII_MMU_PERM_EXEC, &pa) &&
+    return wii_mmu_translate_bus_ex(mmu, bus, ea, asid, WII_MMU_PERM_EXEC, user, &pa) &&
            wii_bus_read32be(bus, pa, value);
 }
 
@@ -82,23 +82,23 @@ static bool ppc_mmu_read32be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, 
     return wii_mmu_bus_read32be(mmu, bus, ea, asid, value);
 }
 
-static bool ppc_mmu_write8(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint8_t value)
+static bool ppc_mmu_write8(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, bool user, uint8_t value)
 {
     uint32_t pa;
-    return wii_mmu_translate(mmu, ea, asid, WII_MMU_PERM_WRITE, &pa) &&
+    return wii_mmu_translate_bus_ex(mmu, bus, ea, asid, WII_MMU_PERM_WRITE, user, &pa) &&
            wii_bus_write8(bus, pa, value);
 }
 
-static bool ppc_mmu_write16be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint16_t value)
+static bool ppc_mmu_write16be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, bool user, uint16_t value)
 {
     uint32_t pa;
-    return wii_mmu_translate(mmu, ea, asid, WII_MMU_PERM_WRITE, &pa) &&
+    return wii_mmu_translate_bus_ex(mmu, bus, ea, asid, WII_MMU_PERM_WRITE, user, &pa) &&
            wii_bus_write16be(bus, pa, value);
 }
 
-static bool ppc_mmu_write32be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint32_t value)
+static bool ppc_mmu_write32be(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, bool user, uint32_t value)
 {
-    return wii_mmu_bus_write32be(mmu, bus, ea, asid, value);
+    { uint32_t pa; return wii_mmu_translate_bus_ex(mmu,bus,ea,asid,WII_MMU_PERM_WRITE,user,&pa) && wii_bus_write32be(bus,pa,value); }
 }
 
 static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruction, wii_memory_t *memory, wii_bus_t *bus, const wii_mmu_t *mmu, uint16_t asid)
@@ -192,19 +192,19 @@ static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruct
             cpu->gpr[rt] = value;
         } else if (opcode == 34u) {
             uint8_t value;
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_read8(mmu, bus, address, asid, &value) : wii_bus_read8(bus, address, &value)) : wii_memory_read8(memory, address, &value))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_read8(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, &value) : wii_bus_read8(bus, address, &value)) : wii_memory_read8(memory, address, &value))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
             cpu->gpr[rt] = value;
         } else if (opcode == 40u || opcode == 42u) {
             uint16_t value;
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_read16be(mmu, bus, address, asid, &value) : wii_bus_read16be(bus, address, &value)) : wii_memory_read16be(memory, address, &value))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_read16be(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, &value) : wii_bus_read16be(bus, address, &value)) : wii_memory_read16be(memory, address, &value))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
             cpu->gpr[rt] = (opcode == 42u && (value & 0x8000u) != 0u)
                 ? (0xffff0000u | (uint32_t)value) : (uint32_t)value;
         } else if (opcode == 36u) {
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write32be(mmu, bus, address, asid, cpu->gpr[rt]) : wii_bus_write32be(bus, address, cpu->gpr[rt])) : wii_memory_write32be(memory, address, cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write32be(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, cpu->gpr[rt]) : wii_bus_write32be(bus, address, cpu->gpr[rt])) : wii_memory_write32be(memory, address, cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
         } else if (opcode == 44u) {
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write16be(mmu, bus, address, asid, (uint16_t)cpu->gpr[rt]) : wii_bus_write16be(bus, address, (uint16_t)cpu->gpr[rt])) : wii_memory_write16be(memory, address, (uint16_t)cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write16be(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, (uint16_t)cpu->gpr[rt]) : wii_bus_write16be(bus, address, (uint16_t)cpu->gpr[rt])) : wii_memory_write16be(memory, address, (uint16_t)cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
         } else {
-            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write8(mmu, bus, address, asid, (uint8_t)cpu->gpr[rt]) : wii_bus_write8(bus, address, (uint8_t)cpu->gpr[rt])) : wii_memory_write8(memory, address, (uint8_t)cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
+            if (!(bus != 0 ? (mmu != 0 ? ppc_mmu_write8(mmu, bus, address, asid, (cpu->msr & PPC_MSR_PR) != 0u, (uint8_t)cpu->gpr[rt]) : wii_bus_write8(bus, address, (uint8_t)cpu->gpr[rt])) : wii_memory_write8(memory, address, (uint8_t)cpu->gpr[rt]))) { ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address); return PPC_STEP_UNSUPPORTED; }
         }
         cpu->pc += 4u;
         return PPC_STEP_OK;
@@ -593,7 +593,7 @@ ppc_step_result_t ppc_cpu_step_from_mmu(ppc_cpu_t *cpu, wii_bus_t *bus,
         ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_ALIGNMENT, cpu->pc, cpu->pc);
         return PPC_STEP_ALIGNMENT;
     }
-    if (!ppc_mmu_fetch32(mmu, bus, cpu->pc, asid, &instruction)) {
+    if (!ppc_mmu_fetch32(mmu, bus, cpu->pc, asid, (cpu->msr & PPC_MSR_PR) != 0u, &instruction)) {
         ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_INSTRUCTION_STORAGE, cpu->pc, cpu->pc);
         return PPC_STEP_UNSUPPORTED;
     }
