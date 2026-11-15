@@ -136,7 +136,7 @@ int main(void)
         wii_mmu_init(&mmu); wii_bus_init(&bus);
         assert(wii_bus_map_wii_ram(&bus,mem1,sizeof(mem1),mem2,sizeof(mem2)));
         assert(wii_mmu_set_sdr1(&mmu,0x80000000u));
-        assert(wii_mmu_set_segment(&mmu,0u,vsid,true,true,false));
+        assert(wii_mmu_set_segment(&mmu,0u,vsid,false,true,false));
         store_be32(&mem1[0],0x80000000u|(vsid<<7));
         store_be32(&mem1[4],0x80001001u);
         assert(wii_mmu_bus_read8(&mmu,&bus,0x234u,0u,&value));
