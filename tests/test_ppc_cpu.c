@@ -579,7 +579,7 @@ int main(void)
         mmu_cpu.pc = 0x1004u;
         assert(ppc_cpu_step_with_mmu(&mmu_cpu,
                encode_dform(36u, 4u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_UNSUPPORTED);
-        assert(mmu_cpu.pc == 0x300u && mmu_cpu.dar == 0x1008u);
+        assert(mmu_cpu.pc == 0x300u && mmu_cpu.dar == 0x1010u);
         /* Executable permission is distinct from data-read permission. */
         assert(wii_mmu_tlb_map(&cpu_mmu, 0x1000u, 0x80000000u, 4u,
                                WII_MMU_PERM_READ | WII_MMU_PERM_WRITE));
