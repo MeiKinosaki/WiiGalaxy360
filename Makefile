@@ -11,7 +11,7 @@ test-ppc-alu:
 	./test_ppc_alu
 
 test-ppc-cpu:
-	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c src/cpu/ppc_cpu.c src/memory/memory.c tests/test_ppc_cpu.c -o test_ppc_cpu
+	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c src/cpu/ppc_cpu.c src/memory/memory.c src/memory/mmu.c tests/test_ppc_cpu.c -o test_ppc_cpu
 	./test_ppc_cpu
 
 test-memory:
@@ -23,11 +23,11 @@ test-mmu:
 	./test_mmu
 
 test-state:
-	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c src/cpu/ppc_cpu.c src/memory/memory.c src/state/state.c tests/test_state.c -o test_state
+	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c src/cpu/ppc_cpu.c src/memory/memory.c src/memory/mmu.c src/state/state.c tests/test_state.c -o test_state
 	./test_state
 
 test-interrupts:
-	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c src/cpu/ppc_cpu.c src/memory/memory.c src/hardware/interrupts.c tests/test_interrupts.c -o test_interrupts
+	$(CC) $(CPPFLAGS) $(CFLAGS) src/cpu/ppc_alu.c src/cpu/ppc_cpu.c src/memory/memory.c src/memory/mmu.c src/hardware/interrupts.c tests/test_interrupts.c -o test_interrupts
 	./test_interrupts
 
 clean:
