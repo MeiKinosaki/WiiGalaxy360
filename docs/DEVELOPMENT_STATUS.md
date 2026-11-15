@@ -1,6 +1,23 @@
 # Estado e roteiro de desenvolvimento
 
-## Estado confirmado — v2.39b
+## Marco validado — v2.40b
+
+- Host tests do commit `05200faceb6991b9fe8addc9162cda85e3589acb` concluíram com sucesso: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43647958974.
+- Todos os seis jobs reportados nessa execução passaram: `test-memory`, `test-state`, `test-ppc-alu`, `test-interrupts`, `test-ppc-cpu` e `Full host regression suite`.
+- O marco registra a implementação inicial de vetores/estado de exceção e a entrega externa simplificada, além de testes de regressão para falhas de acesso e alinhamento.
+- Isto não valida exceções privilegiadas completas, MSR/EE, retorno de exceção, MMU/TLB, FPU Gekko, dispositivos Wii, build Xenon ou execução no Xbox 360 RGH.
+- A versão de trabalho é **v2.40b**. Não há novo `default.xex` funcional de emulador nem jogos Wii comprovadamente executados.
+
+## Próximo marco técnico
+
+1. Modelar MSR/EE e o mascaramento de interrupções na CPU, com testes de prioridade e habilitação.
+2. Implementar a instrução de retorno de exceção e validar restauração de PC/estado.
+3. Definir o mapa físico real MEM1/MEM2 e aliases, com testes de limites e regiões.
+4. Só então avançar para SDR1, tradução por páginas e TLB.
+
+---
+
+## Histórico de implementação — v2.39b
 
 - Núcleo C da CPU em `src/cpu/ppc_cpu.c`: reset e dispatcher para `b`, `addi`, `addis`, `addic`, `ori`, `xori`, `subfc`, `add` e operações lógicas X-form `and`, `or`, `xor`.
 - `bc`: salto condicional B-form, avaliação dos bits CR e decremento/teste de CTR conforme BO, AA/LK e deslocamento com sinal.
