@@ -40,6 +40,19 @@ bool wii_mmu_translate(const wii_mmu_t *mmu, uint32_t effective_address,
                        uint32_t *physical_address);
 /* Translate an effective address through the software TLB, then access
  * the physical bus. These helpers do not implement page-table walks. */
+bool wii_mmu_bus_read8(const wii_mmu_t *mmu, const wii_bus_t *bus,
+                       uint32_t effective_address, uint16_t asid,
+                       uint8_t *value);
+bool wii_mmu_bus_read16be(const wii_mmu_t *mmu, const wii_bus_t *bus,
+                          uint32_t effective_address, uint16_t asid,
+                          uint16_t *value);
+bool wii_mmu_bus_write8(const wii_mmu_t *mmu, wii_bus_t *bus,
+                        uint32_t effective_address, uint16_t asid,
+                        uint8_t value);
+bool wii_mmu_bus_write16be(const wii_mmu_t *mmu, wii_bus_t *bus,
+                           uint32_t effective_address, uint16_t asid,
+                           uint16_t value);
+
 bool wii_mmu_bus_read32be(const wii_mmu_t *mmu, const wii_bus_t *bus,
                           uint32_t effective_address, uint16_t asid,
                           uint32_t *value);
