@@ -81,7 +81,7 @@ bool wii_mmu_translate_bus_ex(const wii_mmu_t *m,wii_bus_t *bus,uint32_t ea,uint
  bats=access==WII_MMU_PERM_EXEC?m->ibat:m->dbat;
  for(i=0;i<4u;i++){const wii_mmu_bat_t *b=&bats[i];if(b->valid&&(user?b->user_valid:b->supervisor_valid)&&((ea&~b->block_mask)==b->effective_base)&&(b->permissions&access)){*pa=b->physical_base|(ea&b->block_mask);return true;}}
  sr=&m->segments[seg];if(!sr->valid||(access==WII_MMU_PERM_EXEC&&sr->no_execute))return false;
- if(user?!sr->kp:!sr->ks)return false;
+ /* KS/KP select the PTE protection key; they do not disable the segment. */
  vsid=sr->vsid;pi=(ea>>12)&0xffffu;api=(ea>>22)&0x3fu;hash=vsid^pi;mask=m->sdr1&0x1ffu;origin=m->sdr1&0xffff0000u;
  pteg=origin|((hash&mask)<<6);if(walk_pteg(bus,pteg,vsid,api,false,user?sr->kp:sr->ks,ea&0xfffu,access,pa))return true;
  pteg=origin|(((~hash)&mask)<<6);return walk_pteg(bus,pteg,vsid,api,true,user?sr->kp:sr->ks,ea&0xfffu,access,pa);
