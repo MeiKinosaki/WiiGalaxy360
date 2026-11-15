@@ -61,11 +61,11 @@ bool wii_mmu_set_bat(wii_mmu_t *m,bool ins,unsigned n,uint32_t ea,uint32_t pa,ui
  b->valid = true;
  return true;
 }
-static bool walk_pteg(const wii_bus_t *bus,uint32_t base,uint32_t vsid,uint32_t api,bool secondary,uint32_t offset,uint8_t access,uint32_t *pa)
+static bool walk_pteg(wii_bus_t *bus,uint32_t base,uint32_t vsid,uint32_t api,bool secondary,bool key,uint32_t offset,uint8_t access,uint32_t *pa)
 {
  unsigned slot;for(slot=0;slot<8u;slot++){uint32_t p0,p1,a=base+slot*8u;if(!wii_bus_read32be(bus,a,&p0)||!wii_bus_read32be(bus,a+4u,&p1))return false;
  if(!(p0&0x80000000u)||((p0>>7)&0xffffffu)!=vsid||(((p0>>6)&1u)!=0u)!=secondary||(p0&0x3fu)!=api)continue;
- {uint32_t pp=p1&3u;bool key=(p1&WII_MMU_PTE1_KEY)!=0u;bool r=pp!=0u,w=(pp==1u)||(!key&&pp==2u);if((access==WII_MMU_PERM_WRITE&&!w)||((access==WII_MMU_PERM_READ||access==WII_MMU_PERM_EXEC)&&!r))return false;}
+ {uint32_t pp=p1&3u;bool r=pp!=0u,w=(pp==1u)&&!key;if((access==WII_MMU_PERM_WRITE&&!w)||((access==WII_MMU_PERM_READ||access==WII_MMU_PERM_EXEC)&&!r))return false;}
  if (access == WII_MMU_PERM_WRITE) p1 |= WII_MMU_PTE1_CHANGED;
  p1 |= WII_MMU_PTE1_REFERENCED;
  if (!wii_bus_write32be((wii_bus_t *)bus, a + 4u, p1)) return false;
@@ -83,8 +83,8 @@ bool wii_mmu_translate_bus_ex(const wii_mmu_t *m,wii_bus_t *bus,uint32_t ea,uint
  sr=&m->segments[seg];if(!sr->valid||(access==WII_MMU_PERM_EXEC&&sr->no_execute))return false;
  if(user?!sr->kp:!sr->ks)return false;
  vsid=sr->vsid;pi=(ea>>12)&0xffffu;api=(ea>>22)&0x3fu;hash=vsid^pi;mask=m->sdr1&0x1ffu;origin=m->sdr1&0xffff0000u;
- pteg=origin|((hash&mask)<<6);if(walk_pteg(bus,pteg,vsid,api,false,ea&0xfffu,access,pa))return true;
- pteg=origin|(((~hash)&mask)<<6);return walk_pteg(bus,pteg,vsid,api,true,ea&0xfffu,access,pa);
+ pteg=origin|((hash&mask)<<6);if(walk_pteg(bus,pteg,vsid,api,false,user?sr->kp:sr->ks,ea&0xfffu,access,pa))return true;
+ pteg=origin|(((~hash)&mask)<<6);return walk_pteg(bus,pteg,vsid,api,true,user?sr->kp:sr->ks,ea&0xfffu,access,pa);
 }
 bool wii_mmu_translate_bus(const wii_mmu_t *m,wii_bus_t *b,uint32_t ea,uint16_t asid,uint8_t a,uint32_t *pa){return wii_mmu_translate_bus_ex(m,b,ea,asid,a,false,pa);}
 bool wii_mmu_bus_read8(const wii_mmu_t*m,wii_bus_t*b,uint32_t ea,uint16_t a,uint8_t*v){uint32_t p;return v&&wii_mmu_translate_bus(m,b,ea,a,1,&p)&&wii_bus_read8(b,p,v);}
