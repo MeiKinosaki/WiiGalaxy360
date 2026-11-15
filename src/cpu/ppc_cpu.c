@@ -50,7 +50,7 @@ void ppc_cpu_raise_exception(ppc_cpu_t *cpu, ppc_exception_t exception,
 
 static void ppc_cpu_raise_data_storage(ppc_cpu_t *cpu, uint32_t address, bool store)
 {
-    ppc_cpu_raise_data_storage(cpu, address, true);
+    ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_DATA_STORAGE, cpu->pc, address);
     cpu->dsisr |= PPC_DSISR_TRANSLATION;
     if (store) cpu->dsisr |= PPC_DSISR_STORE;
 }
