@@ -2,9 +2,9 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Continuidade de desenvolvimento (marco de trabalho v2.39b)
+## Continuidade de desenvolvimento (marco de trabalho v2.40b)
 
-O marco de trabalho v2.39b amplia o subconjunto da CPU PowerPC com `mfspr`/`mtspr` limitados a LR/CTR, `cmpwi`, `cmplwi`, `bc`, `b` (salto incondicional e link), `addic`, `add`, `and`, `or` e `xor`, mantendo `addi`, `ori` e `subfc`. A CPU agora integra `lbz`, `lhz`, `lha`, `lwz`, `stb`, `sth` e `stw` a uma API de memória big-endian de 8/16/32 bits, com verificação de limites, detecção de acessos desalinhados e extensão de sinal em `lha`. Consulte [`docs/DEVELOPMENT_STATUS.md`](docs/DEVELOPMENT_STATUS.md) e [`docs/DEVELOPMENT_CONTINUITY.md`](docs/DEVELOPMENT_CONTINUITY.md). A CI da correção mais recente está em andamento; execuções anteriores falharam por uma expectativa de teste que confundia endereço desalinhado com endereço fora dos limites, e o teste foi corrigido para usar endereço alinhado. Estas alterações não representam CPU Broadway completa nem comprovam inicialização de jogos Wii no Xbox 360 RGH. A numeração permanece em v2.39b durante a validação, sem novo salto de versão.
+O marco v2.40b registra a validação do workflow **Host tests** no commit `05200faceb6991b9fe8addc9162cda85e3589acb` (execução concluída com sucesso: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43647958974). O núcleo C agora inclui tratamento inicial de exceções para falhas de busca/acesso e alinhamento, além da estrutura de interrupções genérica e testes correspondentes. Isso não equivale a uma implementação completa de exceções Broadway, MMU/TLB, FPU, GPU/Flipper ou áudio. O resultado validado é CI de host; não há prova de build Xenon novo, inicialização no Xbox 360 RGH ou boot de jogos Wii. Consulte [o registro v2.40b](docs/v2.40b-milestone.md) e [o estado de desenvolvimento](docs/DEVELOPMENT_STATUS.md).
 
 ## Estado real — v2.17b: subfc e carry do XER
 
