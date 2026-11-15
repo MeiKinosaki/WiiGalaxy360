@@ -59,7 +59,7 @@ int ppc_cpu_poll_external_interrupt(ppc_cpu_t *cpu, uint32_t active_pending)
 static bool ppc_mmu_read8(const wii_mmu_t *mmu, wii_bus_t *bus, uint32_t ea, uint16_t asid, uint8_t *value)
 {
     uint32_t pa;
-    return wii_mmu_translate(mmu, ea, asid, WII_MMU_PERM_READ, &pa) &&
+    return wii_mmu_translate_bus(mmu, bus, ea, asid, WII_MMU_PERM_READ, &pa) &&
            wii_bus_read8(bus, pa, value);
 }
 
