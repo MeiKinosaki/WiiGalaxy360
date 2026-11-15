@@ -115,7 +115,7 @@ int main(void)
         wii_mmu_init(&mmu); wii_bus_init(&bus);
         assert(wii_bus_map_wii_ram(&bus,mem1,sizeof(mem1),mem2,sizeof(mem2)));
         assert(wii_mmu_set_sdr1(&mmu,0x80000000u));
-        assert(!wii_mmu_set_sdr1(&mmu,0x80000001u));
+        assert(!wii_mmu_set_sdr1(&mmu,0x80000200u));
         assert(wii_mmu_set_segment(&mmu,1u,0x123u,true,false,true));
         assert(!wii_mmu_translate_bus_ex(&mmu,&bus,0x10000100u,0u,WII_MMU_PERM_READ,true,&pa));
         assert(!wii_mmu_translate_bus_ex(&mmu,&bus,0x10000100u,0u,WII_MMU_PERM_EXEC,false,&pa));
