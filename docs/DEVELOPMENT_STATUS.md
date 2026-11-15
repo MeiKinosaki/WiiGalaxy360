@@ -1,26 +1,26 @@
 # Estado e roteiro de desenvolvimento
 
-## Marco validado — v2.44b
+## Marco validado — v2.45b
 
-- Ampliados os acessos de dados da CPU através do TLB para os formatos D-form byte, meia-palavra e palavra: `lbz`, `lhz`, `lha`, `lwz`, `stb`, `sth` e `stw`.
-- Expostas rotinas de barramento MMU traduzidas para leitura/escrita de 8, 16 e 32 bits; os acessos preservam endianness big-endian, ASID, offset e permissões do TLB.
-- Testes de integração verificam store/load de meia-palavra, extensão de sinal de `lha`, byte store/load, permissões e DAR/PC ao rejeitar escrita em página sem WRITE.
-- A execução do Host tests passou em todos os seis jobs individuais e na **Full host regression suite**: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43750299659.
-- Commit de teste validado: `f8210d4a9f5284b9448e73c14e2f79583870700a`. Commits seguintes atualizam README e este documento.
-- Limitação: a tradução ainda usa TLB manual de software. Não há page-table walker hash SDR1/PTEG/PTE, segment registers, BAT ou semântica completa de exceções de tradução/proteção.
-- A validação é somente host; não comprova compilação Xenon, ELF/XEX novo, execução em RGH ou compatibilidade de jogos Wii.
+- Adicionados o registro SDR1 e a configuração inicial de VSID para os 16 segmentos.
+- Implementada busca inicial em PTEG primário e secundário, com oito slots cada, comparação de V/VSID/H/API e composição do endereço físico a partir de RPN e offset.
+- A tradução consulta primeiro o TLB manual; em miss, tenta o page-table walker hash. Helpers de barramento e fetch/load/store da CPU passaram a usar o fallback.
+- Teste de host cria PTE na RAM mapeada, verifica tradução para endereço físico e leitura/escrita através do resultado.
+- GitHub Actions passou em seis jobs isolados e na **Full host regression suite** (7/7): https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43752888641.
+- Commit de código validado: `cdae2eaa46b0d00f63d8103f39776ccfbd7f7328`. README e este documento foram atualizados em commits posteriores.
+- Limitações importantes: walker ainda inicial; não valida completamente os campos/tamanho de SDR1/HTABMASK, não implementa todos os campos de segment register, BAT, PR/KEY e permissões de usuário/supervisor, atualização R/C, preenchimento do TLB nem exceções de page fault precisas.
+- CI é somente host. Não comprova compilação Xenon, ELF/XEX novo, execução em RGH ou compatibilidade de jogos Wii.
 
-**Versão de trabalho: v2.44b. Progresso global estimado: 30%.**
+**Versão de trabalho: v2.45b. Progresso global estimado: 31%.**
 
 ## Próximo roteiro
 
-1. Implementar o page-table walker hash PowerPC/Broadway: SDR1, PTEG, PTE e comparação de tags.
-2. Modelar segment registers e regras de proteção/privilegiadas.
-3. Adicionar BAT e integração com o mecanismo de tradução.
-4. Separar falhas de tradução, proteção e barramento com DAR/DSISR e vetores corretos.
-5. Continuar FPU Gekko e GX FIFO/Flipper em módulos testáveis.
+1. Validar a codificação de SDR1 e HTABMASK com testes de limites e múltiplos PTEGs.
+2. Implementar segment registers com VSID, Ks/Kp, N e controle de tradução.
+3. Implementar BAT e seleção de tradução por região.
+4. Completar PP/PR/KEY, R/C e exceções de tradução com DAR/DSISR corretos.
+5. Avançar FPU Gekko e GX FIFO/Flipper.
 6. Validar toolchain Xenon separadamente; só declarar ELF/XEX quando o artefato existir e for inspecionado.
-
 
 ## Marco validado — v2.43b
 
