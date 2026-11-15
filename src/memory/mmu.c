@@ -28,7 +28,12 @@ bool wii_mmu_translate(const wii_mmu_t *m,uint32_t ea,uint16_t asid,uint8_t acce
 }
 bool wii_mmu_set_sdr1(wii_mmu_t *m,uint32_t v)
 {
- uint32_t mask=v&0x1ffu,origin=v&0xffff0000u;if(!m||(origin&0x3fffu)!=0u||mask>0x1ffu)return false;m->sdr1=v;return true;
+ uint32_t mask = v & 0x1ffu;
+ uint32_t origin = v & 0xffff0000u;
+ if (!m || (v & 0x0000fe00u) != 0u || (origin & 0x3fffu) != 0u ||
+     mask > 0x1ffu) return false;
+ m->sdr1 = v;
+ return true;
 }
 bool wii_mmu_set_segment(wii_mmu_t *m,unsigned n,uint32_t vsid,bool ks,bool kp,bool nx)
 {
