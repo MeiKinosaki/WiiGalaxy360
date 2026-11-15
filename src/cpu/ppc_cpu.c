@@ -10,6 +10,8 @@ void ppc_cpu_reset(ppc_cpu_t *cpu, uint32_t entry_pc)
     cpu->ctr = 0u;
     cpu->cr = 0u;
     cpu->alu.xer_ca = 0u;
+    cpu->msr = 0u;
+    cpu->sdr1 = 0u;
     cpu->srr0 = 0u;
     cpu->srr1 = 0u;
     cpu->dar = 0u;
@@ -34,9 +36,10 @@ void ppc_cpu_raise_exception(ppc_cpu_t *cpu, ppc_exception_t exception,
     case PPC_EXCEPTION_SYSTEM_CALL: vector = 0xc00u; break;
     default: return;
     }
-    /* MSR is not modelled yet; SRR1 records zero until privileged state lands. */
+    /* Save previous MSR in SRR1 and clear EE on exception entry. */
     cpu->srr0 = fault_pc;
-    cpu->srr1 = 0u;
+    cpu->srr1 = cpu->msr;
+    cpu->msr &= ~PPC_MSR_EE;
     cpu->dar = fault_address;
     cpu->dsisr = (exception == PPC_EXCEPTION_DATA_STORAGE) ? 0x02000000u : 0u;
     cpu->exception_vector = vector;
@@ -44,10 +47,9 @@ void ppc_cpu_raise_exception(ppc_cpu_t *cpu, ppc_exception_t exception,
     cpu->pc = vector;
 }
 
-int ppc_cpu_poll_external_interrupt(ppc_cpu_t *cpu, uint32_t active_pending,
-                                     int external_interrupts_enabled)
+int ppc_cpu_poll_external_interrupt(ppc_cpu_t *cpu, uint32_t active_pending)
 {
-    if (cpu == 0 || active_pending == 0u || !external_interrupts_enabled)
+    if (cpu == 0 || active_pending == 0u || (cpu->msr & PPC_MSR_EE) == 0u)
         return 0;
     ppc_cpu_raise_exception(cpu, PPC_EXCEPTION_EXTERNAL, cpu->pc, 0u);
     return 1;
@@ -62,6 +64,15 @@ static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruct
     const uint32_t xo = (instruction >> 1) & 1023u;
 
     if (cpu == 0) return PPC_STEP_UNSUPPORTED;
+
+    /* rfi restores SRR0 and the modeled low half of MSR from SRR1. */
+    if (opcode == 19u && xo == 50u) {
+        cpu->pc = cpu->srr0;
+        cpu->msr = (cpu->msr & 0xffff0000u) | (cpu->srr1 & 0x0000ffffu);
+        cpu->exception_pending = 0u;
+        cpu->exception_vector = 0u;
+        return PPC_STEP_OK;
+    }
 
     /* B-form conditional branch. BO controls CR and CTR tests; BD is signed
      * and word-aligned. This subset does not model branch prediction hints. */
@@ -284,17 +295,32 @@ static ppc_step_result_t ppc_cpu_step_internal(ppc_cpu_t *cpu, uint32_t instruct
     }
 
     if (opcode == 31u) {
-        /* mfspr/mtspr subset: SPR encodes LR=8 and CTR=9. */
+        /* mfspr/mtspr subset: LR=8, CTR=9, SDR1=25, SRR0=26, SRR1=27. */
         if (xo == 339u || xo == 467u) {
             const uint32_t spr = ((instruction >> 16) & 31u) |
                                  (((instruction >> 11) & 31u) << 5);
             uint32_t *special = 0;
             if (spr == 8u) special = &cpu->lr;
             else if (spr == 9u) special = &cpu->ctr;
+            else if (spr == 25u) special = &cpu->sdr1;
+            else if (spr == 26u) special = &cpu->srr0;
+            else if (spr == 27u) special = &cpu->srr1;
             if (special == 0 || (instruction & 1u) != 0u)
                 return PPC_STEP_UNSUPPORTED;
             if (xo == 339u) cpu->gpr[rt] = *special;
             else *special = cpu->gpr[rt];
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+
+        /* mfmsr/mtmsr transfer the modeled MSR. */
+        if (xo == 83u && (instruction & 1u) == 0u) {
+            cpu->gpr[rt] = cpu->msr;
+            cpu->pc += 4u;
+            return PPC_STEP_OK;
+        }
+        if (xo == 146u && (instruction & 1u) == 0u) {
+            cpu->msr = cpu->gpr[rt];
             cpu->pc += 4u;
             return PPC_STEP_OK;
         }
