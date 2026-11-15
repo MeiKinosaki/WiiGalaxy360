@@ -105,5 +105,46 @@ int main(void)
         assert(!wii_mmu_translate_bus(&mmu, &bus, 0x00000234u, 0u,
                                       WII_MMU_PERM_EXEC, &translated) == 0);
     }
+
+    /* Segment protection and BAT block translation. */
+    {
+        uint8_t mem1[0x30000] = {0};
+        uint8_t mem2[0x1000] = {0};
+        wii_bus_t bus;
+        uint32_t pa = 0u;
+        wii_mmu_init(&mmu); wii_bus_init(&bus);
+        assert(wii_bus_map_wii_ram(&bus,mem1,sizeof(mem1),mem2,sizeof(mem2)));
+        assert(wii_mmu_set_sdr1(&mmu,0x80000000u));
+        assert(!wii_mmu_set_sdr1(&mmu,0x80000001u));
+        assert(wii_mmu_set_segment(&mmu,1u,0x123u,true,false,true));
+        assert(!wii_mmu_translate_bus_ex(&mmu,&bus,0x10000100u,0u,WII_MMU_PERM_READ,true,&pa));
+        assert(!wii_mmu_translate_bus_ex(&mmu,&bus,0x10000100u,0u,WII_MMU_PERM_EXEC,false,&pa));
+        assert(wii_mmu_set_bat(&mmu,false,0u,0x10000000u,0x80000000u,0x1ffffu,true,false,WII_MMU_PERM_READ|WII_MMU_PERM_WRITE));
+        assert(wii_mmu_translate_bus_ex(&mmu,&bus,0x10001234u,0u,WII_MMU_PERM_READ,false,&pa));
+        assert(pa==0x80001234u);
+        assert(!wii_mmu_translate_bus_ex(&mmu,&bus,0x10001234u,0u,WII_MMU_PERM_READ,true,&pa));
+    }
+
+    /* PTE referenced/changed bits are written back on actual accesses. */
+    {
+        uint8_t mem1[0x3000] = {0};
+        uint8_t mem2[0x1000] = {0};
+        wii_bus_t bus;
+        uint8_t value=0;
+        uint32_t pte1;
+        const uint32_t vsid=0x12345u;
+        wii_mmu_init(&mmu); wii_bus_init(&bus);
+        assert(wii_bus_map_wii_ram(&bus,mem1,sizeof(mem1),mem2,sizeof(mem2)));
+        assert(wii_mmu_set_sdr1(&mmu,0x80000000u));
+        assert(wii_mmu_set_segment(&mmu,0u,vsid,true,true,false));
+        store_be32(&mem1[0],0x80000000u|(vsid<<7));
+        store_be32(&mem1[4],0x80001001u);
+        assert(wii_mmu_bus_read8(&mmu,&bus,0x234u,0u,&value));
+        pte1=((uint32_t)mem1[4]<<24)|((uint32_t)mem1[5]<<16)|((uint32_t)mem1[6]<<8)|mem1[7];
+        assert((pte1&WII_MMU_PTE1_REFERENCED)!=0u);
+        assert(wii_mmu_bus_write8(&mmu,&bus,0x235u,0u,0x77u));
+        pte1=((uint32_t)mem1[4]<<24)|((uint32_t)mem1[5]<<16)|((uint32_t)mem1[6]<<8)|mem1[7];
+        assert((pte1&WII_MMU_PTE1_CHANGED)!=0u);
+    }
     return 0;
 }
