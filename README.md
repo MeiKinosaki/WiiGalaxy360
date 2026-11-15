@@ -2,9 +2,9 @@
 
 Emulador experimental de Nintendo Wii para Xbox 360 RGH.
 
-## Continuidade de desenvolvimento (marco de trabalho v2.43b)
+## Continuidade de desenvolvimento (marco de trabalho v2.44b)
 
-A v2.43b conecta o TLB aos caminhos da CPU para fetch de instrução e operações D-form de load/store. Foram expostas as APIs `ppc_cpu_step_from_mmu` e `ppc_cpu_step_with_mmu`; fetch exige permissão EXEC, leituras exigem READ e escritas exigem WRITE, sempre respeitando ASID e tradução para o barramento físico. Testes cobrem execução de instrução traduzida, load/store, bloqueio de escrita em página somente leitura e bloqueio de fetch sem EXEC. O Host tests e a regressão completa passaram: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43664116808. Ainda faltam page-table walker hash SDR1/PTEG/PTE, segment registers, BAT, exceções arquiteturais completas, tradução em todos os modos de acesso e integração fiel ao Broadway. Não há prova de build Xenon novo, `default.xex` funcional no RGH ou boot de jogos Wii. Consulte [estado de desenvolvimento](docs/DEVELOPMENT_STATUS.md).
+A v2.44b amplia os acessos da CPU através do TLB para operações D-form de byte, meia-palavra e palavra: `lbz`, `lhz`, `lha`, `lwz`, `stb`, `sth` e `stw`. Foram adicionadas também as APIs de barramento MMU para leitura/escrita traduzida de 8, 16 e 32 bits big-endian. Os testes verificam armazenamento e leitura de meia-palavra, extensão de sinal em `lha`, byte store/load, permissões e endereço da exceção de armazenamento. A regressão completa Host tests passou no commit `f8210d4a9f5284b9448e73c14e2f79583870700a`: https://github.com/MeiKinosaki/WiiGalaxy360/actions/runs/43750299659. A tradução ainda depende do TLB manual; faltam page-table walker hash SDR1/PTEG/PTE, segment registers, BAT e exceções arquiteturais completas. Esta validação é somente host: não comprova build Xenon, `default.xex` novo/funcional no RGH ou boot de jogos Wii. Consulte [estado de desenvolvimento](docs/DEVELOPMENT_STATUS.md).
 
 ## Estado real — v2.17b: subfc e carry do XER
 
