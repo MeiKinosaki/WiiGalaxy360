@@ -165,7 +165,7 @@ bool wii_mmu_translate_bus(const wii_mmu_t *mmu, const wii_bus_t *bus,
                           access, physical_address))
         return true;
     pteg = origin | (((~hash) & mask) << 6);
-    return wii_mmu_walk_pteg(mmu, bus, pteg, vsid, api, true, offset,
+    return wii_mmu_walk_pteg(bus, pteg, vsid, api, true, offset,
                              access, physical_address);
 }
 
