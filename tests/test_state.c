@@ -15,6 +15,7 @@ int main(void)
     cpu.gpr[3]=0x12345678u; cpu.lr=0x80003200u; cpu.ctr=9u;
     cpu.cr=0xdeadbeefu; cpu.alu.xer_ca=1u;
     ppc_cpu_raise_exception(&cpu, PPC_EXCEPTION_DATA_STORAGE, 0x80003120u, 0xdead1000u);
+    cpu.dsisr = 0x02000000u; /* Explicitly seed the saved store-fault status. */
     assert(wii_state_save("test_state.bin",&cpu,mem1,sizeof mem1,mem2,sizeof mem2));
     memset(&loaded,0,sizeof loaded); memset(mem1,0,sizeof mem1); memset(mem2,0,sizeof mem2);
     assert(wii_state_load("test_state.bin",&loaded,mem1,sizeof mem1,mem2,sizeof mem2));
