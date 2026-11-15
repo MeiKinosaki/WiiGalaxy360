@@ -45,7 +45,7 @@ bool wii_mmu_set_segment(wii_mmu_t *m,unsigned n,uint32_t vsid,bool ks,bool kp,b
  m->segments[n].valid = true;
  return true;
 }
-bool wii_mmu_set_segment_vsid(wii_mmu_t *m,unsigned n,uint32_t vsid){return wii_mmu_set_segment(m,n,vsid,true,true,false);}
+bool wii_mmu_set_segment_vsid(wii_mmu_t *m,unsigned n,uint32_t vsid){return wii_mmu_set_segment(m,n,vsid,false,false,false);}
 bool wii_mmu_set_bat(wii_mmu_t *m,bool ins,unsigned n,uint32_t ea,uint32_t pa,uint32_t mask,bool sv,bool uv,uint8_t perms)
 {
  wii_mmu_bat_t *b;
