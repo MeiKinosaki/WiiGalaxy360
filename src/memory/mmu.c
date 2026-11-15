@@ -107,7 +107,7 @@ bool wii_mmu_set_segment_vsid(wii_mmu_t *mmu, unsigned segment,
     return true;
 }
 
-static bool wii_mmu_walk_pteg(const wii_mmu_t *mmu, const wii_bus_t *bus,
+static bool wii_mmu_walk_pteg(const wii_bus_t *bus,
                               uint32_t pteg_address, uint32_t vsid,
                               uint32_t api, bool secondary, uint32_t offset,
                               uint8_t access, uint32_t *physical_address)
@@ -148,11 +148,12 @@ bool wii_mmu_translate_bus(const wii_mmu_t *mmu, const wii_bus_t *bus,
     const uint32_t offset = effective_address & 0xfffu;
     if (mmu == 0 || bus == 0 || physical_address == 0 ||
         (access != WII_MMU_PERM_READ && access != WII_MMU_PERM_WRITE &&
-         access != WII_MMU_PERM_EXEC) || !mmu->segment_valid[segment])
+         access != WII_MMU_PERM_EXEC))
         return false;
     if (wii_mmu_translate(mmu, effective_address, asid, access,
                           physical_address))
         return true;
+    if (!mmu->segment_valid[segment]) return false;
     vsid = mmu->segment_vsid[segment];
     page_index = (effective_address >> 12) & 0xffffu;
     api = (effective_address >> 22) & 0x3fu;
@@ -160,7 +161,7 @@ bool wii_mmu_translate_bus(const wii_mmu_t *mmu, const wii_bus_t *bus,
     mask = mmu->sdr1 & 0x1ffu;
     origin = mmu->sdr1 & 0xffff0000u;
     pteg = origin | ((hash & mask) << 6);
-    if (wii_mmu_walk_pteg(mmu, bus, pteg, vsid, api, false, offset,
+    if (wii_mmu_walk_pteg(bus, pteg, vsid, api, false, offset,
                           access, physical_address))
         return true;
     pteg = origin | (((~hash) & mask) << 6);
