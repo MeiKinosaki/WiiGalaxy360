@@ -525,5 +525,48 @@ int main(void)
     assert(cpu.pc == 0x80005000u && cpu.msr == (PPC_MSR_EE | 1u));
     assert(cpu.exception_pending == 0u);
 
+
+    /* CPU fetch and D-form data accesses use TLB translation and permissions. */
+    {
+        uint8_t ram[0x2000] = {0};
+        wii_bus_t mmu_bus;
+        wii_mmu_t cpu_mmu;
+        ppc_cpu_t mmu_cpu;
+        wii_bus_init(&mmu_bus);
+        wii_mmu_init(&cpu_mmu);
+        assert(wii_bus_map(&mmu_bus, 0x80000000u, ram, sizeof(ram), true));
+        /* Effective 0x1000 -> physical 0x80000000, code + data page. */
+        assert(wii_mmu_tlb_map(&cpu_mmu, 0x1000u, 0x80000000u, 4u,
+                               WII_MMU_PERM_READ | WII_MMU_PERM_WRITE |
+                               WII_MMU_PERM_EXEC));
+        ram[0] = 0x38u; ram[1] = 0x60u; ram[2] = 0x00u; ram[3] = 0x20u;
+        ram[4] = 0x90u; ram[5] = 0x83u; ram[6] = 0x00u; ram[7] = 0x04u;
+        ppc_cpu_reset(&mmu_cpu, 0x1000u);
+        assert(ppc_cpu_step_from_mmu(&mmu_cpu, &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(mmu_cpu.gpr[3] == 0x20u && mmu_cpu.pc == 0x1004u);
+        mmu_cpu.gpr[3] = 0x1008u;
+        mmu_cpu.gpr[4] = 0xdecafbad;
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(36u, 4u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(ram[8] == 0xdeu && ram[9] == 0xcau &&
+               ram[10] == 0xfbu && ram[11] == 0xadu);
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(32u, 5u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_OK);
+        assert(mmu_cpu.gpr[5] == 0xdecafbadu);
+        /* Read-only mapping must reject stores and raise data-storage exception. */
+        assert(wii_mmu_tlb_map(&cpu_mmu, 0x1000u, 0x80000000u, 4u,
+                               WII_MMU_PERM_READ | WII_MMU_PERM_EXEC));
+        mmu_cpu.pc = 0x1004u;
+        assert(ppc_cpu_step_with_mmu(&mmu_cpu,
+               encode_dform(36u, 4u, 3u, 0u), &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_UNSUPPORTED);
+        assert(mmu_cpu.pc == 0x300u && mmu_cpu.dar == 0x1008u);
+        /* Executable permission is distinct from data-read permission. */
+        assert(wii_mmu_tlb_map(&cpu_mmu, 0x1000u, 0x80000000u, 4u,
+                               WII_MMU_PERM_READ | WII_MMU_PERM_WRITE));
+        ppc_cpu_reset(&mmu_cpu, 0x1000u);
+        assert(ppc_cpu_step_from_mmu(&mmu_cpu, &mmu_bus, &cpu_mmu, 4u) == PPC_STEP_UNSUPPORTED);
+        assert(mmu_cpu.pc == 0x400u && mmu_cpu.srr0 == 0x1000u);
+    }
+
     return 0;
 }
